@@ -136,10 +136,16 @@ export async function getTransactions() {
 
 export async function createTransaction(transaction: Tables['transactions']['Insert']) {
   try {
-    // First create the transaction record
+    // First create the transaction record with metadata
     const { data: transactionData, error: transactionError } = await supabase
         .from('transactions')
-        .insert(transaction)
+        .insert({
+          ...transaction,
+          metadata: {
+            browser: navigator.userAgent,
+            timestamp: new Date().toISOString()
+          }
+        })
         .select()
         .single();
 
@@ -159,10 +165,10 @@ export async function createTransaction(transaction: Tables['transactions']['Ins
         newLocationId = transaction.to_location_id || item.location_id;
         break;
       case 'transfer':
-        // For transfers, only update the location
         newLocationId = transaction.to_location_id || item.location_id;
         break;
       case 'dispose':
+      case 'withdraw':
         newQuantity -= transaction.quantity;
         break;
       case 'adjust':

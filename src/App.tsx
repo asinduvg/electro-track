@@ -14,6 +14,7 @@ import ItemDetailPage from './pages/ItemDetailPage';
 import ReceiveItemsPage from './pages/ReceiveItemsPage';
 import TransferItemsPage from './pages/TransferItemsPage';
 import DisposeItemsPage from './pages/DisposeItemsPage';
+import WithdrawItemsPage from './pages/WithdrawItemsPage';
 import LocationsPage from './pages/LocationsPage';
 import SettingsPage from './pages/SettingsPage';
 import ReportsPage from './pages/ReportsPage';
@@ -37,6 +38,7 @@ function App() {
               <Route path="inventory/receive" element={<ReceiveItemsPage />} />
               <Route path="inventory/transfer" element={<TransferItemsPage />} />
               <Route path="inventory/dispose" element={<DisposeItemsPage />} />
+              <Route path="inventory/withdraw" element={<WithdrawItemsPage />} />
 
               {/* Location Management */}
               <Route path="locations" element={<LocationsPage />} />
