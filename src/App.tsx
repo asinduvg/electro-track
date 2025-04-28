@@ -13,6 +13,7 @@ import AddItemPage from './pages/AddItemPage';
 import ItemDetailPage from './pages/ItemDetailPage';
 import ReceiveItemsPage from './pages/ReceiveItemsPage';
 import TransferItemsPage from './pages/TransferItemsPage';
+import DisposeItemsPage from './pages/DisposeItemsPage';
 
 function App() {
   return (
@@ -31,10 +32,10 @@ function App() {
               <Route path="inventory/view/:id" element={<ItemDetailPage />} />
               <Route path="inventory/receive" element={<ReceiveItemsPage />} />
               <Route path="inventory/transfer" element={<TransferItemsPage />} />
+              <Route path="inventory/dispose" element={<DisposeItemsPage />} />
 
               {/* Placeholder routes - would be implemented in a real app */}
               <Route path="inventory/edit/:id" element={<p className="text-center py-12">Edit Item page would be implemented here</p>} />
-              <Route path="inventory/dispose" element={<p className="text-center py-12">Dispose Items page would be implemented here</p>} />
               <Route path="locations" element={<p className="text-center py-12">Storage Locations page would be implemented here</p>} />
               <Route path="reports" element={<p className="text-center py-12">Reports & Analytics page would be implemented here</p>} />
               <Route path="settings" element={<p className="text-center py-12">System Settings page would be implemented here</p>} />
