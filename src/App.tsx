@@ -16,6 +16,8 @@ import TransferItemsPage from './pages/TransferItemsPage';
 import DisposeItemsPage from './pages/DisposeItemsPage';
 import LocationsPage from './pages/LocationsPage';
 import SettingsPage from './pages/SettingsPage';
+import ReportsPage from './pages/ReportsPage';
+import UsersPage from './pages/UsersPage';
 
 function App() {
   return (
@@ -39,13 +41,17 @@ function App() {
               {/* Location Management */}
               <Route path="locations" element={<LocationsPage />} />
 
+              {/* Reports */}
+              <Route path="reports" element={<ReportsPage />} />
+
+              {/* User Management */}
+              <Route path="users" element={<UsersPage />} />
+
               {/* Settings */}
               <Route path="settings" element={<SettingsPage />} />
 
-              {/* Placeholder routes - would be implemented in a real app */}
+              {/* Placeholder routes */}
               <Route path="inventory/edit/:id" element={<p className="text-center py-12">Edit Item page would be implemented here</p>} />
-              <Route path="reports" element={<p className="text-center py-12">Reports & Analytics page would be implemented here</p>} />
-              <Route path="users" element={<p className="text-center py-12">User Management page would be implemented here</p>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
