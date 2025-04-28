@@ -135,10 +135,6 @@ export async function getTransactions() {
 }
 
 export async function createTransaction(transaction: Tables['transactions']['Insert']) {
-  // Start a Supabase transaction
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('No active session');
-
   try {
     // First create the transaction record
     const { data: transactionData, error: transactionError } = await supabase
@@ -149,26 +145,28 @@ export async function createTransaction(transaction: Tables['transactions']['Ins
 
     if (transactionError) throw transactionError;
 
-    // Then update the item quantity based on transaction type
+    // Then update the item quantity and location based on transaction type
     const item = await getItemById(transaction.item_id);
-    console.log('item is ', item)
     if (!item) throw new Error('Item not found');
 
     let newQuantity = item.quantity;
     let newStatus = item.status;
+    let newLocationId = item.location_id;
 
     switch (transaction.type) {
       case 'receive':
         newQuantity += transaction.quantity;
+        newLocationId = transaction.to_location_id || item.location_id;
         break;
       case 'transfer':
-        // No quantity change for transfers
+        // For transfers, only update the location
+        newLocationId = transaction.to_location_id || item.location_id;
         break;
       case 'dispose':
         newQuantity -= transaction.quantity;
         break;
       case 'adjust':
-        newQuantity = transaction.quantity; // Direct set for adjustments
+        newQuantity = transaction.quantity;
         break;
     }
 
@@ -187,7 +185,7 @@ export async function createTransaction(transaction: Tables['transactions']['Ins
         .update({
           quantity: newQuantity,
           status: newStatus,
-          location_id: transaction.to_location_id || item.location_id
+          location_id: newLocationId
         })
         .eq('id', transaction.item_id);
 
