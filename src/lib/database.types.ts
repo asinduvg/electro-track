@@ -1,10 +1,10 @@
 export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+    | string
+    | number
+    | boolean
+    | null
+    | { [key: string]: Json | undefined }
+    | Json[]
 
 export interface Database {
   public: {
@@ -52,7 +52,6 @@ export interface Database {
           quantity: number
           minimum_stock: number | null
           unit_cost: number
-          location_id: string | null
           purchase_date: string | null
           warranty_expiration: string | null
           status: 'in_stock' | 'low_stock' | 'out_of_stock' | 'ordered' | 'discontinued'
@@ -73,7 +72,6 @@ export interface Database {
           quantity?: number
           minimum_stock?: number | null
           unit_cost: number
-          location_id?: string | null
           purchase_date?: string | null
           warranty_expiration?: string | null
           status?: 'in_stock' | 'low_stock' | 'out_of_stock' | 'ordered' | 'discontinued'
@@ -94,13 +92,38 @@ export interface Database {
           quantity?: number
           minimum_stock?: number | null
           unit_cost?: number
-          location_id?: string | null
           purchase_date?: string | null
           warranty_expiration?: string | null
           status?: 'in_stock' | 'low_stock' | 'out_of_stock' | 'ordered' | 'discontinued'
           created_at?: string | null
           updated_at?: string | null
           created_by?: string | null
+        }
+      }
+      item_locations: {
+        Row: {
+          id: string
+          item_id: string
+          location_id: string
+          quantity: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          location_id: string
+          quantity: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          location_id?: string
+          quantity?: number
+          created_at?: string | null
+          updated_at?: string | null
         }
       }
       locations: {
@@ -129,7 +152,7 @@ export interface Database {
       transactions: {
         Row: {
           id: string
-          type: 'receive' | 'transfer' | 'dispose' | 'adjust'
+          type: 'receive' | 'transfer' | 'dispose' | 'adjust' | 'withdraw'
           item_id: string
           quantity: number
           from_location_id: string | null
@@ -137,10 +160,13 @@ export interface Database {
           performed_by: string
           performed_at: string | null
           notes: string | null
+          project_id: string | null
+          purpose: string | null
+          metadata: Json | null
         }
         Insert: {
           id?: string
-          type: 'receive' | 'transfer' | 'dispose' | 'adjust'
+          type: 'receive' | 'transfer' | 'dispose' | 'adjust' | 'withdraw'
           item_id: string
           quantity: number
           from_location_id?: string | null
@@ -148,10 +174,13 @@ export interface Database {
           performed_by: string
           performed_at?: string | null
           notes?: string | null
+          project_id?: string | null
+          purpose?: string | null
+          metadata?: Json | null
         }
         Update: {
           id?: string
-          type?: 'receive' | 'transfer' | 'dispose' | 'adjust'
+          type?: 'receive' | 'transfer' | 'dispose' | 'adjust' | 'withdraw'
           item_id?: string
           quantity?: number
           from_location_id?: string | null
@@ -159,6 +188,56 @@ export interface Database {
           performed_by?: string
           performed_at?: string | null
           notes?: string | null
+          project_id?: string | null
+          purpose?: string | null
+          metadata?: Json | null
+        }
+      }
+      transaction_logs: {
+        Row: {
+          id: string
+          transaction_id: string
+          item_id: string
+          quantity: number
+          from_location_id: string | null
+          to_location_id: string | null
+          performed_by: string
+          performed_at: string | null
+          type: 'receive' | 'transfer' | 'dispose' | 'adjust' | 'withdraw'
+          project_id: string | null
+          purpose: string | null
+          notes: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          transaction_id: string
+          item_id: string
+          quantity: number
+          from_location_id?: string | null
+          to_location_id?: string | null
+          performed_by: string
+          performed_at?: string | null
+          type: 'receive' | 'transfer' | 'dispose' | 'adjust' | 'withdraw'
+          project_id?: string | null
+          purpose?: string | null
+          notes?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          transaction_id?: string
+          item_id?: string
+          quantity?: number
+          from_location_id?: string | null
+          to_location_id?: string | null
+          performed_by?: string
+          performed_at?: string | null
+          type?: 'receive' | 'transfer' | 'dispose' | 'adjust' | 'withdraw'
+          project_id?: string | null
+          purpose?: string | null
+          notes?: string | null
+          metadata?: Json | null
         }
       }
       attachments: {
