@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import InventoryListPage from './pages/InventoryListPage';
 import AddItemPage from './pages/AddItemPage';
+import EditItemPage from './pages/EditItemPage';
 import ItemDetailPage from './pages/ItemDetailPage';
 import ReceiveItemsPage from './pages/ReceiveItemsPage';
 import TransferItemsPage from './pages/TransferItemsPage';
@@ -34,6 +35,7 @@ function App() {
               {/* Inventory Routes */}
               <Route path="inventory/items" element={<InventoryListPage />} />
               <Route path="inventory/add" element={<AddItemPage />} />
+              <Route path="inventory/edit/:id" element={<EditItemPage />} />
               <Route path="inventory/view/:id" element={<ItemDetailPage />} />
               <Route path="inventory/receive" element={<ReceiveItemsPage />} />
               <Route path="inventory/transfer" element={<TransferItemsPage />} />
@@ -51,9 +53,6 @@ function App() {
 
               {/* Settings */}
               <Route path="settings" element={<SettingsPage />} />
-
-              {/* Placeholder routes */}
-              <Route path="inventory/edit/:id" element={<p className="text-center py-12">Edit Item page would be implemented here</p>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -1,24 +1,29 @@
-import React, {useState, useEffect} from 'react';
-import {Link} from 'react-router-dom';
-import {Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown } from 'lucide-react';
 import {
     Table, TableHead, TableBody, TableRow,
     TableHeaderCell, TableCell
 } from '../components/ui/Table';
-import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {Input} from '../components/ui/Input';
-import {Button} from '../components/ui/Button';
-import {Badge} from '../components/ui/Badge';
-import {useAuth} from '../context/AuthContext';
-import {getItems, deleteItem} from '../lib/api';
-import {categories} from '../data/mockData';
-import {UserRole} from '../types';
-import type {Database} from '../lib/database.types';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { useAuth } from '../context/AuthContext';
+import { getItems, deleteItem } from '../lib/api';
+import { categories } from '../data/mockData';
+import { UserRole } from '../types';
+import type { Database } from '../lib/database.types';
 
-type Item = Database['public']['Tables']['items']['Row'];
+type Item = Database['public']['Tables']['items']['Row'] & {
+    locations: Array<{
+        location: Database['public']['Tables']['locations']['Row'];
+        quantity: number;
+    }>;
+};
 
 const InventoryListPage: React.FC = () => {
-    const {currentUser} = useAuth();
+    const { currentUser } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [items, setItems] = useState<Item[]>([]);
     const [filteredItems, setFilteredItems] = useState<Item[]>([]);
@@ -136,11 +141,11 @@ const InventoryListPage: React.FC = () => {
 
     const getSortIcon = (field: keyof Item) => {
         if (sortField !== field) {
-            return <ArrowUpDown size={14} className="ml-1 opacity-50"/>;
+            return <ArrowUpDown size={14} className="ml-1 opacity-50" />;
         }
         return sortDirection === 'asc' ?
-            <ArrowUpDown size={14} className="ml-1 text-blue-600"/> :
-            <ArrowUpDown size={14} className="ml-1 text-blue-600 transform rotate-180"/>;
+            <ArrowUpDown size={14} className="ml-1 text-blue-600" /> :
+            <ArrowUpDown size={14} className="ml-1 text-blue-600 transform rotate-180" />;
     };
 
     const getStatusBadge = (status: string) => {
@@ -170,6 +175,17 @@ const InventoryListPage: React.FC = () => {
         );
     };
 
+    const getLocationString = (item: Item) => {
+        if (!item.locations || item.locations.length === 0) {
+            return 'No Location';
+        }
+
+        return item.locations.map(loc => {
+            const { building, room, unit } = loc.location;
+            return `${building} > ${room} > ${unit} (${loc.quantity})`;
+        }).join(', ');
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-96">
@@ -196,15 +212,14 @@ const InventoryListPage: React.FC = () => {
     return (
         <div className="space-y-6">
             <Card>
-                <CardHeader
-                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
                     <CardTitle>Inventory Items</CardTitle>
                     {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
                         <div className="flex space-x-2">
                             <Button
                                 variant="outline"
                                 size="sm"
-                                leftIcon={<Download size={16}/>}
+                                leftIcon={<Download size={16} />}
                             >
                                 Export
                             </Button>
@@ -212,7 +227,7 @@ const InventoryListPage: React.FC = () => {
                                 <Button
                                     variant="primary"
                                     size="sm"
-                                    leftIcon={<Plus size={16}/>}
+                                    leftIcon={<Plus size={16} />}
                                 >
                                     Add Item
                                 </Button>
@@ -227,7 +242,7 @@ const InventoryListPage: React.FC = () => {
                                 placeholder="Search by name, SKU, description..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                leftAddon={<Search size={16}/>}
+                                leftAddon={<Search size={16} />}
                                 fullWidth
                             />
                         </div>
@@ -263,7 +278,7 @@ const InventoryListPage: React.FC = () => {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                leftIcon={<Filter size={16}/>}
+                                leftIcon={<Filter size={16} />}
                                 onClick={() => {
                                     setSelectedCategory('');
                                     setStatusFilter('');
@@ -335,16 +350,11 @@ const InventoryListPage: React.FC = () => {
                                                 </p>
                                             </TableCell>
                                             <TableCell>{item.category}</TableCell>
-                                            <TableCell
-                                                className={item.quantity < (item.minimum_stock || 0) ? 'text-red-600 font-semibold' : ''}>
+                                            <TableCell className={item.quantity < (item.minimum_stock || 0) ? 'text-red-600 font-semibold' : ''}>
                                                 {item.quantity}
                                             </TableCell>
                                             <TableCell>
-                                                {item.location_id ? (
-                                                    `${item.location.building} > ${item.location.room} > ${item.location.unit}`
-                                                ) : (
-                                                    'No Location'
-                                                )}
+                                                {getLocationString(item)}
                                             </TableCell>
                                             <TableCell>{getStatusBadge(item.status)}</TableCell>
                                             <TableCell>
@@ -353,7 +363,7 @@ const InventoryListPage: React.FC = () => {
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            leftIcon={<Eye size={16}/>}
+                                                            leftIcon={<Eye size={16} />}
                                                         />
                                                     </Link>
 
@@ -363,13 +373,13 @@ const InventoryListPage: React.FC = () => {
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
-                                                                    leftIcon={<Edit size={16}/>}
+                                                                    leftIcon={<Edit size={16} />}
                                                                 />
                                                             </Link>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                leftIcon={<Trash size={16}/>}
+                                                                leftIcon={<Trash size={16} />}
                                                                 onClick={() => handleDelete(item.id)}
                                                             />
                                                         </>
@@ -382,7 +392,7 @@ const InventoryListPage: React.FC = () => {
                                     <TableRow>
                                         <TableCell colSpan={7} className="text-center py-8">
                                             <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <Search size={48} className="mb-2 text-gray-300"/>
+                                                <Search size={48} className="mb-2 text-gray-300" />
                                                 <p className="text-lg">No items found</p>
                                                 <p className="text-sm">Try adjusting your search or filter criteria</p>
                                             </div>

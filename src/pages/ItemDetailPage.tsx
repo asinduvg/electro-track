@@ -1,23 +1,28 @@
-import React, {useState, useEffect} from 'react';
-import {useParams, Link} from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import {
     Edit, ArrowLeft, Package, ShoppingCart, Truck,
     Calendar, DollarSign, MapPin, Info, Clipboard, BarChart
 } from 'lucide-react';
-import {Card, CardContent, CardHeader, CardTitle} from '../components/ui/Card';
-import {Badge} from '../components/ui/Badge';
-import {Button} from '../components/ui/Button';
-import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
-import {useAuth} from '../context/AuthContext';
-import {getItemById, getTransactions} from '../lib/api';
-import type {Database} from '../lib/database.types';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import { Table, TableBody, TableCell, TableRow } from '../components/ui/Table';
+import { useAuth } from '../context/AuthContext';
+import { getItemById, getTransactions } from '../lib/api';
+import type { Database } from '../lib/database.types';
 
-type Item = Database['public']['Tables']['items']['Row'];
+type Item = Database['public']['Tables']['items']['Row'] & {
+    locations: Array<{
+        location: Database['public']['Tables']['locations']['Row'];
+        quantity: number;
+    }>;
+};
 type Transaction = Database['public']['Tables']['transactions']['Row'];
 
 const ItemDetailPage: React.FC = () => {
-    const {id} = useParams<{ id: string }>();
-    const {currentUser} = useAuth();
+    const { id } = useParams<{ id: string }>();
+    const { currentUser } = useAuth();
     const [item, setItem] = useState<Item | null>(null);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -102,7 +107,7 @@ const ItemDetailPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div className="flex items-center">
                     <Link to="/inventory/items" className="mr-4">
-                        <Button variant="ghost" size="sm" leftIcon={<ArrowLeft size={16}/>}>
+                        <Button variant="ghost" size="sm" leftIcon={<ArrowLeft size={16} />}>
                             Back
                         </Button>
                     </Link>
@@ -113,7 +118,7 @@ const ItemDetailPage: React.FC = () => {
                 {(currentUser?.role === 'admin' || currentUser?.role === 'inventory_manager') && (
                     <div className="mt-4 sm:mt-0">
                         <Link to={`/inventory/edit/${item.id}`}>
-                            <Button variant="primary" leftIcon={<Edit size={16}/>}>
+                            <Button variant="primary" leftIcon={<Edit size={16} />}>
                                 Edit Item
                             </Button>
                         </Link>
@@ -127,7 +132,7 @@ const ItemDetailPage: React.FC = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <Info size={18} className="mr-2 text-blue-600"/>
+                                <Info size={18} className="mr-2 text-blue-600" />
                                 Basic Information
                             </CardTitle>
                         </CardHeader>
@@ -165,7 +170,7 @@ const ItemDetailPage: React.FC = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <Package size={18} className="mr-2 text-blue-600"/>
+                                <Package size={18} className="mr-2 text-blue-600" />
                                 Manufacturing Details
                             </CardTitle>
                         </CardHeader>
@@ -197,7 +202,7 @@ const ItemDetailPage: React.FC = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <Clipboard size={18} className="mr-2 text-blue-600"/>
+                                <Clipboard size={18} className="mr-2 text-blue-600" />
                                 Transaction History
                             </CardTitle>
                         </CardHeader>
@@ -211,27 +216,27 @@ const ItemDetailPage: React.FC = () => {
 
                                         switch (transaction.type) {
                                             case 'receive':
-                                                icon = <Truck className="h-5 w-5 text-green-500"/>;
+                                                icon = <Truck className="h-5 w-5 text-green-500" />;
                                                 bgColor = 'bg-green-50';
                                                 title = 'Received';
                                                 break;
                                             case 'transfer':
-                                                icon = <ArrowLeft className="h-5 w-5 text-blue-500"/>;
+                                                icon = <ArrowLeft className="h-5 w-5 text-blue-500" />;
                                                 bgColor = 'bg-blue-50';
                                                 title = 'Transferred';
                                                 break;
                                             case 'dispose':
-                                                icon = <Truck className="h-5 w-5 text-red-500"/>;
+                                                icon = <Truck className="h-5 w-5 text-red-500" />;
                                                 bgColor = 'bg-red-50';
                                                 title = 'Disposed';
                                                 break;
                                             case 'withdraw':
-                                                icon = <ShoppingCart className="h-5 w-5 text-orange-500"/>;
+                                                icon = <ShoppingCart className="h-5 w-5 text-orange-500" />;
                                                 bgColor = 'bg-orange-50';
                                                 title = 'Withdrawn';
                                                 break;
                                             default:
-                                                icon = <BarChart className="h-5 w-5 text-yellow-500"/>;
+                                                icon = <BarChart className="h-5 w-5 text-yellow-500" />;
                                                 bgColor = 'bg-yellow-50';
                                                 title = 'Adjusted';
                                         }
@@ -300,7 +305,7 @@ const ItemDetailPage: React.FC = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <ShoppingCart size={18} className="mr-2 text-blue-600"/>
+                                <ShoppingCart size={18} className="mr-2 text-blue-600" />
                                 Inventory Details
                             </CardTitle>
                         </CardHeader>
@@ -333,16 +338,23 @@ const ItemDetailPage: React.FC = () => {
                                 </div>
 
                                 <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm text-gray-500">Location</p>
-                                    {item.location_id ? (
-                                        <>
-                                            <p className="text-lg font-medium text-gray-900 mt-1">
-                                                {item.location.building}
-                                            </p>
-                                            <p className="text-sm text-gray-700">
-                                                {item.location.room} &gt; {item.location.unit}
-                                            </p>
-                                        </>
+                                    <p className="text-sm text-gray-500">Locations</p>
+                                    {item.locations && item.locations.length > 0 ? (
+                                        <div className="space-y-2 mt-2">
+                                            {item.locations.map((loc, index) => (
+                                                <div key={index} className="border-b border-gray-200 last:border-0 pb-2 last:pb-0">
+                                                    <p className="text-lg font-medium text-gray-900">
+                                                        {loc.location.building}
+                                                    </p>
+                                                    <p className="text-sm text-gray-700">
+                                                        {loc.location.room} &gt; {loc.location.unit}
+                                                    </p>
+                                                    <p className="text-sm font-medium text-blue-600 mt-1">
+                                                        Quantity: {loc.quantity}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     ) : (
                                         <p className="text-lg font-medium text-gray-900 mt-1">
                                             No Location Assigned
@@ -357,7 +369,7 @@ const ItemDetailPage: React.FC = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <Calendar size={18} className="mr-2 text-blue-600"/>
+                                <Calendar size={18} className="mr-2 text-blue-600" />
                                 Dates & Information
                             </CardTitle>
                         </CardHeader>
@@ -400,7 +412,7 @@ const ItemDetailPage: React.FC = () => {
                                     <Button
                                         variant="outline"
                                         fullWidth
-                                        leftIcon={<Truck size={16}/>}
+                                        leftIcon={<Truck size={16} />}
                                     >
                                         Receive Stock
                                     </Button>
@@ -409,7 +421,7 @@ const ItemDetailPage: React.FC = () => {
                                     <Button
                                         variant="outline"
                                         fullWidth
-                                        leftIcon={<ArrowLeft size={16}/>}
+                                        leftIcon={<ArrowLeft size={16} />}
                                     >
                                         Transfer Stock
                                     </Button>
@@ -418,7 +430,7 @@ const ItemDetailPage: React.FC = () => {
                                     <Button
                                         variant="outline"
                                         fullWidth
-                                        leftIcon={<ShoppingCart size={16}/>}
+                                        leftIcon={<ShoppingCart size={16} />}
                                     >
                                         Withdraw Stock
                                     </Button>
@@ -427,7 +439,7 @@ const ItemDetailPage: React.FC = () => {
                                     <Button
                                         variant="outline"
                                         fullWidth
-                                        leftIcon={<BarChart size={16}/>}
+                                        leftIcon={<BarChart size={16} />}
                                     >
                                         View Reports
                                     </Button>
