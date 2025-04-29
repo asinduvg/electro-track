@@ -42,7 +42,7 @@ export async function getItems() {
       .from('items')
       .select(`
       *,
-      location:locations(*),
+      location:locations!items_location_id_fkey(*),
       created_by:users!items_created_by_fkey(*)
     `);
 
@@ -55,7 +55,7 @@ export async function getItemById(id: string) {
       .from('items')
       .select(`
       *,
-      location:locations(*),
+      location:locations!items_location_id_fkey(*),
       created_by:users!items_created_by_fkey(*)
     `)
       .eq('id', id)
@@ -125,9 +125,9 @@ export async function getTransactions() {
       .select(`
       *,
       item:items(*),
-      from_location:locations(*),
-      to_location:locations(*),
-      performed_by:users(*)
+      from_location:locations!transactions_from_location_id_fkey(*),
+      to_location:locations!transactions_to_location_id_fkey(*),
+      performed_by_user:users!transactions_performed_by_fkey(*)
     `);
 
   if (error) throw error;
