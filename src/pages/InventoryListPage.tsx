@@ -1,29 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown } from 'lucide-react';
+import React, {useState, useEffect} from 'react';
+import {Link} from 'react-router-dom';
+import {
+    Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown,
+    LayoutGrid, LayoutList
+} from 'lucide-react';
 import {
     Table, TableHead, TableBody, TableRow,
     TableHeaderCell, TableCell
 } from '../components/ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
-import { useAuth } from '../context/AuthContext';
-import { getItems, deleteItem } from '../lib/api';
-import { categories } from '../data/mockData';
-import { UserRole } from '../types';
-import type { Database } from '../lib/database.types';
+import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
+import {Input} from '../components/ui/Input';
+import {Button} from '../components/ui/Button';
+import {Badge} from '../components/ui/Badge';
+import {useAuth} from '../context/AuthContext';
+import {getItems, deleteItem} from '../lib/api';
+import {categories} from '../data/mockData';
+import {UserRole} from '../types';
+import type {Database} from '../lib/database.types';
 
 type Item = Database['public']['Tables']['items']['Row'] & {
     locations: Array<{
         location: Database['public']['Tables']['locations']['Row'];
         quantity: number;
+        status: 'in_stock' | 'ordered';
     }>;
 };
 
+type ViewMode = 'overview' | 'detailed';
+
 const InventoryListPage: React.FC = () => {
-    const { currentUser } = useAuth();
+    const {currentUser} = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [items, setItems] = useState<Item[]>([]);
     const [filteredItems, setFilteredItems] = useState<Item[]>([]);
@@ -31,6 +37,7 @@ const InventoryListPage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [sortField, setSortField] = useState<keyof Item>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [viewMode, setViewMode] = useState<ViewMode>('overview');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -97,31 +104,14 @@ const InventoryListPage: React.FC = () => {
             let aValue = a[sortField];
             let bValue = b[sortField];
 
-            // Handle string comparison
             if (typeof aValue === 'string' && typeof bValue === 'string') {
-                if (sortDirection === 'asc') {
-                    return aValue.localeCompare(bValue);
-                } else {
-                    return bValue.localeCompare(aValue);
-                }
+                return sortDirection === 'asc'
+                    ? aValue.localeCompare(bValue)
+                    : bValue.localeCompare(aValue);
             }
 
-            // Handle number comparison
             if (typeof aValue === 'number' && typeof bValue === 'number') {
-                if (sortDirection === 'asc') {
-                    return aValue - bValue;
-                } else {
-                    return bValue - aValue;
-                }
-            }
-
-            // Handle date comparison
-            if (aValue instanceof Date && bValue instanceof Date) {
-                if (sortDirection === 'asc') {
-                    return aValue.getTime() - bValue.getTime();
-                } else {
-                    return bValue.getTime() - aValue.getTime();
-                }
+                return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
             }
 
             return 0;
@@ -141,11 +131,11 @@ const InventoryListPage: React.FC = () => {
 
     const getSortIcon = (field: keyof Item) => {
         if (sortField !== field) {
-            return <ArrowUpDown size={14} className="ml-1 opacity-50" />;
+            return <ArrowUpDown size={14} className="ml-1 opacity-50"/>;
         }
         return sortDirection === 'asc' ?
-            <ArrowUpDown size={14} className="ml-1 text-blue-600" /> :
-            <ArrowUpDown size={14} className="ml-1 text-blue-600 transform rotate-180" />;
+            <ArrowUpDown size={14} className="ml-1 text-blue-600"/> :
+            <ArrowUpDown size={14} className="ml-1 text-blue-600 transform rotate-180"/>;
     };
 
     const getStatusBadge = (status: string) => {
@@ -161,7 +151,7 @@ const InventoryListPage: React.FC = () => {
             case 'out_of_stock':
                 variant = 'danger';
                 break;
-            case 'ordered':
+            case 'discontinued':
                 variant = 'info';
                 break;
             default:
@@ -175,16 +165,260 @@ const InventoryListPage: React.FC = () => {
         );
     };
 
-    const getLocationString = (item: Item) => {
-        if (!item.locations || item.locations.length === 0) {
-            return 'No Location';
-        }
-
-        return item.locations.map(loc => {
-            const { building, room, unit } = loc.location;
-            return `${building} > ${room} > ${unit} (${loc.quantity})`;
-        }).join(', ');
+    const getTotalQuantity = (item: Item) => {
+        return item.locations?.reduce((sum, loc) => sum + loc.quantity, 0) || 0;
     };
+
+    const renderOverviewTable = () => (
+        <Table>
+            <TableHead>
+                <TableRow>
+                    <TableHeaderCell
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('sku')}
+                    >
+                        <div className="flex items-center">
+                            SKU {getSortIcon('sku')}
+                        </div>
+                    </TableHeaderCell>
+                    <TableHeaderCell
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('name')}
+                    >
+                        <div className="flex items-center">
+                            Name {getSortIcon('name')}
+                        </div>
+                    </TableHeaderCell>
+                    <TableHeaderCell>Category</TableHeaderCell>
+                    <TableHeaderCell>Total Quantity</TableHeaderCell>
+                    <TableHeaderCell>Status</TableHeaderCell>
+                    <TableHeaderCell>Actions</TableHeaderCell>
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {filteredItems.length > 0 ? (
+                    filteredItems.map((item) => (
+                        <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.sku}</TableCell>
+                            <TableCell>
+                                <Link
+                                    to={`/inventory/view/${item.id}`}
+                                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                                >
+                                    {item.name}
+                                </Link>
+                                <p className="text-xs text-gray-500 truncate max-w-xs">
+                                    {item.description}
+                                </p>
+                            </TableCell>
+                            <TableCell>{item.category}</TableCell>
+                            <TableCell>
+                                <Badge
+                                    variant={getTotalQuantity(item) < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                >
+                                    {getTotalQuantity(item)}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>{getStatusBadge(item.status)}</TableCell>
+                            <TableCell>
+                                <div className="flex space-x-2">
+                                    <Link to={`/inventory/view/${item.id}`}>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            leftIcon={<Eye size={16}/>}
+                                        />
+                                    </Link>
+
+                                    {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
+                                        <>
+                                            <Link to={`/inventory/edit/${item.id}`}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    leftIcon={<Edit size={16}/>}
+                                                />
+                                            </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                leftIcon={<Trash size={16}/>}
+                                                onClick={() => handleDelete(item.id)}
+                                            />
+                                        </>
+                                    )}
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    ))
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                <Search size={48} className="mb-2 text-gray-300"/>
+                                <p className="text-lg">No items found</p>
+                                <p className="text-sm">Try adjusting your search or filter criteria</p>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+        </Table>
+    );
+
+    const renderDetailedTable = () => (
+        <Table>
+            <TableHead>
+                <TableRow>
+                    <TableHeaderCell
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('sku')}
+                    >
+                        <div className="flex items-center">
+                            SKU {getSortIcon('sku')}
+                        </div>
+                    </TableHeaderCell>
+                    <TableHeaderCell
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('name')}
+                    >
+                        <div className="flex items-center">
+                            Name {getSortIcon('name')}
+                        </div>
+                    </TableHeaderCell>
+                    <TableHeaderCell>Category</TableHeaderCell>
+                    <TableHeaderCell>Location</TableHeaderCell>
+                    <TableHeaderCell>Quantity</TableHeaderCell>
+                    <TableHeaderCell>Status</TableHeaderCell>
+                    <TableHeaderCell>Actions</TableHeaderCell>
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {filteredItems.length > 0 ? (
+                    filteredItems.flatMap((item) => (
+                        item.locations.length > 0 ? (
+                            item.locations.map((location, idx) => (
+                                <TableRow key={`${item.id}-${idx}`}>
+                                    <TableCell className="font-medium">{item.sku}</TableCell>
+                                    <TableCell>
+                                        <Link
+                                            to={`/inventory/view/${item.id}`}
+                                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                                        >
+                                            {item.name}
+                                        </Link>
+                                        <p className="text-xs text-gray-500 truncate max-w-xs">
+                                            {item.description}
+                                        </p>
+                                    </TableCell>
+                                    <TableCell>{item.category}</TableCell>
+                                    <TableCell>
+                                        {location.location.building} &gt; {location.location.room} &gt; {location.location.unit}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={location.quantity < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                        >
+                                            {location.quantity}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        {getStatusBadge(location.status)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex space-x-2">
+                                            <Link to={`/inventory/view/${item.id}`}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    leftIcon={<Eye size={16}/>}
+                                                />
+                                            </Link>
+
+                                            {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
+                                                <>
+                                                    <Link to={`/inventory/edit/${item.id}`}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            leftIcon={<Edit size={16}/>}
+                                                        />
+                                                    </Link>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        leftIcon={<Trash size={16}/>}
+                                                        onClick={() => handleDelete(item.id)}
+                                                    />
+                                                </>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow key={item.id}>
+                                <TableCell className="font-medium">{item.sku}</TableCell>
+                                <TableCell>
+                                    <Link
+                                        to={`/inventory/view/${item.id}`}
+                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                        {item.name}
+                                    </Link>
+                                </TableCell>
+                                <TableCell>{item.category}</TableCell>
+                                <TableCell>No Location</TableCell>
+                                <TableCell>
+                                    <Badge variant="danger">0</Badge>
+                                </TableCell>
+                                <TableCell>{getStatusBadge(item.status)}</TableCell>
+                                <TableCell>
+                                    <div className="flex space-x-2">
+                                        <Link to={`/inventory/view/${item.id}`}>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                leftIcon={<Eye size={16}/>}
+                                            />
+                                        </Link>
+
+                                        {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
+                                            <>
+                                                <Link to={`/inventory/edit/${item.id}`}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        leftIcon={<Edit size={16}/>}
+                                                    />
+                                                </Link>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    leftIcon={<Trash size={16}/>}
+                                                    onClick={() => handleDelete(item.id)}
+                                                />
+                                            </>
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )
+                    ))
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                <Search size={48} className="mb-2 text-gray-300"/>
+                                <p className="text-lg">No items found</p>
+                                <p className="text-sm">Try adjusting your search or filter criteria</p>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+        </Table>
+    );
 
     if (isLoading) {
         return (
@@ -194,46 +428,40 @@ const InventoryListPage: React.FC = () => {
         );
     }
 
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-600">{error}</p>
-        <Button 
-          variant="primary" 
-          className="mt-4"
-          onClick={loadItems}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
     return (
         <div className="space-y-6">
             <Card>
-                <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <CardHeader
+                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
                     <CardTitle>Inventory Items</CardTitle>
-                    {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                        <div className="flex space-x-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                leftIcon={<Download size={16} />}
-                            >
-                                Export
-                            </Button>
+                    <div className="flex space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={viewMode === 'overview' ? <LayoutGrid size={16}/> : <LayoutList size={16}/>}
+                            onClick={() => setViewMode(viewMode === 'overview' ? 'detailed' : 'overview')}
+                        >
+                            {viewMode === 'overview' ? 'Detailed View' : 'Overview'}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<Download size={16}/>}
+                        >
+                            Export
+                        </Button>
+                        {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
                             <Link to="/inventory/add">
                                 <Button
                                     variant="primary"
                                     size="sm"
-                                    leftIcon={<Plus size={16} />}
+                                    leftIcon={<Plus size={16}/>}
                                 >
                                     Add Item
                                 </Button>
                             </Link>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -242,7 +470,7 @@ const InventoryListPage: React.FC = () => {
                                 placeholder="Search by name, SKU, description..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                leftAddon={<Search size={16} />}
+                                leftAddon={<Search size={16}/>}
                                 fullWidth
                             />
                         </div>
@@ -271,14 +499,13 @@ const InventoryListPage: React.FC = () => {
                                     <option value="in_stock">In Stock</option>
                                     <option value="low_stock">Low Stock</option>
                                     <option value="out_of_stock">Out of Stock</option>
-                                    <option value="ordered">Ordered</option>
                                     <option value="discontinued">Discontinued</option>
                                 </select>
                             </div>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                leftIcon={<Filter size={16} />}
+                                leftIcon={<Filter size={16}/>}
                                 onClick={() => {
                                     setSelectedCategory('');
                                     setStatusFilter('');
@@ -291,116 +518,7 @@ const InventoryListPage: React.FC = () => {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableHeaderCell
-                                        className="cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('sku')}
-                                    >
-                                        <div className="flex items-center">
-                                            SKU {getSortIcon('sku')}
-                                        </div>
-                                    </TableHeaderCell>
-                                    <TableHeaderCell
-                                        className="cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('name')}
-                                    >
-                                        <div className="flex items-center">
-                                            Name {getSortIcon('name')}
-                                        </div>
-                                    </TableHeaderCell>
-                                    <TableHeaderCell>Category</TableHeaderCell>
-                                    <TableHeaderCell
-                                        className="cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('quantity')}
-                                    >
-                                        <div className="flex items-center">
-                                            Quantity {getSortIcon('quantity')}
-                                        </div>
-                                    </TableHeaderCell>
-                                    <TableHeaderCell>Location</TableHeaderCell>
-                                    <TableHeaderCell
-                                        className="cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('status')}
-                                    >
-                                        <div className="flex items-center">
-                                            Status {getSortIcon('status')}
-                                        </div>
-                                    </TableHeaderCell>
-                                    <TableHeaderCell>Actions</TableHeaderCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {filteredItems.length > 0 ? (
-                                    filteredItems.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell className="font-medium">{item.sku}</TableCell>
-                                            <TableCell>
-                                                <Link
-                                                    to={`/inventory/view/${item.id}`}
-                                                    className="text-blue-600 hover:text-blue-800 hover:underline"
-                                                >
-                                                    {item.name}
-                                                </Link>
-                                                <p className="text-xs text-gray-500 truncate max-w-xs">
-                                                    {item.description && item.description.length > 60
-                                                        ? `${item.description.substring(0, 60)}...`
-                                                        : item.description}
-                                                </p>
-                                            </TableCell>
-                                            <TableCell>{item.category}</TableCell>
-                                            <TableCell className={item.quantity < (item.minimum_stock || 0) ? 'text-red-600 font-semibold' : ''}>
-                                                {item.quantity}
-                                            </TableCell>
-                                            <TableCell>
-                                                {getLocationString(item)}
-                                            </TableCell>
-                                            <TableCell>{getStatusBadge(item.status)}</TableCell>
-                                            <TableCell>
-                                                <div className="flex space-x-2">
-                                                    <Link to={`/inventory/view/${item.id}`}>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            leftIcon={<Eye size={16} />}
-                                                        />
-                                                    </Link>
-
-                                                    {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                                                        <>
-                                                            <Link to={`/inventory/edit/${item.id}`}>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    leftIcon={<Edit size={16} />}
-                                                                />
-                                                            </Link>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                leftIcon={<Trash size={16} />}
-                                                                onClick={() => handleDelete(item.id)}
-                                                            />
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="text-center py-8">
-                                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <Search size={48} className="mb-2 text-gray-300" />
-                                                <p className="text-lg">No items found</p>
-                                                <p className="text-sm">Try adjusting your search or filter criteria</p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                        {viewMode === 'overview' ? renderOverviewTable() : renderDetailedTable()}
                     </div>
                 </CardContent>
             </Card>

@@ -1,5 +1,5 @@
-import React, { forwardRef } from 'react';
-import { cn } from '../../utils/cn';
+import React, {forwardRef} from 'react';
+import {cn} from '../../utils/cn';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
@@ -36,7 +36,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     leftAddon && 'flex',
                 )}>
                     {leftAddon && (
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        <span
+                            className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
               {leftAddon}
             </span>
                     )}
@@ -58,7 +59,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         {...props}
                     />
                     {rightAddon && (
-                        <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        <span
+                            className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
               {rightAddon}
             </span>
                     )}

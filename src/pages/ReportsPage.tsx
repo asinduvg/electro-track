@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     BarChart as BarChartIcon, PieChart as PieChartIcon,
     LineChart as LineChartIcon, Download, Filter
 } from 'lucide-react';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import {format, subDays, startOfDay, endOfDay} from 'date-fns';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
     PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer
 } from 'recharts';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import { getItems, getTransactions } from '../lib/api';
-import type { Database } from '../lib/database.types';
+import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
+import {Input} from '../components/ui/Input';
+import {Button} from '../components/ui/Button';
+import {getItems, getTransactions} from '../lib/api';
+import type {Database} from '../lib/database.types';
 
 type Item = Database['public']['Tables']['items']['Row'];
 type Transaction = Database['public']['Tables']['transactions']['Row'];
@@ -125,7 +125,7 @@ const ReportsPage: React.FC = () => {
                 <h1 className="text-2xl font-bold">Reports & Analytics</h1>
                 <Button
                     variant="outline"
-                    leftIcon={<Download size={16} />}
+                    leftIcon={<Download size={16}/>}
                 >
                     Export Data
                 </Button>
@@ -143,7 +143,7 @@ const ReportsPage: React.FC = () => {
                                 </p>
                             </div>
                             <div className="bg-blue-700 p-3 rounded-full">
-                                <BarChartIcon size={24} />
+                                <BarChartIcon size={24}/>
                             </div>
                         </div>
                     </CardContent>
@@ -159,7 +159,7 @@ const ReportsPage: React.FC = () => {
                                 </p>
                             </div>
                             <div className="bg-green-600 p-3 rounded-full">
-                                <LineChartIcon size={24} />
+                                <LineChartIcon size={24}/>
                             </div>
                         </div>
                     </CardContent>
@@ -175,7 +175,7 @@ const ReportsPage: React.FC = () => {
                                 </p>
                             </div>
                             <div className="bg-purple-700 p-3 rounded-full">
-                                <PieChartIcon size={24} />
+                                <PieChartIcon size={24}/>
                             </div>
                         </div>
                     </CardContent>
@@ -191,7 +191,7 @@ const ReportsPage: React.FC = () => {
                                 </p>
                             </div>
                             <div className="bg-orange-500 p-3 rounded-full">
-                                <BarChartIcon size={24} />
+                                <BarChartIcon size={24}/>
                             </div>
                         </div>
                     </CardContent>
@@ -209,14 +209,14 @@ const ReportsPage: React.FC = () => {
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={categoryData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
+                                    <CartesianGrid strokeDasharray="3 3"/>
+                                    <XAxis dataKey="name"/>
+                                    <YAxis/>
                                     <Tooltip
                                         formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
                                     />
-                                    <Legend />
-                                    <Bar dataKey="value" fill="#3B82F6" name="Value ($)" />
+                                    <Legend/>
+                                    <Bar dataKey="value" fill="#3B82F6" name="Value ($)"/>
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -240,7 +240,7 @@ const ReportsPage: React.FC = () => {
                                         outerRadius={120}
                                         fill="#8884d8"
                                         dataKey="value"
-                                        label={({ name, percent }) =>
+                                        label={({name, percent}) =>
                                             `${name} ${(percent * 100).toFixed(0)}%`
                                         }
                                     >
@@ -251,7 +251,7 @@ const ReportsPage: React.FC = () => {
                                             />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip/>
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
@@ -267,19 +267,19 @@ const ReportsPage: React.FC = () => {
                                 <Input
                                     type="date"
                                     value={dateRange.start}
-                                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                                    onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
                                 />
                                 <span>to</span>
                                 <Input
                                     type="date"
                                     value={dateRange.end}
-                                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                                    onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
                                 />
                             </div>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                leftIcon={<Filter size={16} />}
+                                leftIcon={<Filter size={16}/>}
                             >
                                 Filter
                             </Button>
@@ -289,11 +289,11 @@ const ReportsPage: React.FC = () => {
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={transactionData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="date" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Legend />
+                                    <CartesianGrid strokeDasharray="3 3"/>
+                                    <XAxis dataKey="date"/>
+                                    <YAxis/>
+                                    <Tooltip/>
+                                    <Legend/>
                                     <Line
                                         type="monotone"
                                         dataKey="count"
