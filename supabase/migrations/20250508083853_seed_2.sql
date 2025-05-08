@@ -1,78 +1,5 @@
 -- Seed data for ElectroTrack inventory management system
 
--- Create demo users in auth.users table first
--- We need to insert directly into auth.users to create authentication accounts
-DO
-$$
-    BEGIN
-        -- Admin user
-        IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@et.com') THEN
-            INSERT INTO auth.users (id, email, raw_user_meta_data, created_at, updated_at, email_confirmed_at)
-            VALUES (uuid_generate_v4(),
-                    'admin@et.com',
-                    '{"name": "Admin User", "role": "admin"}',
-                    now(),
-                    now(),
-                    now());
-        END IF;
-
-        -- Inventory Manager user
-        IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'im@et.com') THEN
-            INSERT INTO auth.users (id, email, raw_user_meta_data, created_at, updated_at, email_confirmed_at)
-            VALUES (uuid_generate_v4(),
-                    'im@et.com',
-                    '{"name": "Inventory Manager", "role": "inventory_manager", "department": "Operations"}',
-                    now(),
-                    now(),
-                    now());
-        END IF;
-
-        -- Warehouse Staff user
-        IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'ws@et.com') THEN
-            INSERT INTO auth.users (id, email, raw_user_meta_data, created_at, updated_at, email_confirmed_at)
-            VALUES (uuid_generate_v4(),
-                    'ws@et.com',
-                    '{"name": "Warehouse Staff", "role": "warehouse_staff", "department": "Warehouse"}',
-                    now(),
-                    now(),
-                    now());
-        END IF;
-
-        -- Department User
-        IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'du@et.com') THEN
-            INSERT INTO auth.users (id, email, raw_user_meta_data, created_at, updated_at, email_confirmed_at)
-            VALUES (uuid_generate_v4(),
-                    'du@et.com',
-                    '{"name": "Department User", "role": "department_user", "department": "Engineering"}',
-                    now(),
-                    now(),
-                    now());
-        END IF;
-    END
-$$;
-
--- Set passwords for the users
--- This sets the password to 'pw@et' for all users
-UPDATE auth.users
-SET encrypted_password = crypt('pw@et', gen_salt('bf'))
-WHERE email IN ('admin@et.com', 'im@et.com', 'ws@et.com', 'du@et.com')
-  AND encrypted_password IS NULL;
-
--- Now create corresponding entries in public.users table
--- Get the IDs from auth.users and use them to create entries in public.users
-INSERT INTO public.users (id, email, name, role, department, created_at)
-SELECT id,
-       email,
-       (raw_user_meta_data ->> 'name')::text,
-       (raw_user_meta_data ->> 'role')::user_role,
-       (raw_user_meta_data ->> 'department')::text,
-       created_at
-FROM auth.users
-WHERE email IN ('admin@et.com', 'im@et.com', 'ws@et.com', 'du@et.com')
-  AND NOT EXISTS (SELECT 1
-                  FROM public.users
-                  WHERE email = auth.users.email);
-
 -- Insert sample locations
 DO
 $$
@@ -129,22 +56,6 @@ $$
     END
 $$;
 
--- Get the admin user ID to use as creator for initial records
-DO
-$$
-    DECLARE
-        admin_id UUID;
-    BEGIN
-        SELECT id INTO admin_id FROM public.users WHERE email = 'admin@et.com' LIMIT 1;
-
-        -- Update created_by for items
-        UPDATE items SET created_by = admin_id WHERE created_by IS NULL;
-
-        -- Update created_by for locations
-        UPDATE locations SET created_by = admin_id WHERE created_by IS NULL;
-    END
-$$;
-
 -- Link items to locations with quantities
 DO
 $$
@@ -170,12 +81,11 @@ $$
                 -- Insert item_location if it doesn't exist
                 IF NOT EXISTS (SELECT 1
                                FROM item_locations
-                               WHERE item_id = item_id_val AND location_id = location_id_val) THEN
+                               WHERE item_id = item_id_val
+                                 AND location_id = location_id_val) THEN
                     INSERT INTO item_locations (item_id, location_id, quantity, status)
                     VALUES (item_id_val, location_id_val, qty, 'in_stock');
                 END IF;
             END LOOP;
     END
 $$;
-
--- Removed the quantity update since the quantity column doesn't exist in the items table
