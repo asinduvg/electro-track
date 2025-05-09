@@ -1,57 +1,63 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, Link} from 'react-router-dom';
 import {
-    Edit, ArrowLeft, Package, ShoppingCart, Truck,
-    Calendar, DollarSign, MapPin, Info, Clipboard, BarChart
+    Edit, ArrowLeft, Package, ShoppingCart, Truck, Info, Clipboard, BarChart
 } from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from '../components/ui/Card';
 import {Badge} from '../components/ui/Badge';
 import {Button} from '../components/ui/Button';
 import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
 import {useAuth} from '../context/AuthContext';
-import {getItemById, getTransactions} from '../lib/api';
-import type {Database} from '../lib/database.types';
+// import {getItemById, getTransactions} from '../lib/api';
+// import type {Database} from '../lib/database.types';
+import {useItems, Item} from "../context/ItemsContext.tsx";
 
-type Item = Database['public']['Tables']['items']['Row'] & {
-    locations: Array<{
-        location: Database['public']['Tables']['locations']['Row'];
-        quantity: number;
-    }>;
-};
-type Transaction = Database['public']['Tables']['transactions']['Row'];
+// type Transaction = Database['public']['Tables']['transactions']['Row'];
 
 const ItemDetailPage: React.FC = () => {
     const {id} = useParams<{ id: string }>();
     const {currentUser} = useAuth();
     const [item, setItem] = useState<Item | null>(null);
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    // const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const {getItem, stocks, transactions, locations, error: itemsError} = useItems();
+
     useEffect(() => {
-        loadData();
-    }, [id]);
-
-    const loadData = async () => {
-        try {
-            setIsLoading(true);
-            if (!id) throw new Error('Item ID is required');
-
-            const [itemData, transactionsData] = await Promise.all([
-                getItemById(id),
-                getTransactions()
-            ]);
-
-            setItem(itemData);
-            // Filter transactions for this item
-            setTransactions(transactionsData.filter(t => t.item_id === id));
-        } catch (err) {
-            console.error('Error loading item details:', err);
-            setError('Failed to load item details');
-        } finally {
+        // loadData();
+        (async () => {
+            if (itemsError) {
+                setError(itemsError);
+                setIsLoading(false);
+                return;
+            }
+            if (!id) return;
+            setItem(await getItem(id));
             setIsLoading(false);
-        }
-    };
+        })()
+    }, [getItem, id, itemsError]);
+
+    // const loadData = async () => {
+    //     try {
+    //         setIsLoading(true);
+    //         if (!id) throw new Error('Item ID is required');
+    //
+    //         const [itemData, transactionsData] = await Promise.all([
+    //             getItemById(id),
+    //             getTransactions()
+    //         ]);
+    //
+    //         setItem(itemData);
+    //         // Filter transactions for this item
+    //         setTransactions(transactionsData.filter(t => t.item_id === id));
+    //     } catch (err) {
+    //         console.error('Error loading item details:', err);
+    //         setError('Failed to load item details');
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     if (isLoading) {
         return (
@@ -101,6 +107,22 @@ const ItemDetailPage: React.FC = () => {
             </Badge>
         );
     };
+
+    const getTotalQuantity = (itemId: string) => {
+        return stocks
+            .filter(stock => stock.item_id === itemId)
+            .reduce((sum, stock) => sum + stock.quantity, 0);
+    };
+
+    const stocksWithLocation = (item: Item) => {
+        return (
+            stocks
+                .filter(stock => stock.item_id === item.id) // item_locations
+                .flatMap(stock => locations
+                    .filter(location => location.id === stock.location_id)
+                    .map(location => ({...stock, location}))
+                ));
+    }
 
     return (
         <div className="space-y-6">
@@ -261,13 +283,27 @@ const ItemDetailPage: React.FC = () => {
                                                             <span className="font-medium">{transaction.quantity}</span>
                                                             {' units'}
                                                             {transaction.from_location_id && transaction.to_location_id && (
-                                                                <span> from {transaction.from_location_id} to {transaction.to_location_id}</span>
+                                                                <span> from {
+                                                                    locations
+                                                                        .filter(loc => loc.id === transaction.from_location_id)
+                                                                        .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
+                                                                } to {locations
+                                                                    .filter(loc => loc.id === transaction.to_location_id)
+                                                                    .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
+                                                                } </span>
                                                             )}
                                                             {!transaction.from_location_id && transaction.to_location_id && (
-                                                                <span> to {transaction.to_location_id}</span>
+                                                                <span> to {locations
+                                                                    .filter(loc => loc.id === transaction.to_location_id)
+                                                                    .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
+                                                                } </span>
                                                             )}
                                                             {transaction.from_location_id && !transaction.to_location_id && (
-                                                                <span> from {transaction.from_location_id}</span>
+                                                                <span> from {
+                                                                    locations
+                                                                        .filter(loc => loc.id === transaction.from_location_id)
+                                                                        .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
+                                                                } </span>
                                                             )}
                                                         </p>
                                                         {transaction.project_id && (
@@ -314,11 +350,11 @@ const ItemDetailPage: React.FC = () => {
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <p className="text-sm text-gray-500">Current Quantity</p>
                                     <p className={`text-2xl font-bold ${
-                                        item.minimum_stock && item.quantity < item.minimum_stock
+                                        item.minimum_stock && getTotalQuantity(item.id) < item.minimum_stock
                                             ? 'text-red-600'
                                             : 'text-gray-900'
                                     }`}>
-                                        {item.quantity}
+                                        {getTotalQuantity(item.id)}
                                     </p>
                                     {item.minimum_stock && (
                                         <p className="text-xs text-gray-500 mt-1">
@@ -333,25 +369,53 @@ const ItemDetailPage: React.FC = () => {
                                         ${item.unit_cost.toFixed(2)}
                                     </p>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Total value: ${(item.quantity * item.unit_cost).toFixed(2)}
+                                        Total value: ${(getTotalQuantity(item.id) * item.unit_cost).toFixed(2)}
                                     </p>
                                 </div>
 
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <p className="text-sm text-gray-500">Locations</p>
-                                    {item.locations && item.locations.length > 0 ? (
+                                    {stocksWithLocation(item).length > 0 ? (
                                         <div className="space-y-2 mt-2">
-                                            {item.locations.map((loc, index) => (
+                                            {stocksWithLocation(item).map((stockWithLocation, index) => (
                                                 <div key={index}
                                                      className="border-b border-gray-200 last:border-0 pb-2 last:pb-0">
                                                     <p className="text-lg font-medium text-gray-900">
-                                                        {loc.location.building}
+                                                        {stockWithLocation.location.building}
                                                     </p>
                                                     <p className="text-sm text-gray-700">
-                                                        {loc.location.room} &gt; {loc.location.unit}
+                                                        {stockWithLocation.location.room} &gt; {stockWithLocation.location.unit}
                                                     </p>
                                                     <p className="text-sm font-medium text-blue-600 mt-1">
-                                                        Quantity: {loc.quantity}
+                                                        Quantity: {stockWithLocation.quantity}
+                                                    </p>
+                                                    <p className="text-sm font-medium text-gray-600 mt-1">
+                                                        Added
+                                                        On: {new Date(stockWithLocation.created_at || '').toLocaleDateString()}
+                                                    </p>
+                                                    <p className="text-sm font-medium text-gray-600 mt-1">
+                                                        Last
+                                                        Updated: {new Date(stockWithLocation.updated_at || '').toLocaleDateString()}
+                                                    </p>
+                                                    <p className="text-sm font-medium text-gray-600 mt-1">
+                                                        Warranty Expiration: {
+                                                        stockWithLocation.warranty_expiration ?
+                                                            new Date(stockWithLocation.warranty_expiration || '').toLocaleDateString() :
+                                                            'N/A'
+                                                    }
+                                                    </p>
+                                                    <p className="text-sm font-medium text-gray-600 mt-1">
+                                                        Purchased Date: {
+                                                        stockWithLocation.purchased_date ?
+                                                            new Date(stockWithLocation.purchased_date || '').toLocaleDateString() :
+                                                            'N/A'
+                                                    }
+                                                    </p>
+                                                    <p className="text-sm font-medium text-gray-600 mt-1">
+                                                        Paid: {stockWithLocation.is_paid ? 'Yes' : 'No'}
+                                                    </p>
+                                                    <p className="text-sm font-medium text-gray-600 mt-1">
+                                                        Status: {getStatusBadge(stockWithLocation.status)}
                                                     </p>
                                                 </div>
                                             ))}
@@ -363,42 +427,6 @@ const ItemDetailPage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Dates & Information */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center">
-                                <Calendar size={18} className="mr-2 text-blue-600"/>
-                                Dates & Information
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Added On</TableCell>
-                                        <TableCell>{new Date(item.created_at || '').toLocaleDateString()}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Last Updated</TableCell>
-                                        <TableCell>{new Date(item.updated_at || '').toLocaleDateString()}</TableCell>
-                                    </TableRow>
-                                    {item.purchase_date && (
-                                        <TableRow>
-                                            <TableCell className="font-medium">Purchase Date</TableCell>
-                                            <TableCell>{new Date(item.purchase_date).toLocaleDateString()}</TableCell>
-                                        </TableRow>
-                                    )}
-                                    {item.warranty_expiration && (
-                                        <TableRow>
-                                            <TableCell className="font-medium">Warranty Until</TableCell>
-                                            <TableCell>{new Date(item.warranty_expiration).toLocaleDateString()}</TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
                         </CardContent>
                     </Card>
 

@@ -49,14 +49,15 @@ const InventoryListPage: React.FC = () => {
     // }, []);
 
     useEffect(() => {
-        if (error) {
+        if (itemsError) {
             setError(itemsError);
+            setIsLoading(false);
             return;
         }
         if (items.length > 0) {
             setIsLoading(false);
         }
-    }, [items]);
+    }, [items, itemsError]);
 
     // const loadItems = async () => {
     //     try {
@@ -178,9 +179,9 @@ const InventoryListPage: React.FC = () => {
         );
     };
 
-    const getTotalQuantity = (item: Item) => {
+    const getTotalQuantity = (itemId: string) => {
         return stocks
-            .filter(stock => stock.item_id === item.id)
+            .filter(stock => stock.item_id === itemId)
             .reduce((sum, stock) => sum + stock.quantity, 0);
     };
 
@@ -239,9 +240,9 @@ const InventoryListPage: React.FC = () => {
                             <TableCell>{item.category}</TableCell>
                             <TableCell>
                                 <Badge
-                                    variant={getTotalQuantity(item) < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                    variant={getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                 >
-                                    {getTotalQuantity(item)}
+                                    {getTotalQuantity(item.id)}
                                 </Badge>
                             </TableCell>
                             <TableCell>{getStatusBadge(item.status)}</TableCell>

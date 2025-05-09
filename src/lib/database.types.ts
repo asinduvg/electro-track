@@ -178,6 +178,21 @@ export interface Database {
                     created_by?: string | null
                     updated_by?: string | null
                 }
+            },
+            transactions: {
+                Row: {
+                    id: string,
+                    type: 'receive' | 'withdraw' | 'transfer' | 'dispose' | 'adjust',
+                    item_id: string
+                    quantity: number
+                    from_location_id: string
+                    to_location_id: string
+                    performed_by: string,
+                    performed_at: string,
+                    notes: string | null
+                    project_id: string | null
+                    purpose: string | null
+                }
             }
         }
         Views: {

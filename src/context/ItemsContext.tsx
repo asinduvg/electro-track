@@ -21,6 +21,7 @@ import {supabase} from "../lib/supabase.ts";
 export type Item = Database['public']['Tables']['items']['Row']
 type Location = Database['public']['Tables']['locations']['Row'];
 type Stocks = Database['public']['Tables']['item_locations']['Row'];
+type Transaction = Database['public']['Tables']['transactions']['Row'];
 
 type ItemInsert = Database['public']['Tables']['items']['Insert'];
 
@@ -49,6 +50,7 @@ interface ItemsContextType {
     performTransaction: (transaction: TransactionPayload) => Promise<boolean>;
     isRefreshing: boolean;
     stocks: Stocks[];
+    transactions: Transaction[];
 }
 
 // Create the context
@@ -59,26 +61,29 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
     const {currentUser, isAuthenticated} = useAuth();
     const [items, setItems] = useState<Item[]>([]);
     const [locations, setLocations] = useState<Location[]>([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [stocks, setStocks] = useState<Stocks[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     // Function to refresh items and locations
-    const refreshItemsWithStocksAndLocations = async () => {
+    const refreshItemsWithStocksAndLocations = useCallback(async () => {
         try {
             setIsRefreshing(true);
             setError(null);
 
-            const [itemsData, locationsData, stocksData] = await Promise.all([
+            const [itemsData, locationsData, stocksData, transactionData] = await Promise.all([
                 getItems(),
                 getLocations(),
-                getStocks()
+                getStocks(),
+                getTransactions()
             ]);
 
             setItems(itemsData);
             setLocations(locationsData);
             setStocks(stocksData);
+            setTransactions(transactionData);
         } catch (err) {
             console.error('Error loading items, stocks and locations:', err);
             setError('Failed to load inventory data');
@@ -86,14 +91,16 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
             setIsLoading(false);
             setIsRefreshing(false);
         }
-    };
+    }, []);
 
     // Load items and locations when the component mounts and user is authenticated
     useEffect(() => {
-        if (isAuthenticated) {
-            refreshItemsWithStocksAndLocations();
-        }
-    }, [isAuthenticated]);
+        (async () => {
+            if (isAuthenticated) {
+                await refreshItemsWithStocksAndLocations();
+            }
+        })()
+    }, [isAuthenticated, refreshItemsWithStocksAndLocations]);
 
     // DB calls start
 
@@ -134,6 +141,15 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
         if (itemError) throw itemError;
 
         return item as Item;
+    }
+
+    const getTransactions = async () => {
+        const {data, error} = await supabase
+            .from('transactions')
+            .select('*');
+
+        if (error) throw error;
+        return data as Transaction[];
     }
 
     // DB calls end
@@ -284,7 +300,8 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
         removeItem,
         performTransaction,
         isRefreshing,
-        stocks
+        stocks,
+        transactions
     };
 
     return <ItemsContext.Provider value={value}>{children}</ItemsContext.Provider>;
