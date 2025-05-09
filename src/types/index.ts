@@ -8,7 +8,6 @@ export enum UserRole {
 
 export interface User {
     id: string;
-    username: string;
     name: string;
     email: string;
     role: UserRole;
@@ -31,7 +30,7 @@ export interface Item {
     quantity: number;
     minimumStock?: number;
     unitCost: number;
-    location: ItemLocation;
+    locations: ItemLocation[];
     purchaseDate?: Date;
     warrantyExpiration?: Date;
     status: ItemStatus;

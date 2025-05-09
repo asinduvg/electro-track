@@ -60,47 +60,47 @@ export async function updatePassword(newPassword: string) {
 }
 
 // Initialize demo users if they don't exist
-export async function initializeDemoUsers() {
-    const demoUsers = [
-        {
-            email: 'vegain@example.com',
-            password: 'vegain321',
-            role: UserRole.ADMIN,
-            name: 'Admin User'
-        },
-        {
-            email: 'inventory@example.com',
-            password: 'password123',
-            role: UserRole.INVENTORY_MANAGER,
-            name: 'Inventory Manager',
-            department: 'Operations'
-        },
-        {
-            email: 'warehouse@example.com',
-            password: 'password123',
-            role: UserRole.WAREHOUSE_STAFF,
-            name: 'Warehouse Staff',
-            department: 'Warehouse'
-        },
-        {
-            email: 'department@example.com',
-            password: 'password123',
-            role: UserRole.DEPARTMENT_USER,
-            name: 'Department User',
-            department: 'Engineering'
-        }
-    ];
-
-    for (const user of demoUsers) {
-        try {
-            await signUp(user.email, user.password, {
-                role: user.role,
-                name: user.name,
-                department: user.department
-            });
-        } catch (error) {
-            // Ignore errors if user already exists
-            console.log(`User ${user.email} may already exist:`, error);
-        }
-    }
-}
+// export async function initializeDemoUsers() {
+//     const demoUsers = [
+//         {
+//             email: 'vegain@example.com',
+//             password: 'vegain321',
+//             role: UserRole.ADMIN,
+//             name: 'Admin User'
+//         },
+//         {
+//             email: 'inventory@example.com',
+//             password: 'password123',
+//             role: UserRole.INVENTORY_MANAGER,
+//             name: 'Inventory Manager',
+//             department: 'Operations'
+//         },
+//         {
+//             email: 'warehouse@example.com',
+//             password: 'password123',
+//             role: UserRole.WAREHOUSE_STAFF,
+//             name: 'Warehouse Staff',
+//             department: 'Warehouse'
+//         },
+//         {
+//             email: 'department@example.com',
+//             password: 'password123',
+//             role: UserRole.DEPARTMENT_USER,
+//             name: 'Department User',
+//             department: 'Engineering'
+//         }
+//     ];
+//
+//     for (const user of demoUsers) {
+//         try {
+//             await signUp(user.email, user.password, {
+//                 role: user.role,
+//                 name: user.name,
+//                 department: user.department
+//             });
+//         } catch (error) {
+//             // Ignore errors if user already exists
+//             console.log(`User ${user.email} may already exist:`, error);
+//         }
+//     }
+// }

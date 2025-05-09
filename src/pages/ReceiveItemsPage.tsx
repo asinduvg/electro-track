@@ -9,8 +9,9 @@ import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
 import {getItems, getLocations, createTransaction} from '../lib/api';
 import type {Database} from '../lib/database.types';
+import {Item} from "../types";
 
-type Item = Database['public']['Tables']['items']['Row'];
+// type Item = Database['public']['Tables']['items']['Row'];
 type Location = Database['public']['Tables']['locations']['Row'];
 
 interface ReceiveItem {

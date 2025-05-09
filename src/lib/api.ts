@@ -2,6 +2,10 @@ import {supabase} from './supabase';
 import type {Database} from './database.types';
 
 type Tables = Database['public']['Tables'];
+type Item = Database['public']['Tables']['items']['Row'];
+type ItemWithUser = Item & {
+    created_by: Database['public']['Tables']['users']['Row']
+};
 
 // Users
 export async function getUsers() {
@@ -46,24 +50,25 @@ export async function getItems() {
     `);
 
     if (itemsError) throw itemsError;
-
-    // Get item locations
-    const {data: itemLocations, error: locationsError} = await supabase
-        .from('item_locations')
-        .select(`
-      *,
-      location:locations(*)
-    `);
-
-    if (locationsError) throw locationsError;
-
-    // Combine items with their locations
-    const itemsWithLocations = items.map(item => ({
-        ...item,
-        locations: itemLocations?.filter(il => il.item_id === item.id) || []
-    }));
-
-    return itemsWithLocations;
+    //
+    // // Get item locations
+    // const {data: itemLocations, error: locationsError} = await supabase
+    //     .from('item_locations')
+    //     .select(`
+    //   *,
+    //   location:locations(*)
+    // `);
+    //
+    // if (locationsError) throw locationsError;
+    //
+    // // Combine items with their locations
+    // const itemsWithLocations = items.map(item => ({
+    //     ...item,
+    //     locations: itemLocations?.filter(il => il.item_id === item.id) || []
+    // }));
+    //
+    // return itemsWithLocations;
+    return items as ItemWithUser[];
 }
 
 export async function getItemById(id: string) {

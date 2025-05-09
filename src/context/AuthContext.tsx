@@ -118,6 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
             }
 
             return null;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             setError('Invalid email or password');
             return null;

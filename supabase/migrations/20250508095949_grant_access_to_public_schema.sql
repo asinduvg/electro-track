@@ -1,2 +1,10 @@
 GRANT USAGE ON SCHEMA "public" to authenticated;
-GRANT SELECT ON public.users TO authenticated;
+GRANT SELECT, UPDATE ON public.users TO authenticated;
+
+GRANT SELECT ON public.locations TO authenticated;
+
+GRANT SELECT, INSERT ON public.items TO authenticated;
+
+GRANT SELECT, INSERT ON public.item_locations TO authenticated;
+
+GRANT SELECT, INSERT ON public.transactions TO authenticated;

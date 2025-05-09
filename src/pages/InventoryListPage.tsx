@@ -13,25 +13,24 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {getItems, deleteItem} from '../lib/api';
 import {categories} from '../data/mockData';
 import {UserRole} from '../types';
-import type {Database} from '../lib/database.types';
+import {useItems, Item} from "../context/ItemsContext.tsx";
 
-type Item = Database['public']['Tables']['items']['Row'] & {
-    locations: Array<{
-        location: Database['public']['Tables']['locations']['Row'];
-        quantity: number;
-        status: 'in_stock' | 'ordered';
-    }>;
-};
+// type Item = Database['public']['Tables']['items']['Row'] & {
+//     locations: Array<{
+//         location: Database['public']['Tables']['locations']['Row'];
+//         quantity: number;
+//         status: 'in_stock' | 'ordered';
+//     }>;
+// };
 
 type ViewMode = 'overview' | 'detailed';
 
 const InventoryListPage: React.FC = () => {
     const {currentUser} = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
-    const [items, setItems] = useState<Item[]>([]);
+    // const [items, setItems] = useState<Item[]>([]);
     const [filteredItems, setFilteredItems] = useState<Item[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('');
@@ -41,38 +40,52 @@ const InventoryListPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const {items, stocks, locations, error: itemsError} = useItems();
+
+    console.log('items', items);
+
+    // useEffect(() => {
+    //     loadItems();
+    // }, []);
+
     useEffect(() => {
-        loadItems();
-    }, []);
-
-    const loadItems = async () => {
-        try {
-            setIsLoading(true);
-            const data = await getItems();
-            setItems(data);
-            setFilteredItems(data);
-        } catch (err) {
-            console.error('Error loading items:', err);
-            setError('Failed to load inventory items');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this item?')) {
+        if (error) {
+            setError(itemsError);
             return;
         }
-
-        try {
-            await deleteItem(id);
-            setItems(items.filter(item => item.id !== id));
-            setFilteredItems(filteredItems.filter(item => item.id !== id));
-        } catch (err) {
-            console.error('Error deleting item:', err);
-            alert('Failed to delete item');
+        if (items.length > 0) {
+            setIsLoading(false);
         }
-    };
+    }, [items]);
+
+    // const loadItems = async () => {
+    //     try {
+    //         setIsLoading(true);
+    //         const data = await getItems();
+    //         setItems(data);
+    //         setFilteredItems(data);
+    //     } catch (err) {
+    //         console.error('Error loading items:', err);
+    //         setError('Failed to load inventory items');
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
+
+    // const handleDelete = async (id: string) => {
+    //     if (!window.confirm('Are you sure you want to delete this item?')) {
+    //         return;
+    //     }
+    //
+    //     try {
+    //         await deleteItem(id);
+    //         setItems(items.filter(item => item.id !== id));
+    //         setFilteredItems(filteredItems.filter(item => item.id !== id));
+    //     } catch (err) {
+    //         console.error('Error deleting item:', err);
+    //         alert('Failed to delete item');
+    //     }
+    // };
 
     useEffect(() => {
         let result = [...items];
@@ -101,8 +114,8 @@ const InventoryListPage: React.FC = () => {
 
         // Apply sorting
         result.sort((a, b) => {
-            let aValue = a[sortField];
-            let bValue = b[sortField];
+            const aValue = a[sortField];
+            const bValue = b[sortField];
 
             if (typeof aValue === 'string' && typeof bValue === 'string') {
                 return sortDirection === 'asc'
@@ -166,8 +179,20 @@ const InventoryListPage: React.FC = () => {
     };
 
     const getTotalQuantity = (item: Item) => {
-        return item.locations?.reduce((sum, loc) => sum + loc.quantity, 0) || 0;
+        return stocks
+            .filter(stock => stock.item_id === item.id)
+            .reduce((sum, stock) => sum + stock.quantity, 0);
     };
+
+    const stocksWithLocation = (item: Item) => {
+        return (
+            stocks
+                .filter(stock => stock.item_id === item.id) // item_locations
+                .flatMap(stock => locations
+                    .filter(location => location.id === stock.location_id)
+                    .map(location => ({...stock, location}))
+                ));
+    }
 
     const renderOverviewTable = () => (
         <Table>
@@ -243,7 +268,8 @@ const InventoryListPage: React.FC = () => {
                                                 variant="ghost"
                                                 size="sm"
                                                 leftIcon={<Trash size={16}/>}
-                                                onClick={() => handleDelete(item.id)}
+                                                onClick={() => /*handleDelete(item.id) */ {
+                                                }}
                                             />
                                         </>
                                     )}
@@ -295,67 +321,69 @@ const InventoryListPage: React.FC = () => {
             </TableHead>
             <TableBody>
                 {filteredItems.length > 0 ? (
-                    filteredItems.flatMap((item) => (
-                        item.locations.length > 0 ? (
-                            item.locations.map((location, idx) => (
-                                <TableRow key={`${item.id}-${idx}`}>
-                                    <TableCell className="font-medium">{item.sku}</TableCell>
-                                    <TableCell>
-                                        <Link
-                                            to={`/inventory/view/${item.id}`}
-                                            className="text-blue-600 hover:text-blue-800 hover:underline"
-                                        >
-                                            {item.name}
-                                        </Link>
-                                        <p className="text-xs text-gray-500 truncate max-w-xs">
-                                            {item.description}
-                                        </p>
-                                    </TableCell>
-                                    <TableCell>{item.category}</TableCell>
-                                    <TableCell>
-                                        {location.location.building} &gt; {location.location.room} &gt; {location.location.unit}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            variant={location.quantity < (item.minimum_stock || 0) ? 'warning' : 'success'}
-                                        >
-                                            {location.quantity}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        {getStatusBadge(location.status)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Link to={`/inventory/view/${item.id}`}>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    leftIcon={<Eye size={16}/>}
-                                                />
+                    filteredItems.map((item) => ( // item -> item.locations
+                        stocks.filter(stock => stock.item_id === item.id).length > 0 ? (
+                            stocksWithLocation(item)
+                                .map((stockNLocation, idx) => (
+                                    <TableRow key={`${item.id}-${idx}`}>
+                                        <TableCell className="font-medium">{item.sku}</TableCell>
+                                        <TableCell>
+                                            <Link
+                                                to={`/inventory/view/${item.id}`}
+                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                            >
+                                                {item.name}
                                             </Link>
-
-                                            {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                                                <>
-                                                    <Link to={`/inventory/edit/${item.id}`}>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            leftIcon={<Edit size={16}/>}
-                                                        />
-                                                    </Link>
+                                            <p className="text-xs text-gray-500 truncate max-w-xs">
+                                                {item.description}
+                                            </p>
+                                        </TableCell>
+                                        <TableCell>{item.category}</TableCell>
+                                        <TableCell>
+                                            {stockNLocation.location.building} &gt; {stockNLocation.location.room} &gt; {stockNLocation.location.unit}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant={stockNLocation.quantity < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                            >
+                                                {stockNLocation.quantity}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {getStatusBadge(stockNLocation.status)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex space-x-2">
+                                                <Link to={`/inventory/view/${item.id}`}>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        leftIcon={<Trash size={16}/>}
-                                                        onClick={() => handleDelete(item.id)}
+                                                        leftIcon={<Eye size={16}/>}
                                                     />
-                                                </>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                                                </Link>
+
+                                                {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
+                                                    <>
+                                                        <Link to={`/inventory/edit/${item.id}`}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                leftIcon={<Edit size={16}/>}
+                                                            />
+                                                        </Link>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            leftIcon={<Trash size={16}/>}
+                                                            onClick={() => /* handleDelete(item.id) */ {
+                                                            }}
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
                         ) : (
                             <TableRow key={item.id}>
                                 <TableCell className="font-medium">{item.sku}</TableCell>
@@ -396,7 +424,8 @@ const InventoryListPage: React.FC = () => {
                                                     variant="ghost"
                                                     size="sm"
                                                     leftIcon={<Trash size={16}/>}
-                                                    onClick={() => handleDelete(item.id)}
+                                                    onClick={() => /* handleDelete(item.id) */ {
+                                                    }}
                                                 />
                                             </>
                                         )}
@@ -441,7 +470,7 @@ const InventoryListPage: React.FC = () => {
                             leftIcon={viewMode === 'overview' ? <LayoutGrid size={16}/> : <LayoutList size={16}/>}
                             onClick={() => setViewMode(viewMode === 'overview' ? 'detailed' : 'overview')}
                         >
-                            {viewMode === 'overview' ? 'Detailed View' : 'Overview'}
+                            {viewMode === 'overview' ? 'Overview' : 'Detailed View'}
                         </Button>
                         <Button
                             variant="outline"
