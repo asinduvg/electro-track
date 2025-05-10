@@ -9,7 +9,7 @@ import {useAuth} from '../context/AuthContext';
 // import {getItemById, updateItem, getLocations} from '../lib/api';
 import type {Database} from '../lib/database.types';
 import {useItems} from "../context/ItemsContext.tsx";
-import {supabase} from "../lib/supabase.ts";
+// import {supabase} from "../lib/supabase.ts";
 
 type Item = Database['public']['Tables']['items']['Row'];
 // type Location = Database['public']['Tables']['locations']['Row'];
@@ -25,7 +25,7 @@ const EditItemPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const {getItem, updateItem, stocks, transactions, locations, error: itemsError} = useItems();
+    const {getItem, updateItem, error: itemsError} = useItems();
 
     const [formData, setFormData] = useState<Partial<Item>>({
         sku: '',

@@ -16,7 +16,7 @@ import {supabase} from "../lib/supabase.ts";
 // };
 
 type Item = Database['public']['Tables']['items']['Row']
-type Location = Database['public']['Tables']['locations']['Row'];
+
 type Stocks = Database['public']['Tables']['item_locations']['Row'];
 type Transaction = Database['public']['Tables']['transactions']['Row'];
 
@@ -36,7 +36,6 @@ interface TransactionPayload {
 
 interface ItemsContextType {
     items: Item[];
-    locations: Location[];
     isLoading: boolean;
     error: string | null;
     refreshItems: () => Promise<void>;
@@ -57,7 +56,6 @@ const ItemsContext = createContext<ItemsContextType | undefined>(undefined);
 export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
     const {currentUser, isAuthenticated} = useAuth();
     const [items, setItems] = useState<Item[]>([]);
-    const [locations, setLocations] = useState<Location[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [stocks, setStocks] = useState<Stocks[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -70,15 +68,13 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
             setIsRefreshing(true);
             setError(null);
 
-            const [itemsData, locationsData, stocksData, transactionData] = await Promise.all([
+            const [itemsData, stocksData, transactionData] = await Promise.all([
                 getItems(),
-                getLocations(),
                 getStocks(),
                 getTransactions()
             ]);
 
             setItems(itemsData);
-            setLocations(locationsData);
             setStocks(stocksData);
             setTransactions(transactionData);
         } catch (err) {
@@ -110,14 +106,6 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
         return items as Item[];
     }
 
-    const getLocations = async () => {
-        const {data, error} = await supabase
-            .from('locations')
-            .select('*');
-
-        if (error) throw error;
-        return data as Location[];
-    }
 
     const getStocks = async () => {
         const {data, error} = await supabase
@@ -319,7 +307,6 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
     // Context value
     const value: ItemsContextType = {
         items,
-        locations,
         isLoading,
         error,
         refreshItems,

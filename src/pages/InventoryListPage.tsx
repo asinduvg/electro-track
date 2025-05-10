@@ -13,24 +13,18 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
+import {useLocations} from "../context/LocationsContext.tsx";
 import {categories} from '../data/mockData';
 import {UserRole} from '../types';
-import {useItems, Item} from "../context/ItemsContext.tsx";
+import {useItems} from "../context/ItemsContext.tsx";
+import type {Database} from "../lib/database.types.ts";
 
-// type Item = Database['public']['Tables']['items']['Row'] & {
-//     locations: Array<{
-//         location: Database['public']['Tables']['locations']['Row'];
-//         quantity: number;
-//         status: 'in_stock' | 'ordered';
-//     }>;
-// };
-
+type Item = Database['public']['Tables']['items']['Row'];
 type ViewMode = 'overview' | 'detailed';
 
 const InventoryListPage: React.FC = () => {
     const {currentUser} = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
-    // const [items, setItems] = useState<Item[]>([]);
     const [filteredItems, setFilteredItems] = useState<Item[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('');
@@ -40,13 +34,8 @@ const InventoryListPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, removeItem, error: itemsError} = useItems();
-
-    console.log('items', items);
-
-    // useEffect(() => {
-    //     loadItems();
-    // }, []);
+    const {items, stocks, removeItem, error: itemsError} = useItems();
+    const {locations} = useLocations();
 
     useEffect(() => {
         if (itemsError) {

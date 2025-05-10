@@ -6,24 +6,20 @@ import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {getLocations, createLocation, getItems} from '../lib/api';
-import type {Database} from '../lib/database.types';
-
-type Location = Database['public']['Tables']['locations']['Row'];
-type Item = Database['public']['Tables']['items']['Row'];
-
-interface LocationWithItemCount extends Location {
-    itemCount: number;
-    totalValue: number;
-}
+import {useLocations} from "../context/LocationsContext.tsx";
+import {createLocation} from '../lib/api';
+import {useItems} from "../context/ItemsContext.tsx";
 
 const LocationsPage: React.FC = () => {
     const {currentUser} = useAuth();
-    const [locations, setLocations] = useState<LocationWithItemCount[]>([]);
-    const [items, setItems] = useState<Item[]>([]);
+    // const [locations, setLocations] = useState<LocationWithItemCount[]>([]);
+    // const [items, setItems] = useState<Item[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const {locations} = useLocations();
+    const {stocks, items} = useItems();
 
     // New Location Form State
     const [isAddingLocation, setIsAddingLocation] = useState(false);
@@ -35,36 +31,38 @@ const LocationsPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        try {
-            setIsLoading(true);
-            const [locationsData, itemsData] = await Promise.all([
-                getLocations(),
-                getItems()
-            ]);
-
-            // Calculate item counts and total values for each location
-            const locationsWithCounts = locationsData.map(location => {
-                const locationItems = itemsData.filter(item => item.location_id === location.id);
-                return {
-                    ...location,
-                    itemCount: locationItems.length,
-                    totalValue: locationItems.reduce((sum, item) => sum + (item.quantity * item.unit_cost), 0)
-                };
-            });
-
-            setLocations(locationsWithCounts);
-            setItems(itemsData);
-        } catch (err) {
-            console.error('Error loading data:', err);
-            setError('Failed to load locations data');
-        } finally {
+        if (locations.length > 0) {
             setIsLoading(false);
         }
-    };
+    }, [locations]);
+
+    // const loadData = async () => {
+    //     try {
+    //         setIsLoading(true);
+    //         const [locationsData, itemsData] = await Promise.all([
+    //             getLocations(),
+    //             getItems()
+    //         ]);
+    //
+    //         // Calculate item counts and total values for each location
+    //         const locationsWithCounts = locationsData.map(location => {
+    //             const locationItems = itemsData.filter(item => item.location_id === location.id);
+    //             return {
+    //                 ...location,
+    //                 itemCount: locationItems.length,
+    //                 totalValue: locationItems.reduce((sum, item) => sum + (item.quantity * item.unit_cost), 0)
+    //             };
+    //         });
+    //
+    //         setLocations(locationsWithCounts);
+    //         setItems(itemsData);
+    //     } catch (err) {
+    //         console.error('Error loading data:', err);
+    //         setError('Failed to load locations data');
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     const handleCreateLocation = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -101,6 +99,29 @@ const LocationsPage: React.FC = () => {
     });
 
     const canManageLocations = currentUser?.role === 'admin' || currentUser?.role === 'inventory_manager';
+
+    const itemsStoredInLocation = (locationId: string) => {
+        return stocks
+            .filter(stock => stock.location_id === locationId)
+            .map(stock => stock.quantity)
+            .reduce((sum, quantity) => sum + quantity, 0);
+    }
+
+    const totalValueInLocation = (locationId: string) => {
+        return stocks
+            .filter(stock => stock.location_id === locationId)
+            .flatMap(stock =>
+                items
+                    .filter(item => item.id === stock.item_id)
+                    .map(item => ({...stock, item}))
+            )
+            .map(stock => stock.quantity * stock.item.unit_cost)
+            .reduce((sum, quantity) => sum + quantity, 0);
+    }
+
+    const totalInventoryValue = locations
+        .map(location => totalValueInLocation(location.id))
+        .reduce((sum, value) => sum + value, 0);
 
     if (isLoading) {
         return (
@@ -176,7 +197,7 @@ const LocationsPage: React.FC = () => {
                             <div>
                                 <p className="text-purple-200 font-medium">Total Inventory Value</p>
                                 <p className="text-3xl font-bold mt-1">
-                                    ${locations.reduce((sum, loc) => sum + loc.totalValue, 0).toLocaleString()}
+                                    {totalInventoryValue.toLocaleString()}
                                 </p>
                             </div>
                             <div className="bg-purple-700 p-3 rounded-full">
@@ -271,11 +292,14 @@ const LocationsPage: React.FC = () => {
                                         <TableCell>{location.room || '-'}</TableCell>
                                         <TableCell className="font-medium">{location.unit}</TableCell>
                                         <TableCell>
-                                            <Badge variant={location.itemCount > 0 ? 'success' : 'secondary'}>
-                                                {location.itemCount} items
+                                            <Badge
+                                                variant={itemsStoredInLocation(location.id) > 0 ? 'success' : 'secondary'}>
+                                                {itemsStoredInLocation(location.id)} items
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>${location.totalValue.toLocaleString()}</TableCell>
+                                        <TableCell>
+                                            {totalValueInLocation(location.id).toLocaleString()}
+                                        </TableCell>
                                         {canManageLocations && (
                                             <TableCell>
                                                 <div className="flex space-x-2">
@@ -288,7 +312,7 @@ const LocationsPage: React.FC = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         leftIcon={<Trash2 size={16}/>}
-                                                        disabled={location.itemCount > 0}
+                                                        // disabled={location.itemCount > 0}
                                                     />
                                                 </div>
                                             </TableCell>
