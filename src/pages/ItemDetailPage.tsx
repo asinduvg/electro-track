@@ -8,23 +8,21 @@ import {Badge} from '../components/ui/Badge';
 import {Button} from '../components/ui/Button';
 import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
 import {useAuth} from '../context/AuthContext';
-// import {getItemById, getTransactions} from '../lib/api';
-// import type {Database} from '../lib/database.types';
 import {useItems} from "../context/ItemsContext.tsx";
 import type {Database} from "../lib/database.types.ts";
+import {useLocations} from "../context/LocationsContext.tsx";
 
 type Item = Database['public']['Tables']['items']['Row']
-// type Transaction = Database['public']['Tables']['transactions']['Row'];
 
 const ItemDetailPage: React.FC = () => {
     const {id} = useParams<{ id: string }>();
     const {currentUser} = useAuth();
     const [item, setItem] = useState<Item | null>(null);
-    // const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {getItem, stocks, transactions, locations, error: itemsError} = useItems();
+    const {getItem, stocks, transactions, error: itemsError} = useItems();
+    const {locations} = useLocations();
 
     useEffect(() => {
         // loadData();
@@ -39,27 +37,6 @@ const ItemDetailPage: React.FC = () => {
             setIsLoading(false);
         })()
     }, [getItem, id, itemsError]);
-
-    // const loadData = async () => {
-    //     try {
-    //         setIsLoading(true);
-    //         if (!id) throw new Error('Item ID is required');
-    //
-    //         const [itemData, transactionsData] = await Promise.all([
-    //             getItemById(id),
-    //             getTransactions()
-    //         ]);
-    //
-    //         setItem(itemData);
-    //         // Filter transactions for this item
-    //         setTransactions(transactionsData.filter(t => t.item_id === id));
-    //     } catch (err) {
-    //         console.error('Error loading item details:', err);
-    //         setError('Failed to load item details');
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // };
 
     if (isLoading) {
         return (

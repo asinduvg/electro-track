@@ -85,7 +85,7 @@ export interface Database {
                     updated_by?: string | null
                 }
                 Update: {
-                    id?: string
+                    id: string
                     sku?: string
                     name?: string
                     description?: string | null

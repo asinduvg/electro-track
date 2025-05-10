@@ -6,81 +6,48 @@ import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
 import {getCategoriesList, getSubcategoriesForCategory} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
-// import {getItemById, updateItem, getLocations} from '../lib/api';
 import type {Database} from '../lib/database.types';
 import {useItems} from "../context/ItemsContext.tsx";
-// import {supabase} from "../lib/supabase.ts";
 
-type Item = Database['public']['Tables']['items']['Row'];
-// type Location = Database['public']['Tables']['locations']['Row'];
+// type Item = Database['public']['Tables']['items']['Row'];
+type ItemUpdate = Database['public']['Tables']['items']['Update'];
 
 const EditItemPage: React.FC = () => {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
     const {currentUser} = useAuth();
     const categories = getCategoriesList();
-    // const [locations, setLocations] = useState<Location[]>([]);
-    // const [item, setItem] = useState<Item | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const {getItem, updateItem, error: itemsError} = useItems();
 
-    const [formData, setFormData] = useState<Partial<Item>>({
-        sku: '',
-        name: '',
-        description: '',
-        category: '',
-        subcategory: '',
-        manufacturer: '',
-        model: '',
-        serial_number: '',
-        minimum_stock: 0,
-        unit_cost: 0,
-        status: 'in_stock'
-    });
+    const [formData, setFormData] = useState<ItemUpdate | null>(null);
 
     useEffect(() => {
-        // loadData();
         (async () => {
-            if (itemsError) {
-                setError(itemsError);
+            try {
+                if (!id) throw new Error('Item ID is required');
+
+                if (itemsError) {
+                    setError(itemsError);
+                    return;
+                }
+                const item = await getItem(id);
+                if (!item) throw new Error('Item not found');
+                setFormData(item);
+            } catch (err) {
+                console.error('Error loading item:', err);
+                setError('Failed to load item details');
+            } finally {
                 setIsLoading(false);
-                return;
             }
-            if (!id) return;
-            const item = await getItem(id);
-
-            if (!item) return;
-
-            setFormData(item);
-            setIsLoading(false);
         })()
     }, [getItem, id, itemsError]);
 
-    // const loadData = async () => {
-    //     try {
-    //         setIsLoading(true);
-    //         if (!id) throw new Error('Item ID is required');
-    //
-    //         const [itemData, locationsData] = await Promise.all([
-    //             getItemById(id),
-    //             getLocations()
-    //         ]);
-    //
-    //         setFormData(itemData);
-    //         setLocations(locationsData);
-    //     } catch (err) {
-    //         console.error('Error loading item:', err);
-    //         setError('Failed to load item details');
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // };
-
     // Get subcategories based on selected category
-    const subcategories = formData.category
+    const subcategories = formData?.category
         ? getSubcategoriesForCategory(formData.category)
         : [];
 
@@ -117,6 +84,10 @@ const EditItemPage: React.FC = () => {
         try {
             setIsSubmitting(true);
             setError(null);
+
+            if (!formData) return;
+
+            console.log('formData', formData)
 
             await updateItem(id, formData);
             navigate(`/inventory/view/${id}`);
@@ -180,7 +151,7 @@ const EditItemPage: React.FC = () => {
                                         label="SKU"
                                         id="sku"
                                         name="sku"
-                                        value={formData.sku}
+                                        value={formData?.sku}
                                         onChange={handleInputChange}
                                         required
                                         helperText="Unique identifier for this item"
@@ -189,7 +160,7 @@ const EditItemPage: React.FC = () => {
                                         label="Name"
                                         id="name"
                                         name="name"
-                                        value={formData.name}
+                                        value={formData?.name}
                                         onChange={handleInputChange}
                                         required
                                     />
@@ -207,7 +178,7 @@ const EditItemPage: React.FC = () => {
                                         name="description"
                                         rows={3}
                                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                        value={formData.description || ''}
+                                        value={formData?.description || ''}
                                         onChange={handleInputChange}
                                     />
                                 </div>
@@ -224,7 +195,7 @@ const EditItemPage: React.FC = () => {
                                             id="category"
                                             name="category"
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={formData.category}
+                                            value={formData?.category}
                                             onChange={handleInputChange}
                                             required
                                         >
@@ -248,9 +219,9 @@ const EditItemPage: React.FC = () => {
                                             id="subcategory"
                                             name="subcategory"
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={formData.subcategory || ''}
+                                            value={formData?.subcategory || ''}
                                             onChange={handleInputChange}
-                                            disabled={!formData.category}
+                                            disabled={!formData?.category}
                                         >
                                             <option value="">Select Subcategory</option>
                                             {subcategories.map((subcategory) => (
@@ -275,7 +246,7 @@ const EditItemPage: React.FC = () => {
                                         label="Manufacturer"
                                         id="manufacturer"
                                         name="manufacturer"
-                                        value={formData.manufacturer}
+                                        value={formData?.manufacturer}
                                         onChange={handleInputChange}
                                         required
                                     />
@@ -283,14 +254,14 @@ const EditItemPage: React.FC = () => {
                                         label="Model"
                                         id="model"
                                         name="model"
-                                        value={formData.model || ''}
+                                        value={formData?.model || ''}
                                         onChange={handleInputChange}
                                     />
                                     <Input
                                         label="Serial Number"
                                         id="serial_number"
                                         name="serial_number"
-                                        value={formData.serial_number || ''}
+                                        value={formData?.serial_number || ''}
                                         onChange={handleInputChange}
                                     />
                                 </div>
@@ -322,7 +293,7 @@ const EditItemPage: React.FC = () => {
                                         name="minimum_stock"
                                         type="number"
                                         min="0"
-                                        value={formData.minimum_stock?.toString()}
+                                        value={formData?.minimum_stock?.toString()}
                                         onChange={handleInputChange}
                                         helperText="Alert when quantity falls below this number"
                                     />
@@ -333,7 +304,7 @@ const EditItemPage: React.FC = () => {
                                         type="number"
                                         min="0"
                                         step="0.01"
-                                        value={formData.unit_cost?.toString()}
+                                        value={formData?.unit_cost?.toString()}
                                         onChange={handleInputChange}
                                         required
                                     />
@@ -374,7 +345,7 @@ const EditItemPage: React.FC = () => {
                                         id="status"
                                         name="status"
                                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                        value={formData.status}
+                                        value={formData?.status}
                                         onChange={handleInputChange}
                                         required
                                     >

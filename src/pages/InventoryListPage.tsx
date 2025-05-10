@@ -20,7 +20,6 @@ import {useItems} from "../context/ItemsContext.tsx";
 import type {Database} from "../lib/database.types.ts";
 
 type Item = Database['public']['Tables']['items']['Row'];
-type ViewMode = 'overview' | 'detailed';
 
 const InventoryListPage: React.FC = () => {
     const {currentUser} = useAuth();
@@ -30,7 +29,6 @@ const InventoryListPage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [sortField, setSortField] = useState<keyof Item>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const [viewMode, setViewMode] = useState<ViewMode>('overview');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -234,13 +232,7 @@ const InventoryListPage: React.FC = () => {
                                         ))}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge
-                                            variant={
-                                                getTotalQuantity(item.id) <= 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'
-                                            }
-                                        >
-                                            {getTotalQuantity(item.id)}
-                                        </Badge>
+                                        {getTotalQuantity(item.id)}
                                     </TableCell>
                                     <TableCell>
                                         {getStatusBadge(item.status)}
