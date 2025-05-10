@@ -283,7 +283,7 @@ const LocationsPage: React.FC = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         leftIcon={<Trash2 size={16}/>}
-                                                        // disabled={location.itemCount > 0}
+                                                        disabled={itemsStoredInLocation(location.id) > 0}
                                                     />
                                                 </div>
                                             </TableCell>

@@ -106,7 +106,6 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
         return items as Item[];
     }
 
-
     const getStocks = async () => {
         const {data, error} = await supabase
             .from('item_locations')
@@ -145,7 +144,7 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
             .single();
 
         if (error) throw error;
-        return data;
+        return data as Item;
     }
 
     const updateItem = async (id: string, updates: Partial<Database['public']['Tables']['items']['Update']>) => {
@@ -219,8 +218,8 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
             const newItem = await createItem(item);
 
             // Refresh the items list to include the new item
-            await refreshItemsWithStocksAndLocations();
-
+            // await refreshItemsWithStocksAndLocations();
+            setItems(prevItems => [...prevItems, newItem]);
             return newItem;
         } catch (err) {
             console.error('Error adding item:', err);

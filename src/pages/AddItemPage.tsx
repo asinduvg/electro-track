@@ -6,22 +6,24 @@ import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent, CardFooter} from '../components/ui/Card';
 import {getCategoriesList, getSubcategoriesForCategory} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
-import {createItem, addItemLocation, getLocations} from '../lib/api';
-import type {Database} from '../lib/database.types';
+// import {createItem, addItemLocation, getLocations} from '../lib/api';
+// import type {Database} from '../lib/database.types';
+// import {useLocations} from "../context/LocationsContext.tsx";
+import {useItems} from "../context/ItemsContext.tsx";
 
-type Location = Database['public']['Tables']['locations']['Row'];
+// type Location = Database['public']['Tables']['locations']['Row'];
 
-interface ItemLocation {
-    locationId: string;
-    quantity: number;
-    status: 'in_stock' | 'ordered';
-}
+// interface ItemLocation {
+//     locationId: string;
+//     quantity: number;
+//     status: 'in_stock' | 'ordered';
+// }
 
 const AddItemPage: React.FC = () => {
     const navigate = useNavigate();
     const {currentUser} = useAuth();
     const categories = getCategoriesList();
-    const [locations, setLocations] = useState<Location[]>([]);
+    // const [locations, setLocations] = useState<Location[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -38,21 +40,24 @@ const AddItemPage: React.FC = () => {
         unit_cost: 0
     });
 
-    const [itemLocations, setItemLocations] = useState<ItemLocation[]>([]);
+    // const [itemLocations, setItemLocations] = useState<ItemLocation[]>([]);
 
-    useEffect(() => {
-        loadLocations();
-    }, []);
+    // const {locations} = useLocations();
+    const {items, stocks, addItem, error: itemsError} = useItems();
 
-    const loadLocations = async () => {
-        try {
-            const data = await getLocations();
-            setLocations(data);
-        } catch (err) {
-            console.error('Error loading locations:', err);
-            setError('Failed to load storage locations');
-        }
-    };
+    // useEffect(() => {
+    //     loadLocations();
+    // }, []);
+
+    // const loadLocations = async () => {
+    //     try {
+    //         const data = await getLocations();
+    //         setLocations(data);
+    //     } catch (err) {
+    //         console.error('Error loading locations:', err);
+    //         setError('Failed to load storage locations');
+    //     }
+    // };
 
     // Get subcategories based on selected category
     const subcategories = formData.category
@@ -76,31 +81,31 @@ const AddItemPage: React.FC = () => {
         }
     };
 
-    const addLocation = () => {
-        setItemLocations([...itemLocations, {
-            locationId: '',
-            quantity: 0,
-            status: 'in_stock'
-        }]);
-    };
+    // const addLocation = () => {
+    //     setItemLocations([...itemLocations, {
+    //         locationId: '',
+    //         quantity: 0,
+    //         status: 'in_stock'
+    //     }]);
+    // };
 
-    const removeLocation = (index: number) => {
-        const updatedLocations = [...itemLocations];
-        updatedLocations.splice(index, 1);
-        setItemLocations(updatedLocations);
-    };
+    // const removeLocation = (index: number) => {
+    //     const updatedLocations = [...itemLocations];
+    //     updatedLocations.splice(index, 1);
+    //     setItemLocations(updatedLocations);
+    // };
 
-    const handleLocationChange = (index: number, field: keyof ItemLocation, value: string | number) => {
-        const updatedLocations = [...itemLocations];
-        if (field === 'quantity') {
-            value = Math.max(0, Number(value));
-        }
-        updatedLocations[index] = {
-            ...updatedLocations[index],
-            [field]: value
-        };
-        setItemLocations(updatedLocations);
-    };
+    // const handleLocationChange = (index: number, field: keyof ItemLocation, value: string | number) => {
+    //     const updatedLocations = [...itemLocations];
+    //     if (field === 'quantity') {
+    //         value = Math.max(0, Number(value));
+    //     }
+    //     updatedLocations[index] = {
+    //         ...updatedLocations[index],
+    //         [field]: value
+    //     };
+    //     setItemLocations(updatedLocations);
+    // };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,10 +115,10 @@ const AddItemPage: React.FC = () => {
             return;
         }
 
-        if (itemLocations.length === 0) {
-            setError('Please add at least one location and quantity');
-            return;
-        }
+        // if (itemLocations.length === 0) {
+        //     setError('Please add at least one location and quantity');
+        //     return;
+        // }
 
         try {
             setIsSubmitting(true);
@@ -125,17 +130,17 @@ const AddItemPage: React.FC = () => {
                 created_by: currentUser.id
             };
 
-            const newItem = await createItem(itemData);
+            await addItem(itemData);
 
             // Create item locations
-            for (const location of itemLocations) {
-                await addItemLocation({
-                    item_id: newItem.id,
-                    location_id: location.locationId,
-                    quantity: location.quantity,
-                    status: location.status
-                });
-            }
+            // for (const location of itemLocations) {
+            //     await addItemLocation({
+            //         item_id: newItem.id,
+            //         location_id: location.locationId,
+            //         quantity: location.quantity,
+            //         status: location.status
+            //     });
+            // }
 
             navigate('/inventory/items');
         } catch (err) {
@@ -324,93 +329,93 @@ const AddItemPage: React.FC = () => {
                     </Card>
 
                     {/* Locations */}
-                    <Card>
-                        <CardHeader className="flex flex-row justify-between items-center">
-                            <CardTitle>Storage Locations</CardTitle>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                leftIcon={<Plus size={16}/>}
-                                onClick={addLocation}
-                            >
-                                Add Location
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
-                            {itemLocations.length === 0 ? (
-                                <div className="text-center py-6 text-gray-500">
-                                    <p>No locations added yet.</p>
-                                    <p className="text-sm mt-1">
-                                        Click "Add Location" to specify where this item will be stored.
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {itemLocations.map((loc, index) => (
-                                        <div key={index}
-                                             className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border-b border-gray-200 pb-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Location
-                                                </label>
-                                                <select
-                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    value={loc.locationId}
-                                                    onChange={(e) => handleLocationChange(index, 'locationId', e.target.value)}
-                                                    required
-                                                >
-                                                    <option value="">Select Location</option>
-                                                    {locations.map((location) => (
-                                                        <option key={location.id} value={location.id}>
-                                                            {location.building} &gt; {location.room} &gt; {location.unit}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Quantity
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    value={loc.quantity}
-                                                    onChange={(e) => handleLocationChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Status
-                                                </label>
-                                                <select
-                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    value={loc.status}
-                                                    onChange={(e) => handleLocationChange(index, 'status', e.target.value as 'in_stock' | 'ordered')}
-                                                    required
-                                                >
-                                                    <option value="in_stock">In Stock</option>
-                                                    <option value="ordered">Ordered</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    onClick={() => removeLocation(index)}
-                                                    className="text-red-600 hover:text-red-700"
-                                                >
-                                                    Remove
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    {/*<Card>*/}
+                    {/*    <CardHeader className="flex flex-row justify-between items-center">*/}
+                    {/*        <CardTitle>Storage Locations</CardTitle>*/}
+                    {/*        <Button*/}
+                    {/*            type="button"*/}
+                    {/*            variant="outline"*/}
+                    {/*            size="sm"*/}
+                    {/*            leftIcon={<Plus size={16}/>}*/}
+                    {/*            onClick={addLocation}*/}
+                    {/*        >*/}
+                    {/*            Add Location*/}
+                    {/*        </Button>*/}
+                    {/*    </CardHeader>*/}
+                    {/*    <CardContent>*/}
+                    {/*        {itemLocations.length === 0 ? (*/}
+                    {/*            <div className="text-center py-6 text-gray-500">*/}
+                    {/*                <p>No locations added yet.</p>*/}
+                    {/*                <p className="text-sm mt-1">*/}
+                    {/*                    Click "Add Location" to specify where this item will be stored.*/}
+                    {/*                </p>*/}
+                    {/*            </div>*/}
+                    {/*        ) : (*/}
+                    {/*            <div className="space-y-4">*/}
+                    {/*                {itemLocations.map((loc, index) => (*/}
+                    {/*                    <div key={index}*/}
+                    {/*                         className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border-b border-gray-200 pb-4">*/}
+                    {/*                        <div>*/}
+                    {/*                            <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+                    {/*                                Location*/}
+                    {/*                            </label>*/}
+                    {/*                            <select*/}
+                    {/*                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"*/}
+                    {/*                                value={loc.locationId}*/}
+                    {/*                                onChange={(e) => handleLocationChange(index, 'locationId', e.target.value)}*/}
+                    {/*                                required*/}
+                    {/*                            >*/}
+                    {/*                                <option value="">Select Location</option>*/}
+                    {/*                                {locations.map((location) => (*/}
+                    {/*                                    <option key={location.id} value={location.id}>*/}
+                    {/*                                        {location.building} &gt; {location.room} &gt; {location.unit}*/}
+                    {/*                                    </option>*/}
+                    {/*                                ))}*/}
+                    {/*                            </select>*/}
+                    {/*                        </div>*/}
+                    {/*                        <div>*/}
+                    {/*                            <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+                    {/*                                Quantity*/}
+                    {/*                            </label>*/}
+                    {/*                            <input*/}
+                    {/*                                type="number"*/}
+                    {/*                                min="0"*/}
+                    {/*                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"*/}
+                    {/*                                value={loc.quantity}*/}
+                    {/*                                onChange={(e) => handleLocationChange(index, 'quantity', parseInt(e.target.value) || 0)}*/}
+                    {/*                                required*/}
+                    {/*                            />*/}
+                    {/*                        </div>*/}
+                    {/*                        <div>*/}
+                    {/*                            <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+                    {/*                                Status*/}
+                    {/*                            </label>*/}
+                    {/*                            <select*/}
+                    {/*                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"*/}
+                    {/*                                value={loc.status}*/}
+                    {/*                                onChange={(e) => handleLocationChange(index, 'status', e.target.value as 'in_stock' | 'ordered')}*/}
+                    {/*                                required*/}
+                    {/*                            >*/}
+                    {/*                                <option value="in_stock">In Stock</option>*/}
+                    {/*                                <option value="ordered">Ordered</option>*/}
+                    {/*                            </select>*/}
+                    {/*                        </div>*/}
+                    {/*                        <div>*/}
+                    {/*                            <Button*/}
+                    {/*                                type="button"*/}
+                    {/*                                variant="ghost"*/}
+                    {/*                                onClick={() => removeLocation(index)}*/}
+                    {/*                                className="text-red-600 hover:text-red-700"*/}
+                    {/*                            >*/}
+                    {/*                                Remove*/}
+                    {/*                            </Button>*/}
+                    {/*                        </div>*/}
+                    {/*                    </div>*/}
+                    {/*                ))}*/}
+                    {/*            </div>*/}
+                    {/*        )}*/}
+                    {/*    </CardContent>*/}
+                    {/*</Card>*/}
                 </div>
 
                 <div className="mt-6 flex justify-end space-x-3">

@@ -48,20 +48,6 @@ const InventoryListPage: React.FC = () => {
         }
     }, [items, itemsError]);
 
-    // const loadItems = async () => {
-    //     try {
-    //         setIsLoading(true);
-    //         const data = await getItems();
-    //         setItems(data);
-    //         setFilteredItems(data);
-    //     } catch (err) {
-    //         console.error('Error loading items:', err);
-    //         setError('Failed to load inventory items');
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // };
-
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to delete this item?')) {
             return;
@@ -183,105 +169,8 @@ const InventoryListPage: React.FC = () => {
                 ));
     }
 
-    const renderOverviewTable = () => (
-        <Table>
-            <TableHead>
-                <TableRow>
-                    <TableHeaderCell
-                        className="cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('sku')}
-                    >
-                        <div className="flex items-center">
-                            SKU {getSortIcon('sku')}
-                        </div>
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                        className="cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('name')}
-                    >
-                        <div className="flex items-center">
-                            Name {getSortIcon('name')}
-                        </div>
-                    </TableHeaderCell>
-                    <TableHeaderCell>Category</TableHeaderCell>
-                    <TableHeaderCell>Total Quantity</TableHeaderCell>
-                    <TableHeaderCell>Status</TableHeaderCell>
-                    <TableHeaderCell>Actions</TableHeaderCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {filteredItems.length > 0 ? (
-                    filteredItems.map((item) => (
-                        <TableRow key={item.id}>
-                            <TableCell className="font-medium">{item.sku}</TableCell>
-                            <TableCell>
-                                <Link
-                                    to={`/inventory/view/${item.id}`}
-                                    className="text-blue-600 hover:text-blue-800 hover:underline"
-                                >
-                                    {item.name}
-                                </Link>
-                                <p className="text-xs text-gray-500 truncate max-w-xs">
-                                    {item.description}
-                                </p>
-                            </TableCell>
-                            <TableCell>{item.category}</TableCell>
-                            <TableCell>
-                                <Badge
-                                    variant={getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
-                                >
-                                    {getTotalQuantity(item.id)}
-                                </Badge>
-                            </TableCell>
-                            <TableCell>{getStatusBadge(item.status)}</TableCell>
-                            <TableCell>
-                                <div className="flex space-x-2">
-                                    <Link to={`/inventory/view/${item.id}`}>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            leftIcon={<Eye size={16}/>}
-                                        />
-                                    </Link>
-
-                                    {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                                        <>
-                                            <Link to={`/inventory/edit/${item.id}`}>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    leftIcon={<Edit size={16}/>}
-                                                />
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                leftIcon={<Trash size={16}/>}
-                                                onClick={() => handleDelete(item.id)}
-                                            />
-                                        </>
-                                    )}
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                <Search size={48} className="mb-2 text-gray-300"/>
-                                <p className="text-lg">No items found</p>
-                                <p className="text-sm">Try adjusting your search or filter criteria</p>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
-    );
-
-    const renderDetailedTable = () => (
-        <Table>
+    const renderTableHead = () => {
+        return (
             <TableHead>
                 <TableRow>
                     <TableHeaderCell
@@ -307,135 +196,103 @@ const InventoryListPage: React.FC = () => {
                     <TableHeaderCell>Actions</TableHeaderCell>
                 </TableRow>
             </TableHead>
-            <TableBody>
-                {filteredItems.length > 0 ? (
-                    filteredItems.map((item) => ( // item -> item.locations
-                        stocks.filter(stock => stock.item_id === item.id).length > 0 ? (
-                            stocksWithLocation(item)
-                                .map((stockNLocation, idx) => (
-                                    <TableRow key={`${item.id}-${idx}`}>
-                                        <TableCell className="font-medium">{item.sku}</TableCell>
-                                        <TableCell>
-                                            <Link
-                                                to={`/inventory/view/${item.id}`}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline"
-                                            >
-                                                {item.name}
-                                            </Link>
-                                            <p className="text-xs text-gray-500 truncate max-w-xs">
-                                                {item.description}
-                                            </p>
-                                        </TableCell>
-                                        <TableCell>{item.category}</TableCell>
-                                        <TableCell>
-                                            {stockNLocation.location.building} &gt; {stockNLocation.location.room} &gt; {stockNLocation.location.unit}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant={stockNLocation.quantity < (item.minimum_stock || 0) ? 'warning' : 'success'}
-                                            >
-                                                {stockNLocation.quantity}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {getStatusBadge(stockNLocation.status)}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex space-x-2">
-                                                <Link to={`/inventory/view/${item.id}`}>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        leftIcon={<Eye size={16}/>}
-                                                    />
-                                                </Link>
+        )
+    }
 
-                                                {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                                                    <>
-                                                        <Link to={`/inventory/edit/${item.id}`}>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                leftIcon={<Edit size={16}/>}
-                                                            />
-                                                        </Link>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            leftIcon={<Trash size={16}/>}
-                                                            onClick={() => /* handleDelete(item.id) */ {
-                                                            }}
-                                                        />
-                                                    </>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                        ) : (
-                            <TableRow key={item.id}>
-                                <TableCell className="font-medium">{item.sku}</TableCell>
-                                <TableCell>
-                                    <Link
-                                        to={`/inventory/view/${item.id}`}
-                                        className="text-blue-600 hover:text-blue-800 hover:underline"
-                                    >
-                                        {item.name}
-                                    </Link>
-                                </TableCell>
-                                <TableCell>{item.category}</TableCell>
-                                <TableCell>No Location</TableCell>
-                                <TableCell>
-                                    <Badge variant="danger">0</Badge>
-                                </TableCell>
-                                <TableCell>{getStatusBadge(item.status)}</TableCell>
-                                <TableCell>
-                                    <div className="flex space-x-2">
-                                        <Link to={`/inventory/view/${item.id}`}>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                leftIcon={<Eye size={16}/>}
-                                            />
+    const renderDetailedTable = () => {
+        const fullItemsDetail = filteredItems.map(item => {
+            return {
+                item, stocks: stocksWithLocation(item)
+            }
+        });
+
+        return (
+            <Table>
+                {renderTableHead()}
+                <TableBody>
+                    {filteredItems.length > 0 ? (
+                        fullItemsDetail.map(({item, stocks}, idx) => (
+                                <TableRow key={`${item.id}-${idx}`}>
+                                    <TableCell className="font-medium">{item.sku}</TableCell>
+                                    <TableCell>
+                                        <Link
+                                            to={`/inventory/view/${item.id}`}
+                                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                                        >
+                                            {item.name}
                                         </Link>
-
-                                        {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                                            <>
-                                                <Link to={`/inventory/edit/${item.id}`}>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        leftIcon={<Edit size={16}/>}
-                                                    />
-                                                </Link>
+                                        <p className="text-xs text-gray-500 truncate max-w-xs">
+                                            {item.description}
+                                        </p>
+                                    </TableCell>
+                                    <TableCell>{item.category}</TableCell>
+                                    <TableCell>
+                                        {stocks.map(stockNLocation => (
+                                            <div key={`${stockNLocation.location.id}-${stockNLocation.quantity}`}>
+                                                {stockNLocation.location.building} &gt; {stockNLocation.location.room} &gt; {stockNLocation.location.unit} ({stockNLocation.quantity})
+                                            </div>
+                                        ))}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={
+                                                getTotalQuantity(item.id) <= 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'
+                                            }
+                                        >
+                                            {getTotalQuantity(item.id)}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        {getStatusBadge(item.status)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex space-x-2">
+                                            <Link to={`/inventory/view/${item.id}`}>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    leftIcon={<Trash size={16}/>}
-                                                    onClick={() => /* handleDelete(item.id) */ {
-                                                    }}
+                                                    leftIcon={<Eye size={16}/>}
                                                 />
-                                            </>
-                                        )}
-                                    </div>
-                                </TableCell>
-                            </TableRow>
+                                            </Link>
+
+                                            {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
+                                                <>
+                                                    <Link to={`/inventory/edit/${item.id}`}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            leftIcon={<Edit size={16}/>}
+                                                        />
+                                                    </Link>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        leftIcon={<Trash size={16}/>}
+                                                        onClick={() => /* handleDelete(item.id) */ {
+                                                        }}
+                                                    />
+                                                </>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )
                         )
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                <Search size={48} className="mb-2 text-gray-300"/>
-                                <p className="text-lg">No items found</p>
-                                <p className="text-sm">Try adjusting your search or filter criteria</p>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
-    );
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8">
+                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                    <Search size={48} className="mb-2 text-gray-300"/>
+                                    <p className="text-lg">No items found</p>
+                                    <p className="text-sm">Try adjusting your search or filter criteria</p>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        );
+    }
 
     if (isLoading) {
         return (
@@ -452,14 +309,6 @@ const InventoryListPage: React.FC = () => {
                     className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
                     <CardTitle>Inventory Items</CardTitle>
                     <div className="flex space-x-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            leftIcon={viewMode === 'overview' ? <LayoutGrid size={16}/> : <LayoutList size={16}/>}
-                            onClick={() => setViewMode(viewMode === 'overview' ? 'detailed' : 'overview')}
-                        >
-                            {viewMode === 'overview' ? 'Overview' : 'Detailed View'}
-                        </Button>
                         <Button
                             variant="outline"
                             size="sm"
@@ -535,7 +384,7 @@ const InventoryListPage: React.FC = () => {
                     </div>
 
                     <div className="overflow-x-auto">
-                        {viewMode === 'overview' ? renderOverviewTable() : renderDetailedTable()}
+                        {renderDetailedTable()}
                     </div>
                 </CardContent>
             </Card>
