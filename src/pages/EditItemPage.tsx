@@ -6,21 +6,26 @@ import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
 import {getCategoriesList, getSubcategoriesForCategory} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
-import {getItemById, updateItem, getLocations} from '../lib/api';
+// import {getItemById, updateItem, getLocations} from '../lib/api';
 import type {Database} from '../lib/database.types';
+import {useItems} from "../context/ItemsContext.tsx";
+import {supabase} from "../lib/supabase.ts";
 
 type Item = Database['public']['Tables']['items']['Row'];
-type Location = Database['public']['Tables']['locations']['Row'];
+// type Location = Database['public']['Tables']['locations']['Row'];
 
 const EditItemPage: React.FC = () => {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
     const {currentUser} = useAuth();
     const categories = getCategoriesList();
-    const [locations, setLocations] = useState<Location[]>([]);
+    // const [locations, setLocations] = useState<Location[]>([]);
+    // const [item, setItem] = useState<Item | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const {getItem, stocks, transactions, locations, error: itemsError} = useItems();
 
     const [formData, setFormData] = useState<Partial<Item>>({
         sku: '',
@@ -31,36 +36,63 @@ const EditItemPage: React.FC = () => {
         manufacturer: '',
         model: '',
         serial_number: '',
-        quantity: 0,
         minimum_stock: 0,
         unit_cost: 0,
-        location_id: '',
         status: 'in_stock'
     });
 
     useEffect(() => {
-        loadData();
-    }, [id]);
+        // loadData();
+        (async () => {
+            if (itemsError) {
+                setError(itemsError);
+                setIsLoading(false);
+                return;
+            }
+            if (!id) return;
+            const item = await getItem(id);
 
-    const loadData = async () => {
-        try {
-            setIsLoading(true);
-            if (!id) throw new Error('Item ID is required');
+            if (!item) return;
 
-            const [itemData, locationsData] = await Promise.all([
-                getItemById(id),
-                getLocations()
-            ]);
-
-            setFormData(itemData);
-            setLocations(locationsData);
-        } catch (err) {
-            console.error('Error loading item:', err);
-            setError('Failed to load item details');
-        } finally {
+            setFormData(item);
             setIsLoading(false);
-        }
-    };
+        })()
+    }, [getItem, id, itemsError]);
+
+    // const loadData = async () => {
+    //     try {
+    //         setIsLoading(true);
+    //         if (!id) throw new Error('Item ID is required');
+    //
+    //         const [itemData, locationsData] = await Promise.all([
+    //             getItemById(id),
+    //             getLocations()
+    //         ]);
+    //
+    //         setFormData(itemData);
+    //         setLocations(locationsData);
+    //     } catch (err) {
+    //         console.error('Error loading item:', err);
+    //         setError('Failed to load item details');
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
+
+    // DB start
+    const updateItem = async (id: string, updates: Partial<Database['public']['Tables']['items']['Update']>) => {
+        const {data, error} = await supabase
+            .from('items')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
+    // DB end
 
     // Get subcategories based on selected category
     const subcategories = formData.category
@@ -289,16 +321,16 @@ const EditItemPage: React.FC = () => {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 gap-4">
-                                    <Input
-                                        label="Quantity"
-                                        id="quantity"
-                                        name="quantity"
-                                        type="number"
-                                        min="0"
-                                        value={formData.quantity?.toString()}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
+                                    {/*<Input*/}
+                                    {/*    label="Quantity"*/}
+                                    {/*    id="quantity"*/}
+                                    {/*    name="quantity"*/}
+                                    {/*    type="number"*/}
+                                    {/*    min="0"*/}
+                                    {/*    value={formData.quantity?.toString()}*/}
+                                    {/*    onChange={handleInputChange}*/}
+                                    {/*    required*/}
+                                    {/*/>*/}
                                     <Input
                                         label="Minimum Stock"
                                         id="minimum_stock"
@@ -323,27 +355,27 @@ const EditItemPage: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <label
-                                        htmlFor="location_id"
-                                        className="block text-sm font-medium text-gray-700 mb-1"
-                                    >
-                                        Storage Location
-                                    </label>
-                                    <select
-                                        id="location_id"
-                                        name="location_id"
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                        value={formData.location_id || ''}
-                                        onChange={handleInputChange}
-                                        required
-                                    >
-                                        <option value="">Select Location</option>
-                                        {locations.map((location) => (
-                                            <option key={location.id} value={location.id}>
-                                                {location.building} &gt; {location.room} &gt; {location.unit}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    {/*<label*/}
+                                    {/*    htmlFor="location_id"*/}
+                                    {/*    className="block text-sm font-medium text-gray-700 mb-1"*/}
+                                    {/*>*/}
+                                    {/*    Storage Location*/}
+                                    {/*</label>*/}
+                                    {/*<select*/}
+                                    {/*    id="location_id"*/}
+                                    {/*    name="location_id"*/}
+                                    {/*    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"*/}
+                                    {/*    value={formData.location_id || ''}*/}
+                                    {/*    onChange={handleInputChange}*/}
+                                    {/*    required*/}
+                                    {/*>*/}
+                                    {/*    <option value="">Select Location</option>*/}
+                                    {/*    {locations.map((location) => (*/}
+                                    {/*        <option key={location.id} value={location.id}>*/}
+                                    {/*            {location.building} &gt; {location.room} &gt; {location.unit}*/}
+                                    {/*        </option>*/}
+                                    {/*    ))}*/}
+                                    {/*</select>*/}
                                 </div>
 
                                 <div>
@@ -362,9 +394,6 @@ const EditItemPage: React.FC = () => {
                                         required
                                     >
                                         <option value="in_stock">In Stock</option>
-                                        <option value="low_stock">Low Stock</option>
-                                        <option value="out_of_stock">Out of Stock</option>
-                                        <option value="ordered">Ordered</option>
                                         <option value="discontinued">Discontinued</option>
                                     </select>
                                 </div>

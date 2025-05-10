@@ -10,8 +10,10 @@ import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
 import {useAuth} from '../context/AuthContext';
 // import {getItemById, getTransactions} from '../lib/api';
 // import type {Database} from '../lib/database.types';
-import {useItems, Item} from "../context/ItemsContext.tsx";
+import {useItems} from "../context/ItemsContext.tsx";
+import type {Database} from "../lib/database.types.ts";
 
+type Item = Database['public']['Tables']['items']['Row']
 // type Transaction = Database['public']['Tables']['transactions']['Row'];
 
 const ItemDetailPage: React.FC = () => {

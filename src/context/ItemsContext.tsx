@@ -18,7 +18,7 @@ import {supabase} from "../lib/supabase.ts";
 //     }>;
 // };
 
-export type Item = Database['public']['Tables']['items']['Row']
+type Item = Database['public']['Tables']['items']['Row']
 type Location = Database['public']['Tables']['locations']['Row'];
 type Stocks = Database['public']['Tables']['item_locations']['Row'];
 type Transaction = Database['public']['Tables']['transactions']['Row'];
