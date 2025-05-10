@@ -7,7 +7,7 @@ import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from 
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
 import {useLocations} from "../context/LocationsContext.tsx";
-import {createLocation} from '../lib/api';
+// import {createLocation} from '../lib/api';
 import {useItems} from "../context/ItemsContext.tsx";
 
 const LocationsPage: React.FC = () => {
@@ -18,7 +18,7 @@ const LocationsPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {locations} = useLocations();
+    const {locations, createLocation} = useLocations();
     const {stocks, items} = useItems();
 
     // New Location Form State
@@ -36,34 +36,6 @@ const LocationsPage: React.FC = () => {
         }
     }, [locations]);
 
-    // const loadData = async () => {
-    //     try {
-    //         setIsLoading(true);
-    //         const [locationsData, itemsData] = await Promise.all([
-    //             getLocations(),
-    //             getItems()
-    //         ]);
-    //
-    //         // Calculate item counts and total values for each location
-    //         const locationsWithCounts = locationsData.map(location => {
-    //             const locationItems = itemsData.filter(item => item.location_id === location.id);
-    //             return {
-    //                 ...location,
-    //                 itemCount: locationItems.length,
-    //                 totalValue: locationItems.reduce((sum, item) => sum + (item.quantity * item.unit_cost), 0)
-    //             };
-    //         });
-    //
-    //         setLocations(locationsWithCounts);
-    //         setItems(itemsData);
-    //     } catch (err) {
-    //         console.error('Error loading data:', err);
-    //         setError('Failed to load locations data');
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // };
-
     const handleCreateLocation = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -77,7 +49,6 @@ const LocationsPage: React.FC = () => {
             setError(null);
 
             await createLocation(newLocation);
-            await loadData();
 
             setIsAddingLocation(false);
             setNewLocation({building: '', room: '', unit: ''});
