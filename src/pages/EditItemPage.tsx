@@ -25,7 +25,7 @@ const EditItemPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const {getItem, stocks, transactions, locations, error: itemsError} = useItems();
+    const {getItem, updateItem, stocks, transactions, locations, error: itemsError} = useItems();
 
     const [formData, setFormData] = useState<Partial<Item>>({
         sku: '',
@@ -78,21 +78,6 @@ const EditItemPage: React.FC = () => {
     //         setIsLoading(false);
     //     }
     // };
-
-    // DB start
-    const updateItem = async (id: string, updates: Partial<Database['public']['Tables']['items']['Update']>) => {
-        const {data, error} = await supabase
-            .from('items')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    }
-
-    // DB end
 
     // Get subcategories based on selected category
     const subcategories = formData.category

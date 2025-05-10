@@ -123,14 +123,14 @@ export async function updateItem(id: string, updates: Partial<Tables['items']['U
     return data;
 }
 
-export async function deleteItem(id: string) {
-    const {error} = await supabase
-        .from('items')
-        .delete()
-        .eq('id', id);
-
-    if (error) throw error;
-}
+// export async function deleteItem(id: string) {
+//     const {error} = await supabase
+//         .from('items')
+//         .delete()
+//         .eq('id', id);
+//
+//     if (error) throw error;
+// }
 
 // Item Locations
 export async function getItemLocations(itemId: string) {

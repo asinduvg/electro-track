@@ -40,7 +40,7 @@ const InventoryListPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, error: itemsError} = useItems();
+    const {items, stocks, locations, removeItem, error: itemsError} = useItems();
 
     console.log('items', items);
 
@@ -73,20 +73,19 @@ const InventoryListPage: React.FC = () => {
     //     }
     // };
 
-    // const handleDelete = async (id: string) => {
-    //     if (!window.confirm('Are you sure you want to delete this item?')) {
-    //         return;
-    //     }
-    //
-    //     try {
-    //         await deleteItem(id);
-    //         setItems(items.filter(item => item.id !== id));
-    //         setFilteredItems(filteredItems.filter(item => item.id !== id));
-    //     } catch (err) {
-    //         console.error('Error deleting item:', err);
-    //         alert('Failed to delete item');
-    //     }
-    // };
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this item?')) {
+            return;
+        }
+
+        try {
+            await removeItem(id);
+            setFilteredItems(filteredItems.filter(item => item.id !== id));
+        } catch (err) {
+            console.error('Error deleting item:', err);
+            alert('Failed to delete item');
+        }
+    };
 
     useEffect(() => {
         let result = [...items];
@@ -269,8 +268,7 @@ const InventoryListPage: React.FC = () => {
                                                 variant="ghost"
                                                 size="sm"
                                                 leftIcon={<Trash size={16}/>}
-                                                onClick={() => /*handleDelete(item.id) */ {
-                                                }}
+                                                onClick={() => handleDelete(item.id)}
                                             />
                                         </>
                                     )}

@@ -1,9 +1,6 @@
 import React, {createContext, useContext, useState, useEffect, useCallback} from 'react';
 import {useAuth} from './AuthContext';
 import {
-    createItem,
-    updateItem,
-    deleteItem,
     createTransaction,
 } from '../lib/api';
 import type {Database} from '../lib/database.types';
@@ -152,6 +149,38 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
         return data as Transaction[];
     }
 
+    const createItem = async (item: Database['public']['Tables']['items']['Insert']) => {
+        const {data, error} = await supabase
+            .from('items')
+            .insert(item)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
+    const updateItem = async (id: string, updates: Partial<Database['public']['Tables']['items']['Update']>) => {
+        const {data, error} = await supabase
+            .from('items')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
+    const deleteItem = async (id: string) => {
+        const {error} = await supabase
+            .from('items')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    }
+
     // DB calls end
 
     // Function to get a single item by ID
@@ -213,7 +242,7 @@ export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({children
     };
 
     // Function to update an existing item
-    const updateItemData = async (id: string, updates: Partial<Item>): Promise<Item | null> => {
+    const updateItemData = async (id: string, updates: Partial<Item>): Promise<Item | null> => { // todo: check type signature
         if (!isAuthenticated || !currentUser) {
             setError('You must be logged in to update items');
             return null;
