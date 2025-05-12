@@ -7,7 +7,7 @@ import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
 import {getCategoriesList, getSubcategoriesForCategory} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
 import type {Database} from '../lib/database.types';
-import {useItems} from "../context/ItemsContext.tsx";
+import {useDatabase} from "../context/DatabaseContext.tsx";
 
 // type Item = Database['public']['Tables']['items']['Row'];
 type ItemUpdate = Database['public']['Tables']['items']['Update'];
@@ -21,7 +21,7 @@ const EditItemPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const {getItem, updateItem, error: itemsError} = useItems();
+    const {getItem, updateItem, itemsError} = useDatabase();
 
     const [formData, setFormData] = useState<ItemUpdate | null>(null);
 

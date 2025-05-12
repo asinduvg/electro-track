@@ -10,9 +10,8 @@ import {useAuth} from '../context/AuthContext';
 import {getItems, getLocations, createTransaction} from '../lib/api';
 import type {Database} from '../lib/database.types';
 import {Item} from "../types";
+import {useDatabase} from "../context/DatabaseContext.tsx";
 
-// type Item = Database['public']['Tables']['items']['Row'];
-type Location = Database['public']['Tables']['locations']['Row'];
 
 interface ReceiveItem {
     id: string;
@@ -26,43 +25,45 @@ const ReceiveItemsPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {currentUser} = useAuth();
 
-    const [items, setItems] = useState<Item[]>([]);
-    const [locations, setLocations] = useState<Location[]>([]);
+    // const [items, setItems] = useState<Item[]>([]);
+    // const [locations, setLocations] = useState<Location[]>([]);
     const [selectedItems, setSelectedItems] = useState<ReceiveItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        loadItems();
-        loadLocations();
+    const {items, stocks, locations, removeItem, itemsError} = useDatabase();
 
-        // If itemId is provided in URL, pre-select that item
-        const itemId = searchParams.get('itemId');
-        if (itemId) {
-            setSelectedItems([{id: itemId, quantity: 1, locationId: '', notes: ''}]);
-        }
-    }, [searchParams]);
+    // useEffect(() => {
+    //     loadItems();
+    //     loadLocations();
+    //
+    //     // If itemId is provided in URL, pre-select that item
+    //     const itemId = searchParams.get('itemId');
+    //     if (itemId) {
+    //         setSelectedItems([{id: itemId, quantity: 1, locationId: '', notes: ''}]);
+    //     }
+    // }, [searchParams]);
 
-    const loadItems = async () => {
-        try {
-            const data = await getItems();
-            setItems(data);
-        } catch (err) {
-            console.error('Error loading items:', err);
-            setError('Failed to load inventory items');
-        }
-    };
+    // const loadItems = async () => {
+    //     try {
+    //         const data = await getItems();
+    //         setItems(data);
+    //     } catch (err) {
+    //         console.error('Error loading items:', err);
+    //         setError('Failed to load inventory items');
+    //     }
+    // };
 
-    const loadLocations = async () => {
-        try {
-            const data = await getLocations();
-            setLocations(data);
-        } catch (err) {
-            console.error('Error loading locations:', err);
-            setError('Failed to load storage locations');
-        }
-    };
+    // const loadLocations = async () => {
+    //     try {
+    //         const data = await getLocations();
+    //         setLocations(data);
+    //     } catch (err) {
+    //         console.error('Error loading locations:', err);
+    //         setError('Failed to load storage locations');
+    //     }
+    // };
 
     const filteredItems = items.filter(item =>
         !selectedItems.some(selected => selected.id === item.id) &&
@@ -73,7 +74,7 @@ const ReceiveItemsPage: React.FC = () => {
     const handleAddItem = (item: Item) => {
         setSelectedItems([
             ...selectedItems,
-            {id: item.id, quantity: 1, locationId: item.location_id || '', notes: ''}
+            {id: item.id, quantity: 1, locationId: '', notes: ''}
         ]);
         setSearchTerm('');
     };
@@ -145,6 +146,12 @@ const ReceiveItemsPage: React.FC = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const getTotalQuantity = (itemId: string) => {
+        return stocks
+            .filter(stock => stock.item_id === itemId)
+            .reduce((sum, stock) => sum + stock.quantity, 0);
     };
 
     return (
@@ -267,7 +274,7 @@ const ReceiveItemsPage: React.FC = () => {
                         {/* Item Search */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Add Items</CardTitle>
+                                <CardTitle>Select Items</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="mb-4">
@@ -296,9 +303,9 @@ const ReceiveItemsPage: React.FC = () => {
                                                     <TableCell>{item.name}</TableCell>
                                                     <TableCell>
                                                         <Badge
-                                                            variant={item.quantity < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                                            variant={getTotalQuantity(item.id) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                                         >
-                                                            {item.quantity}
+                                                            {getTotalQuantity(item.id)}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>

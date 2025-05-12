@@ -6,10 +6,9 @@ import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent, CardFooter} from '../components/ui/Card';
 import {getCategoriesList, getSubcategoriesForCategory} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
+import {useDatabase} from "../context/DatabaseContext.tsx";
 // import {createItem, addItemLocation, getLocations} from '../lib/api';
 // import type {Database} from '../lib/database.types';
-// import {useLocations} from "../context/LocationsContext.tsx";
-import {useItems} from "../context/ItemsContext.tsx";
 
 // type Location = Database['public']['Tables']['locations']['Row'];
 
@@ -43,7 +42,14 @@ const AddItemPage: React.FC = () => {
     // const [itemLocations, setItemLocations] = useState<ItemLocation[]>([]);
 
     // const {locations} = useLocations();
-    const {items, stocks, addItem, error: itemsError} = useItems();
+    const {items, addItem, itemsError} = useDatabase();
+
+    useEffect(() => {
+        if (itemsError) {
+            setError(itemsError);
+            return;
+        }
+    }, [items, itemsError]);
 
     // useEffect(() => {
     //     loadLocations();

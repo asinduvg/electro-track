@@ -6,9 +6,8 @@ import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {useLocations} from "../context/LocationsContext.tsx";
 // import {createLocation} from '../lib/api';
-import {useItems} from "../context/ItemsContext.tsx";
+import {useDatabase} from "../context/DatabaseContext.tsx";
 
 const LocationsPage: React.FC = () => {
     const {currentUser} = useAuth();
@@ -18,8 +17,7 @@ const LocationsPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {locations, createLocation} = useLocations();
-    const {stocks, items} = useItems();
+    const {locations, createLocation, stocks, items} = useDatabase();
 
     // New Location Form State
     const [isAddingLocation, setIsAddingLocation] = useState(false);

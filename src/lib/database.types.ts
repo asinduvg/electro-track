@@ -181,17 +181,27 @@ export interface Database {
             },
             transactions: {
                 Row: {
-                    id: string,
-                    type: 'receive' | 'withdraw' | 'transfer' | 'dispose' | 'adjust',
+                    id: string
+                    type: 'receive' | 'withdraw' | 'transfer' | 'dispose' | 'adjust'
                     item_id: string
                     quantity: number
                     from_location_id: string
                     to_location_id: string
-                    performed_by: string,
-                    performed_at: string,
+                    performed_by: string
+                    performed_at: string
                     notes: string | null
                     project_id: string | null
                     purpose: string | null
+                },
+                Insert: {
+                    id?: string
+                    type: 'receive' | 'withdraw' | 'transfer' | 'dispose' | 'adjust'
+                    item_id: string
+                    quantity: number
+                    from_location_id: string | null
+                    to_location_id: string | null
+                    performed_by: string
+                    performed_at: string
                 }
             }
         }

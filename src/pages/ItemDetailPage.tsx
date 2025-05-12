@@ -8,9 +8,8 @@ import {Badge} from '../components/ui/Badge';
 import {Button} from '../components/ui/Button';
 import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
 import {useAuth} from '../context/AuthContext';
-import {useItems} from "../context/ItemsContext.tsx";
 import type {Database} from "../lib/database.types.ts";
-import {useLocations} from "../context/LocationsContext.tsx";
+import {useDatabase} from "../context/DatabaseContext.tsx";
 
 type Item = Database['public']['Tables']['items']['Row']
 
@@ -21,11 +20,9 @@ const ItemDetailPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {getItem, stocks, transactions, error: itemsError} = useItems();
-    const {locations} = useLocations();
+    const {getItem, stocks, transactions, locations, itemsError} = useDatabase();
 
     useEffect(() => {
-        // loadData();
         (async () => {
             if (itemsError) {
                 setError(itemsError);

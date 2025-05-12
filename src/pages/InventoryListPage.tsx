@@ -1,8 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {
-    Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown,
-    LayoutGrid, LayoutList
+    Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown
 } from 'lucide-react';
 import {
     Table, TableHead, TableBody, TableRow,
@@ -13,11 +12,10 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {useLocations} from "../context/LocationsContext.tsx";
 import {categories} from '../data/mockData';
 import {UserRole} from '../types';
-import {useItems} from "../context/ItemsContext.tsx";
 import type {Database} from "../lib/database.types.ts";
+import {useDatabase} from "../context/DatabaseContext.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
 
@@ -32,8 +30,7 @@ const InventoryListPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, removeItem, error: itemsError} = useItems();
-    const {locations} = useLocations();
+    const {items, stocks, locations, removeItem, itemsError} = useDatabase();
 
     useEffect(() => {
         if (itemsError) {
@@ -260,8 +257,7 @@ const InventoryListPage: React.FC = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         leftIcon={<Trash size={16}/>}
-                                                        onClick={() => /* handleDelete(item.id) */ {
-                                                        }}
+                                                        onClick={() => handleDelete(item.id)}
                                                     />
                                                 </>
                                             )}
