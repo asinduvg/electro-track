@@ -8,7 +8,10 @@ import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from 
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
 import {Item} from "../types";
-import {useDatabase} from "../context/DatabaseContext.tsx";
+import useItems from "../hooks/useItems.tsx";
+import useLocations from "../hooks/useLocations.tsx";
+import useTransactions from "../hooks/useTransactions.tsx";
+import useStocks from "../hooks/useStocks.tsx";
 
 interface ReceiveItem {
     id: string;
@@ -27,7 +30,10 @@ const ReceiveItemsPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, createTransaction, removeItem, itemsError, refreshData} = useDatabase();
+    const {items, getTotalQuantity} = useItems();
+    const {locations} = useLocations();
+    const {stocks} = useStocks();
+    const {createTransaction} = useTransactions();
 
     useEffect(() => {
         // If itemId is provided in URL, pre-select that item
@@ -101,7 +107,7 @@ const ReceiveItemsPage: React.FC = () => {
 
             // Create receive transactions for each item
             for (const item of selectedItems) {
-                const txn = await createTransaction({
+                await createTransaction({
                     type: 'receive',
                     item_id: item.id,
                     quantity: item.quantity,
@@ -110,12 +116,6 @@ const ReceiveItemsPage: React.FC = () => {
                     notes: item.notes,
                     from_location_id: null,
                 });
-                if (txn) {
-                    await Promise.all([
-                        await refreshData('items'),
-                        await refreshData('stocks'),
-                    ])
-                }
             }
 
             navigate('/inventory/items');
@@ -125,12 +125,6 @@ const ReceiveItemsPage: React.FC = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-    const getTotalQuantity = (itemId: string) => {
-        return stocks
-            .filter(stock => stock.item_id === itemId)
-            .reduce((sum, stock) => sum + stock.quantity, 0);
     };
 
     return (
@@ -282,9 +276,9 @@ const ReceiveItemsPage: React.FC = () => {
                                                     <TableCell>{item.name}</TableCell>
                                                     <TableCell>
                                                         <Badge
-                                                            variant={getTotalQuantity(item.id) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                                            variant={getTotalQuantity(item.id, stocks) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                                         >
-                                                            {getTotalQuantity(item.id)}
+                                                            {getTotalQuantity(item.id, stocks)}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>

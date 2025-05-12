@@ -8,10 +8,11 @@ import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from 
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
 import type {Database} from '../lib/database.types';
-import {useDatabase} from "../context/DatabaseContext.tsx";
+import useItems from "../hooks/useItems.tsx";
+import useTransactions from "../hooks/useTransactions.tsx";
+import useLocations from "../hooks/useLocations.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
-type Location = Database['public']['Tables']['locations']['Row'];
 
 interface DisposeItem {
     id: string;
@@ -40,7 +41,9 @@ const DisposeItemsPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, createTransaction, refreshData} = useDatabase();
+    const {locations} = useLocations();
+    const {items, getTotalQuantity, getQtyInLocation, availableLocations} = useItems(locations);
+    const {createTransaction} = useTransactions();
 
     useEffect(() => {
 
@@ -150,9 +153,7 @@ const DisposeItemsPage: React.FC = () => {
                 });
             }
 
-            await refreshData('*');
-
-            navigate('/inventory/items');
+            navigate('/inventory/items'); // navigating to something else refresh that page's state
         } catch (err) {
             console.error('Error disposing items:', err);
             setError('Failed to process disposal transaction');
@@ -161,26 +162,25 @@ const DisposeItemsPage: React.FC = () => {
         }
     };
 
-    const availableLocations = (itemId: string): Location[] => {
-        return stocks
-            .filter(stock => stock.item_id === itemId && stock.quantity > 0)
-            .flatMap(stock => locations
-                .filter(location => location.id === stock.location_id)
-            )
-    }
+    // const availableLocations = (itemId: string): Location[] => {
+    //     return stocks
+    //         .filter(stock => stock.item_id === itemId && stock.quantity > 0)
+    //         .flatMap(stock => locations
+    //             .filter(location => location.id === stock.location_id)
+    //         )
+    // }
 
-    const getQtyInLocation = (itemId: string, locationId: string): number => {
-        return stocks
-            .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    }
+    // const getQtyInLocation = (itemId: string, locationId: string): number => {
+    //     return stocks
+    //         .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
+    //         .reduce((sum, stock) => sum + stock.quantity, 0);
+    // }
 
-    const getTotalQuantity = (itemId: string) => {
-        return stocks
-            .filter(stock => stock.item_id === itemId)
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    }
-
+    // const getTotalQuantity = (itemId: string) => {
+    //     return stocks
+    //         .filter(stock => stock.item_id === itemId)
+    //         .reduce((sum, stock) => sum + stock.quantity, 0);
+    // }
 
     return (
         <div className="space-y-6">

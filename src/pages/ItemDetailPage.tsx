@@ -9,7 +9,10 @@ import {Button} from '../components/ui/Button';
 import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
 import {useAuth} from '../context/AuthContext';
 import type {Database} from "../lib/database.types.ts";
-import {useDatabase} from "../context/DatabaseContext.tsx";
+import useItems from "../hooks/useItems.tsx";
+import useLocations from "../hooks/useLocations.tsx";
+import useTransactions from "../hooks/useTransactions.tsx";
+import useStocks from "../hooks/useStocks.tsx";
 
 type Item = Database['public']['Tables']['items']['Row']
 
@@ -20,7 +23,10 @@ const ItemDetailPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {getItem, stocks, transactions, locations, itemsError} = useDatabase();
+    const {getItem, getTotalQuantity, stocksWithLocation, error: itemsError} = useItems();
+    const {locations} = useLocations();
+    const {stocks} = useStocks();
+    const {transactions} = useTransactions();
 
     useEffect(() => {
         (async () => {
@@ -83,22 +89,6 @@ const ItemDetailPage: React.FC = () => {
             </Badge>
         );
     };
-
-    const getTotalQuantity = (itemId: string) => {
-        return stocks
-            .filter(stock => stock.item_id === itemId)
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    };
-
-    const stocksWithLocation = (item: Item) => {
-        return (
-            stocks
-                .filter(stock => stock.item_id === item.id) // item_locations
-                .flatMap(stock => locations
-                    .filter(location => location.id === stock.location_id)
-                    .map(location => ({...stock, location}))
-                ));
-    }
 
     const itemTransactions = transactions.filter(transaction => transaction.item_id === item.id);
 
@@ -328,17 +318,17 @@ const ItemDetailPage: React.FC = () => {
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <p className="text-sm text-gray-500">Current Quantity</p>
                                     <p className={`text-2xl font-bold ${
-                                        item.minimum_stock && getTotalQuantity(item.id) < item.minimum_stock
+                                        item.minimum_stock && getTotalQuantity(item.id, stocks) < item.minimum_stock
                                             ? 'text-red-600'
                                             : 'text-gray-900'
                                     }`}>
-                                        {getTotalQuantity(item.id)}
+                                        {getTotalQuantity(item.id, stocks)}
                                     </p>
                                     {item.minimum_stock ? (
                                         <p className="text-xs text-gray-500 mt-1">
                                             Minimum stock: {item.minimum_stock}
                                         </p>
-                                    ): <p className="text-xs text-gray-500 mt-1">Minimum stock: Not set</p>}
+                                    ) : <p className="text-xs text-gray-500 mt-1">Minimum stock: Not set</p>}
                                 </div>
 
                                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -347,15 +337,15 @@ const ItemDetailPage: React.FC = () => {
                                         ${item.unit_cost.toFixed(2)}
                                     </p>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Total value: ${(getTotalQuantity(item.id) * item.unit_cost).toFixed(2)}
+                                        Total value: ${(getTotalQuantity(item.id, stocks) * item.unit_cost).toFixed(2)}
                                     </p>
                                 </div>
 
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <p className="text-sm text-gray-500">Locations</p>
-                                    {stocksWithLocation(item).length > 0 ? (
+                                    {stocksWithLocation(item.id, locations, stocks).length > 0 ? (
                                         <div className="space-y-2 mt-2">
-                                            {stocksWithLocation(item).map((stockWithLocation, index) => (
+                                            {stocksWithLocation(item.id, locations, stocks).map((stockWithLocation, index) => (
                                                 <div key={index}
                                                      className="border-b border-gray-200 last:border-0 pb-2 last:pb-0">
                                                     <p className="text-lg font-medium text-gray-900">

@@ -6,18 +6,25 @@ import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-// import {createLocation} from '../lib/api';
-import {useDatabase} from "../context/DatabaseContext.tsx";
+import useLocations from "../hooks/useLocations.tsx";
+import useItems from "../hooks/useItems.tsx";
+import useStocks from "../hooks/useStocks.tsx";
 
 const LocationsPage: React.FC = () => {
     const {currentUser} = useAuth();
-    // const [locations, setLocations] = useState<LocationWithItemCount[]>([]);
-    // const [items, setItems] = useState<Item[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {locations, createLocation, stocks, items} = useDatabase();
+    const {items} = useItems();
+    const {stocks} = useStocks();
+    const {
+        locations,
+        createLocation,
+        itemsStoredInLocation,
+        totalValueInLocation,
+        totalInventoryValue
+    } = useLocations();
 
     // New Location Form State
     const [isAddingLocation, setIsAddingLocation] = useState(false);
@@ -68,29 +75,6 @@ const LocationsPage: React.FC = () => {
     });
 
     const canManageLocations = currentUser?.role === 'admin' || currentUser?.role === 'inventory_manager';
-
-    const itemsStoredInLocation = (locationId: string) => {
-        return stocks
-            .filter(stock => stock.location_id === locationId)
-            .map(stock => stock.quantity)
-            .reduce((sum, quantity) => sum + quantity, 0);
-    }
-
-    const totalValueInLocation = (locationId: string) => {
-        return stocks
-            .filter(stock => stock.location_id === locationId)
-            .flatMap(stock =>
-                items
-                    .filter(item => item.id === stock.item_id)
-                    .map(item => ({...stock, item}))
-            )
-            .map(stock => stock.quantity * stock.item.unit_cost)
-            .reduce((sum, quantity) => sum + quantity, 0);
-    }
-
-    const totalInventoryValue = locations
-        .map(location => totalValueInLocation(location.id))
-        .reduce((sum, value) => sum + value, 0);
 
     if (isLoading) {
         return (
@@ -166,7 +150,7 @@ const LocationsPage: React.FC = () => {
                             <div>
                                 <p className="text-purple-200 font-medium">Total Inventory Value</p>
                                 <p className="text-3xl font-bold mt-1">
-                                    {totalInventoryValue.toLocaleString()}
+                                    {totalInventoryValue(stocks, items).toLocaleString()}
                                 </p>
                             </div>
                             <div className="bg-purple-700 p-3 rounded-full">
@@ -262,12 +246,12 @@ const LocationsPage: React.FC = () => {
                                         <TableCell className="font-medium">{location.unit}</TableCell>
                                         <TableCell>
                                             <Badge
-                                                variant={itemsStoredInLocation(location.id) > 0 ? 'success' : 'secondary'}>
-                                                {itemsStoredInLocation(location.id)} items
+                                                variant={itemsStoredInLocation(location.id, stocks) > 0 ? 'success' : 'secondary'}>
+                                                {itemsStoredInLocation(location.id, stocks)} items
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {totalValueInLocation(location.id).toLocaleString()}
+                                            {totalValueInLocation(location.id, stocks, items).toLocaleString()}
                                         </TableCell>
                                         {canManageLocations && (
                                             <TableCell>
@@ -281,7 +265,7 @@ const LocationsPage: React.FC = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         leftIcon={<Trash2 size={16}/>}
-                                                        disabled={itemsStoredInLocation(location.id) > 0}
+                                                        disabled={itemsStoredInLocation(location.id, stocks) > 0}
                                                     />
                                                 </div>
                                             </TableCell>

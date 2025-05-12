@@ -8,10 +8,12 @@ import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from 
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
 import type {Database} from '../lib/database.types';
-import {useDatabase} from "../context/DatabaseContext.tsx";
+import useItems from "../hooks/useItems.tsx";
+import useLocations from "../hooks/useLocations.tsx";
+import useTransactions from "../hooks/useTransactions.tsx";
+import useStocks from "../hooks/useStocks.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
-type Location = Database['public']['Tables']['locations']['Row'];
 
 interface TransferItem {
     id: string;
@@ -31,7 +33,10 @@ const TransferItemsPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, createTransaction, refreshData} = useDatabase();
+    const {items, getTotalQuantity, getQtyInLocation, availableLocations} = useItems();
+    const {locations} = useLocations();
+    const {stocks} = useStocks();
+    const {createTransaction} = useTransactions();
 
     useEffect(() => {
         // If itemId is provided in URL, pre-select that item
@@ -140,8 +145,6 @@ const TransferItemsPage: React.FC = () => {
                 });
             }
 
-            await refreshData('*');
-
             navigate('/inventory/items');
         } catch (err) {
             console.error('Error transferring items:', err);
@@ -150,26 +153,6 @@ const TransferItemsPage: React.FC = () => {
             setIsSubmitting(false);
         }
     };
-
-    const getTotalQuantity = (itemId: string) => {
-        return stocks
-            .filter(stock => stock.item_id === itemId)
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    }
-
-    const availableLocations = (itemId: string): Location[] => {
-        return stocks
-            .filter(stock => stock.item_id === itemId && stock.quantity > 0)
-            .flatMap(stock => locations
-                .filter(location => location.id === stock.location_id)
-            )
-    }
-
-    const getQtyInLocation = (itemId: string, locationId: string): number => {
-        return stocks
-            .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    }
 
     return (
         <div className="space-y-6">
@@ -250,7 +233,7 @@ const TransferItemsPage: React.FC = () => {
                                                                 required
                                                             >
                                                                 <option value="">Select Source Location</option>
-                                                                {availableLocations(selectedItem.id).map((location) => (
+                                                                {availableLocations(selectedItem.id, locations, stocks).map((location) => (
                                                                     <option key={location.id} value={location.id}>
                                                                         {location.building} &gt; {location.room} &gt; {location.unit}
                                                                     </option>
@@ -287,14 +270,14 @@ const TransferItemsPage: React.FC = () => {
                                                                 label="Quantity"
                                                                 type="number"
                                                                 min="1"
-                                                                max={getQtyInLocation(selectedItem.id, selectedItem.fromLocationId)}
-                                                                value={selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) ? getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) : selectedItem.quantity}
+                                                                max={getQtyInLocation(selectedItem.id, selectedItem.fromLocationId, stocks)}
+                                                                value={selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.fromLocationId, stocks) ? getQtyInLocation(selectedItem.id, selectedItem.fromLocationId, stocks) : selectedItem.quantity}
                                                                 onChange={(e) => handleQuantityChange(
                                                                     item.id,
-                                                                    (parseInt(e.target.value) || 0) > getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) ? getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) : (parseInt(e.target.value) || 0)
+                                                                    (parseInt(e.target.value) || 0) > getQtyInLocation(selectedItem.id, selectedItem.fromLocationId, stocks) ? getQtyInLocation(selectedItem.id, selectedItem.fromLocationId, stocks) : (parseInt(e.target.value) || 0)
                                                                 )}
                                                                 required
-                                                                helperText={`Available: ${getQtyInLocation(selectedItem.id, selectedItem.fromLocationId)}`}
+                                                                helperText={`Available: ${getQtyInLocation(selectedItem.id, selectedItem.fromLocationId, stocks)}`}
                                                             />
                                                         </div>
 
@@ -347,9 +330,9 @@ const TransferItemsPage: React.FC = () => {
                                                     <TableCell>{item.name}</TableCell>
                                                     <TableCell>
                                                         <Badge
-                                                            variant={getTotalQuantity(item.id) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                                            variant={getTotalQuantity(item.id, stocks) === 0 ? 'danger' : getTotalQuantity(item.id, stocks) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                                         >
-                                                            {getTotalQuantity(item.id)}
+                                                            {getTotalQuantity(item.id, stocks)}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
@@ -357,7 +340,7 @@ const TransferItemsPage: React.FC = () => {
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => handleAddItem(item)}
-                                                            disabled={getTotalQuantity(item.id) <= 0}
+                                                            disabled={getTotalQuantity(item.id, stocks) <= 0}
                                                         >
                                                             Select
                                                         </Button>

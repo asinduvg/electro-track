@@ -15,7 +15,9 @@ import {useAuth} from '../context/AuthContext';
 import {categories} from '../data/mockData';
 import {UserRole} from '../types';
 import type {Database} from "../lib/database.types.ts";
-import {useDatabase} from "../context/DatabaseContext.tsx";
+import useItems from "../hooks/useItems.tsx";
+import useLocations from "../hooks/useLocations.tsx";
+import useStocks from "../hooks/useStocks.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
 
@@ -30,7 +32,9 @@ const InventoryListPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, removeItem, itemsError} = useDatabase();
+    const {locations} = useLocations();
+    const {stocks} = useStocks();
+    const {items, getTotalQuantity, stocksWithLocation, removeItem, error: itemsError} = useItems();
 
     useEffect(() => {
         if (itemsError) {
@@ -148,22 +152,6 @@ const InventoryListPage: React.FC = () => {
         );
     };
 
-    const getTotalQuantity = (itemId: string) => {
-        return stocks
-            .filter(stock => stock.item_id === itemId)
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    };
-
-    const stocksWithLocation = (item: Item) => {
-        return (
-            stocks
-                .filter(stock => stock.item_id === item.id) // item_locations
-                .flatMap(stock => locations
-                    .filter(location => location.id === stock.location_id)
-                    .map(location => ({...stock, location}))
-                ));
-    }
-
     const renderTableHead = () => {
         return (
             <TableHead>
@@ -197,7 +185,7 @@ const InventoryListPage: React.FC = () => {
     const renderDetailedTable = () => {
         const fullItemsDetail = filteredItems.map(item => {
             return {
-                item, stocks: stocksWithLocation(item)
+                item, stocks: stocksWithLocation(item.id, locations, stocks)
             }
         });
 
@@ -229,7 +217,7 @@ const InventoryListPage: React.FC = () => {
                                         ))}
                                     </TableCell>
                                     <TableCell>
-                                        {getTotalQuantity(item.id)}
+                                        {getTotalQuantity(item.id, stocks)}
                                     </TableCell>
                                     <TableCell>
                                         {getStatusBadge(item.status)}
