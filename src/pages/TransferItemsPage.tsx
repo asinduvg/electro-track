@@ -165,15 +165,6 @@ const TransferItemsPage: React.FC = () => {
             )
     }
 
-    // const getDestinationLocations = (itemId: string, selectedItem: TransferItem): Location[] => {
-    //     return locations
-    //         .filter(location => location.id !== selectedItem.fromLocationId)
-    //         .filter(location => {
-    //             const stock = stocks.find(stock => stock.item_id === itemId && stock.location_id === location.id);
-    //             return stock && stock.quantity > 0;
-    //         });
-    // }
-
     const getQtyInLocation = (itemId: string, locationId: string): number => {
         return stocks
             .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))

@@ -1,20 +1,22 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
-import {Package, Search, Save, Trash2} from 'lucide-react';
+import {Package, Search, Trash2} from 'lucide-react';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {getItems, createTransaction} from '../lib/api';
 import type {Database} from '../lib/database.types';
+import {useDatabase} from "../context/DatabaseContext.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
+type Location = Database['public']['Tables']['locations']['Row'];
 
 interface DisposeItem {
     id: string;
     quantity: number;
+    locationId: string;
     reason: string;
     notes: string;
 }
@@ -33,14 +35,14 @@ const DisposeItemsPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {currentUser} = useAuth();
 
-    const [items, setItems] = useState<Item[]>([]);
     const [selectedItems, setSelectedItems] = useState<DisposeItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const {items, stocks, locations, createTransaction, refreshData} = useDatabase();
+
     useEffect(() => {
-        loadItems();
 
         // If itemId is provided in URL, pre-select that item
         const itemId = searchParams.get('itemId');
@@ -50,22 +52,13 @@ const DisposeItemsPage: React.FC = () => {
                 setSelectedItems([{
                     id: itemId,
                     quantity: 1,
+                    locationId: '',
                     reason: '',
                     notes: ''
                 }]);
             }
         }
     }, [searchParams, items]);
-
-    const loadItems = async () => {
-        try {
-            const data = await getItems();
-            setItems(data);
-        } catch (err) {
-            console.error('Error loading items:', err);
-            setError('Failed to load inventory items');
-        }
-    };
 
     const filteredItems = items.filter(item =>
         !selectedItems.some(selected => selected.id === item.id) &&
@@ -79,6 +72,7 @@ const DisposeItemsPage: React.FC = () => {
             {
                 id: item.id,
                 quantity: 1,
+                locationId: '',
                 reason: '',
                 notes: ''
             }
@@ -108,6 +102,12 @@ const DisposeItemsPage: React.FC = () => {
         ));
     };
 
+    const handleLocationChange = (itemId: string, locationId: string) => {
+        setSelectedItems(selectedItems.map(item =>
+            item.id === itemId ? {...item, locationId} : item
+        ));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -125,7 +125,7 @@ const DisposeItemsPage: React.FC = () => {
             const item = items.find(i => i.id === selectedItem.id);
             return !item ||
                 selectedItem.quantity <= 0 ||
-                selectedItem.quantity > item.quantity ||
+                selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId)||
                 !selectedItem.reason;
         });
 
@@ -144,11 +144,13 @@ const DisposeItemsPage: React.FC = () => {
                     type: 'dispose',
                     item_id: item.id,
                     quantity: item.quantity,
-                    from_location_id: items.find(i => i.id === item.id)?.location_id || null,
+                    from_location_id: item.locationId,
                     performed_by: currentUser.id,
                     notes: `Reason: ${item.reason}${item.notes ? `\nNotes: ${item.notes}` : ''}`
                 });
             }
+
+            await refreshData('*');
 
             navigate('/inventory/items');
         } catch (err) {
@@ -158,6 +160,27 @@ const DisposeItemsPage: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+
+    const availableLocations = (itemId: string): Location[] => {
+        return stocks
+            .filter(stock => stock.item_id === itemId && stock.quantity > 0)
+            .flatMap(stock => locations
+                .filter(location => location.id === stock.location_id)
+            )
+    }
+
+    const getQtyInLocation = (itemId: string, locationId: string): number => {
+        return stocks
+            .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
+            .reduce((sum, stock) => sum + stock.quantity, 0);
+    }
+
+    const getTotalQuantity = (itemId: string) => {
+        return stocks
+            .filter(stock => stock.item_id === itemId)
+            .reduce((sum, stock) => sum + stock.quantity, 0);
+    }
+
 
     return (
         <div className="space-y-6">
@@ -230,14 +253,14 @@ const DisposeItemsPage: React.FC = () => {
                                                             label="Quantity"
                                                             type="number"
                                                             min="1"
-                                                            max={item.quantity}
-                                                            value={selectedItem.quantity}
+                                                            max={getQtyInLocation(selectedItem.id, selectedItem.locationId)}
+                                                            value={selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId) ? getQtyInLocation(selectedItem.id, selectedItem.locationId) : selectedItem.quantity}
                                                             onChange={(e) => handleQuantityChange(
                                                                 item.id,
-                                                                parseInt(e.target.value) || 0
+                                                                (parseInt(e.target.value) || 0) > getQtyInLocation(selectedItem.id, selectedItem.locationId) ? getQtyInLocation(selectedItem.id, selectedItem.locationId) : (parseInt(e.target.value) || 0)
                                                             )}
                                                             required
-                                                            helperText={`Available: ${item.quantity}`}
+                                                            helperText={`Available: ${getQtyInLocation(selectedItem.id, selectedItem.locationId)}`}
                                                         />
 
                                                         <div>
@@ -255,6 +278,27 @@ const DisposeItemsPage: React.FC = () => {
                                                                 {DISPOSAL_REASONS.map((reason) => (
                                                                     <option key={reason} value={reason}>
                                                                         {reason}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+
+                                                        <div className="col-span-2">
+                                                            <label
+                                                                className="block text-sm font-medium text-gray-700 mb-1"
+                                                            >
+                                                                Storage Location
+                                                            </label>
+                                                            <select
+                                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                value={selectedItem.locationId}
+                                                                onChange={(e) => handleLocationChange(item.id, e.target.value)}
+                                                                required
+                                                            >
+                                                                <option value="">Select Location</option>
+                                                                {availableLocations(selectedItem.id).map((location) => (
+                                                                    <option key={location.id} value={location.id}>
+                                                                        {location.building} &gt; {location.room} &gt; {location.unit}
                                                                     </option>
                                                                 ))}
                                                             </select>
@@ -297,7 +341,6 @@ const DisposeItemsPage: React.FC = () => {
                                         <TableRow>
                                             <TableHeaderCell>SKU</TableHeaderCell>
                                             <TableHeaderCell>Name</TableHeaderCell>
-                                            <TableHeaderCell>Location</TableHeaderCell>
                                             <TableHeaderCell>Stock</TableHeaderCell>
                                             <TableHeaderCell>Action</TableHeaderCell>
                                         </TableRow>
@@ -309,17 +352,10 @@ const DisposeItemsPage: React.FC = () => {
                                                     <TableCell className="font-medium">{item.sku}</TableCell>
                                                     <TableCell>{item.name}</TableCell>
                                                     <TableCell>
-                                                        {item.location ? (
-                                                            `${item.location.building} > ${item.location.room} > ${item.location.unit}`
-                                                        ) : (
-                                                            'No Location'
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
                                                         <Badge
-                                                            variant={item.quantity < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                                            variant={getTotalQuantity(item.id) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                                         >
-                                                            {item.quantity}
+                                                            {getTotalQuantity(item.id)}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
@@ -327,7 +363,7 @@ const DisposeItemsPage: React.FC = () => {
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => handleAddItem(item)}
-                                                            disabled={item.quantity <= 0}
+                                                            disabled={getTotalQuantity(item.id) <= 0}
                                                         >
                                                             Select
                                                         </Button>
