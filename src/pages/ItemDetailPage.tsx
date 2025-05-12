@@ -100,6 +100,8 @@ const ItemDetailPage: React.FC = () => {
                 ));
     }
 
+    const itemTransactions = transactions.filter(transaction => transaction.item_id === item.id);
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
@@ -205,9 +207,9 @@ const ItemDetailPage: React.FC = () => {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {transactions.length > 0 ? (
+                            {itemTransactions.length > 0 ? (
                                 <div className="space-y-4">
-                                    {transactions.map((transaction) => {
+                                    {itemTransactions.map((transaction) => {
                                         let icon;
                                         let bgColor;
                                         let title;
@@ -332,11 +334,11 @@ const ItemDetailPage: React.FC = () => {
                                     }`}>
                                         {getTotalQuantity(item.id)}
                                     </p>
-                                    {item.minimum_stock && (
+                                    {item.minimum_stock ? (
                                         <p className="text-xs text-gray-500 mt-1">
                                             Minimum stock: {item.minimum_stock}
                                         </p>
-                                    )}
+                                    ): <p className="text-xs text-gray-500 mt-1">Minimum stock: Not set</p>}
                                 </div>
 
                                 <div className="bg-gray-50 p-4 rounded-lg">

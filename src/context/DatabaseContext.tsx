@@ -28,6 +28,7 @@ interface DatabaseContextType {
     stocksError: string | null;
     transactionsError: string | null;
     locationsError: string | null;
+    refreshData: (type: 'items' | 'stocks' | 'transactions' | 'locations' | '*') => Promise<void>;
 }
 
 interface PostgreSQLError extends Error {
@@ -106,33 +107,17 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({child
         }
     }, [isAuthenticated])
 
-    // load items from database
+    // load data from database
     useEffect(() => {
         (async () => {
-            await dbOperation<Item[]>(db_getItems, setItems, setItemsError, LoadError.ITEMS);
+            await Promise.all([
+                dbOperation<Item[]>(db_getItems, setItems, setItemsError, LoadError.ITEMS),
+                dbOperation<Stock[]>(db_getStocks, setStocks, setStocksError, LoadError.STOCKS),
+                dbOperation<Transaction[]>(db_getTransactions, setTransactions, setTransactionsError, LoadError.TRANSACTIONS),
+                dbOperation<Location[]>(db_getLocations, setLocations, setLocationsError, LoadError.LOCATIONS)
+            ])
         })()
     }, [dbOperation]);
-
-    // load stocks from database
-    useEffect(() => {
-        (async () => {
-            await dbOperation<Stock[]>(db_getStocks, setStocks, setStocksError, LoadError.STOCKS);
-        })()
-    }, [dbOperation]);
-
-    // load transactions from database
-    useEffect(() => {
-        (async () => {
-            await dbOperation<Transaction[]>(db_getTransactions, setTransactions, setTransactionsError, LoadError.TRANSACTIONS);
-        })()
-    }, [dbOperation])
-
-    // load locations from database
-    useEffect(() => {
-        (async () => {
-            await dbOperation<Location[]>(db_getLocations, setLocations, setLocationsError, LoadError.LOCATIONS);
-        })()
-    })
 
     // DB calls start
     // ITEMS //
@@ -316,6 +301,33 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({child
         )
     }
 
+    const refreshData = async (type: 'items' | 'stocks' | 'transactions' | 'locations' | '*') => {
+        switch (type) {
+            case 'items':
+                await dbOperation<Item[]>(db_getItems, setItems, setItemsError, LoadError.ITEMS);
+                break;
+            case 'stocks':
+                await dbOperation<Stock[]>(db_getStocks, setStocks, setStocksError, LoadError.STOCKS);
+                break;
+            case 'transactions':
+                await dbOperation<Transaction[]>(db_getTransactions, setTransactions, setTransactionsError, LoadError.TRANSACTIONS);
+                break;
+            case 'locations':
+                await dbOperation<Location[]>(db_getLocations, setLocations, setLocationsError, LoadError.LOCATIONS);
+                break;
+            case '*':
+                await Promise.all([
+                    dbOperation<Item[]>(db_getItems, setItems, setItemsError, LoadError.ITEMS),
+                    dbOperation<Stock[]>(db_getStocks, setStocks, setStocksError, LoadError.STOCKS),
+                    dbOperation<Transaction[]>(db_getTransactions, setTransactions, setTransactionsError, LoadError.TRANSACTIONS),
+                    dbOperation<Location[]>(db_getLocations, setLocations, setLocationsError, LoadError.LOCATIONS)
+                ])
+                break;
+            default:
+                break;
+        }
+    }
+
     // PUBLIC API //
 
 
@@ -335,6 +347,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({child
         stocksError,
         transactionsError,
         locationsError,
+        refreshData,
     }
 
     return <DatabaseContext.Provider value={value}>{children}</DatabaseContext.Provider>;
@@ -343,7 +356,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({child
 export const useDatabase = () => {
     const context = useContext(DatabaseContext);
     if (context === undefined) {
-        throw new Error('useTransactions must be used within a DatabaseProvider');
+        throw new Error('useDatabase must be used within a DatabaseProvider');
     }
     return context;
 };

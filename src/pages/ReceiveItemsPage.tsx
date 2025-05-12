@@ -7,8 +7,6 @@ import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {getItems, getLocations, createTransaction} from '../lib/api';
-import type {Database} from '../lib/database.types';
 import {Item} from "../types";
 import {useDatabase} from "../context/DatabaseContext.tsx";
 
@@ -25,45 +23,20 @@ const ReceiveItemsPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {currentUser} = useAuth();
 
-    // const [items, setItems] = useState<Item[]>([]);
-    // const [locations, setLocations] = useState<Location[]>([]);
     const [selectedItems, setSelectedItems] = useState<ReceiveItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, removeItem, itemsError} = useDatabase();
+    const {items, stocks, locations, createTransaction, removeItem, itemsError, refreshData} = useDatabase();
 
-    // useEffect(() => {
-    //     loadItems();
-    //     loadLocations();
-    //
-    //     // If itemId is provided in URL, pre-select that item
-    //     const itemId = searchParams.get('itemId');
-    //     if (itemId) {
-    //         setSelectedItems([{id: itemId, quantity: 1, locationId: '', notes: ''}]);
-    //     }
-    // }, [searchParams]);
-
-    // const loadItems = async () => {
-    //     try {
-    //         const data = await getItems();
-    //         setItems(data);
-    //     } catch (err) {
-    //         console.error('Error loading items:', err);
-    //         setError('Failed to load inventory items');
-    //     }
-    // };
-
-    // const loadLocations = async () => {
-    //     try {
-    //         const data = await getLocations();
-    //         setLocations(data);
-    //     } catch (err) {
-    //         console.error('Error loading locations:', err);
-    //         setError('Failed to load storage locations');
-    //     }
-    // };
+    useEffect(() => {
+        // If itemId is provided in URL, pre-select that item
+        const itemId = searchParams.get('itemId');
+        if (itemId) {
+            setSelectedItems([{id: itemId, quantity: 1, locationId: '', notes: ''}]);
+        }
+    }, [searchParams]);
 
     const filteredItems = items.filter(item =>
         !selectedItems.some(selected => selected.id === item.id) &&
@@ -129,14 +102,21 @@ const ReceiveItemsPage: React.FC = () => {
 
             // Create receive transactions for each item
             for (const item of selectedItems) {
-                await createTransaction({
+                const txn = await createTransaction({
                     type: 'receive',
                     item_id: item.id,
                     quantity: item.quantity,
                     to_location_id: item.locationId,
                     performed_by: currentUser.id,
-                    notes: item.notes
+                    notes: item.notes,
+                    from_location_id: null,
                 });
+                if (txn) {
+                    await Promise.all([
+                        await refreshData('items'),
+                        await refreshData('stocks'),
+                    ])
+                }
             }
 
             navigate('/inventory/items');
