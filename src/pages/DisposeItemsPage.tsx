@@ -11,6 +11,7 @@ import type {Database} from '../lib/database.types';
 import useItems from "../hooks/useItems.tsx";
 import useTransactions from "../hooks/useTransactions.tsx";
 import useLocations from "../hooks/useLocations.tsx";
+import useStocks from "../hooks/useStocks.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
 
@@ -42,7 +43,8 @@ const DisposeItemsPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const {locations} = useLocations();
-    const {items, getTotalQuantity, getQtyInLocation, availableLocations} = useItems(locations);
+    const {stocks} = useStocks();
+    const {items, getTotalQuantity, getQtyInLocation, availableLocations} = useItems();
     const {createTransaction} = useTransactions();
 
     useEffect(() => {
@@ -128,7 +130,7 @@ const DisposeItemsPage: React.FC = () => {
             const item = items.find(i => i.id === selectedItem.id);
             return !item ||
                 selectedItem.quantity <= 0 ||
-                selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId)||
+                selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) ||
                 !selectedItem.reason;
         });
 
@@ -161,26 +163,6 @@ const DisposeItemsPage: React.FC = () => {
             setIsSubmitting(false);
         }
     };
-
-    // const availableLocations = (itemId: string): Location[] => {
-    //     return stocks
-    //         .filter(stock => stock.item_id === itemId && stock.quantity > 0)
-    //         .flatMap(stock => locations
-    //             .filter(location => location.id === stock.location_id)
-    //         )
-    // }
-
-    // const getQtyInLocation = (itemId: string, locationId: string): number => {
-    //     return stocks
-    //         .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
-    //         .reduce((sum, stock) => sum + stock.quantity, 0);
-    // }
-
-    // const getTotalQuantity = (itemId: string) => {
-    //     return stocks
-    //         .filter(stock => stock.item_id === itemId)
-    //         .reduce((sum, stock) => sum + stock.quantity, 0);
-    // }
 
     return (
         <div className="space-y-6">
@@ -253,14 +235,14 @@ const DisposeItemsPage: React.FC = () => {
                                                             label="Quantity"
                                                             type="number"
                                                             min="1"
-                                                            max={getQtyInLocation(selectedItem.id, selectedItem.locationId)}
-                                                            value={selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId) ? getQtyInLocation(selectedItem.id, selectedItem.locationId) : selectedItem.quantity}
+                                                            max={getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks)}
+                                                            value={selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) ? getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) : selectedItem.quantity}
                                                             onChange={(e) => handleQuantityChange(
                                                                 item.id,
-                                                                (parseInt(e.target.value) || 0) > getQtyInLocation(selectedItem.id, selectedItem.locationId) ? getQtyInLocation(selectedItem.id, selectedItem.locationId) : (parseInt(e.target.value) || 0)
+                                                                (parseInt(e.target.value) || 0) > getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) ? getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) : (parseInt(e.target.value) || 0)
                                                             )}
                                                             required
-                                                            helperText={`Available: ${getQtyInLocation(selectedItem.id, selectedItem.locationId)}`}
+                                                            helperText={`Available: ${getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks)}`}
                                                         />
 
                                                         <div>
@@ -296,7 +278,7 @@ const DisposeItemsPage: React.FC = () => {
                                                                 required
                                                             >
                                                                 <option value="">Select Location</option>
-                                                                {availableLocations(selectedItem.id).map((location) => (
+                                                                {availableLocations(selectedItem.id, locations, stocks).map((location) => (
                                                                     <option key={location.id} value={location.id}>
                                                                         {location.building} &gt; {location.room} &gt; {location.unit}
                                                                     </option>
@@ -353,9 +335,9 @@ const DisposeItemsPage: React.FC = () => {
                                                     <TableCell>{item.name}</TableCell>
                                                     <TableCell>
                                                         <Badge
-                                                            variant={getTotalQuantity(item.id) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                                            variant={getTotalQuantity(item.id, stocks) === 0 ? 'danger' : getTotalQuantity(item.id, stocks) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                                         >
-                                                            {getTotalQuantity(item.id)}
+                                                            {getTotalQuantity(item.id, stocks)}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
@@ -363,7 +345,7 @@ const DisposeItemsPage: React.FC = () => {
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => handleAddItem(item)}
-                                                            disabled={getTotalQuantity(item.id) <= 0}
+                                                            disabled={getTotalQuantity(item.id, stocks) <= 0}
                                                         >
                                                             Select
                                                         </Button>
