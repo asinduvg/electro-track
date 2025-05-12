@@ -7,8 +7,8 @@ import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {getItems, getLocations, createTransaction} from '../lib/api';
 import type {Database} from '../lib/database.types';
+import {useDatabase} from "../context/DatabaseContext.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
 type Location = Database['public']['Tables']['locations']['Row'];
@@ -26,17 +26,14 @@ const TransferItemsPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {currentUser} = useAuth();
 
-    const [items, setItems] = useState<Item[]>([]);
-    const [locations, setLocations] = useState<Location[]>([]);
     const [selectedItems, setSelectedItems] = useState<TransferItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        loadItems();
-        loadLocations();
+    const {items, stocks, locations, createTransaction, refreshData} = useDatabase();
 
+    useEffect(() => {
         // If itemId is provided in URL, pre-select that item
         const itemId = searchParams.get('itemId');
         if (itemId) {
@@ -45,33 +42,13 @@ const TransferItemsPage: React.FC = () => {
                 setSelectedItems([{
                     id: itemId,
                     quantity: 1,
-                    fromLocationId: item.location_id || '',
+                    fromLocationId: '',
                     toLocationId: '',
                     notes: ''
                 }]);
             }
         }
     }, [searchParams, items]);
-
-    const loadItems = async () => {
-        try {
-            const data = await getItems();
-            setItems(data);
-        } catch (err) {
-            console.error('Error loading items:', err);
-            setError('Failed to load inventory items');
-        }
-    };
-
-    const loadLocations = async () => {
-        try {
-            const data = await getLocations();
-            setLocations(data);
-        } catch (err) {
-            console.error('Error loading locations:', err);
-            setError('Failed to load storage locations');
-        }
-    };
 
     const filteredItems = items.filter(item =>
         !selectedItems.some(selected => selected.id === item.id) &&
@@ -85,7 +62,7 @@ const TransferItemsPage: React.FC = () => {
             {
                 id: item.id,
                 quantity: 1,
-                fromLocationId: item.location_id || '',
+                fromLocationId: '',
                 toLocationId: '',
                 notes: ''
             }
@@ -163,6 +140,8 @@ const TransferItemsPage: React.FC = () => {
                 });
             }
 
+            await refreshData('*');
+
             navigate('/inventory/items');
         } catch (err) {
             console.error('Error transferring items:', err);
@@ -172,12 +151,34 @@ const TransferItemsPage: React.FC = () => {
         }
     };
 
-    const getLocationName = (locationId: string) => {
-        const location = locations.find(l => l.id === locationId);
-        return location
-            ? `${location.building} > ${location.room} > ${location.unit}`
-            : 'Unknown Location';
-    };
+    const getTotalQuantity = (itemId: string) => {
+        return stocks
+            .filter(stock => stock.item_id === itemId)
+            .reduce((sum, stock) => sum + stock.quantity, 0);
+    }
+
+    const availableLocations = (itemId: string): Location[] => {
+        return stocks
+            .filter(stock => stock.item_id === itemId && stock.quantity > 0)
+            .flatMap(stock => locations
+                .filter(location => location.id === stock.location_id)
+            )
+    }
+
+    // const getDestinationLocations = (itemId: string, selectedItem: TransferItem): Location[] => {
+    //     return locations
+    //         .filter(location => location.id !== selectedItem.fromLocationId)
+    //         .filter(location => {
+    //             const stock = stocks.find(stock => stock.item_id === itemId && stock.location_id === location.id);
+    //             return stock && stock.quantity > 0;
+    //         });
+    // }
+
+    const getQtyInLocation = (itemId: string, locationId: string): number => {
+        return stocks
+            .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
+            .reduce((sum, stock) => sum + stock.quantity, 0);
+    }
 
     return (
         <div className="space-y-6">
@@ -258,7 +259,7 @@ const TransferItemsPage: React.FC = () => {
                                                                 required
                                                             >
                                                                 <option value="">Select Source Location</option>
-                                                                {locations.map((location) => (
+                                                                {availableLocations(selectedItem.id).map((location) => (
                                                                     <option key={location.id} value={location.id}>
                                                                         {location.building} &gt; {location.room} &gt; {location.unit}
                                                                     </option>
@@ -278,7 +279,7 @@ const TransferItemsPage: React.FC = () => {
                                                                 required
                                                             >
                                                                 <option value="">Select Destination Location</option>
-                                                                {locations.map((location) => (
+                                                                {locations.filter(location => location.id !== selectedItem.fromLocationId).map((location) => (
                                                                     <option
                                                                         key={location.id}
                                                                         value={location.id}
@@ -295,14 +296,14 @@ const TransferItemsPage: React.FC = () => {
                                                                 label="Quantity"
                                                                 type="number"
                                                                 min="1"
-                                                                max={item.quantity}
-                                                                value={selectedItem.quantity}
+                                                                max={getQtyInLocation(selectedItem.id, selectedItem.fromLocationId)}
+                                                                value={selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) ? getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) : selectedItem.quantity}
                                                                 onChange={(e) => handleQuantityChange(
                                                                     item.id,
-                                                                    parseInt(e.target.value) || 0
+                                                                    (parseInt(e.target.value) || 0) > getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) ? getQtyInLocation(selectedItem.id, selectedItem.fromLocationId) : (parseInt(e.target.value) || 0)
                                                                 )}
                                                                 required
-                                                                helperText={`Available: ${item.quantity}`}
+                                                                helperText={`Available: ${getQtyInLocation(selectedItem.id, selectedItem.fromLocationId)}`}
                                                             />
                                                         </div>
 
@@ -343,7 +344,6 @@ const TransferItemsPage: React.FC = () => {
                                         <TableRow>
                                             <TableHeaderCell>SKU</TableHeaderCell>
                                             <TableHeaderCell>Name</TableHeaderCell>
-                                            <TableHeaderCell>Current Location</TableHeaderCell>
                                             <TableHeaderCell>Stock</TableHeaderCell>
                                             <TableHeaderCell>Action</TableHeaderCell>
                                         </TableRow>
@@ -355,13 +355,10 @@ const TransferItemsPage: React.FC = () => {
                                                     <TableCell className="font-medium">{item.sku}</TableCell>
                                                     <TableCell>{item.name}</TableCell>
                                                     <TableCell>
-                                                        {item.location_id ? getLocationName(item.location_id) : 'No Location'}
-                                                    </TableCell>
-                                                    <TableCell>
                                                         <Badge
-                                                            variant={item.quantity < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                                            variant={getTotalQuantity(item.id) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                                         >
-                                                            {item.quantity}
+                                                            {getTotalQuantity(item.id)}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
@@ -369,7 +366,7 @@ const TransferItemsPage: React.FC = () => {
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => handleAddItem(item)}
-                                                            disabled={item.quantity <= 0}
+                                                            disabled={getTotalQuantity(item.id) <= 0}
                                                         >
                                                             Select
                                                         </Button>

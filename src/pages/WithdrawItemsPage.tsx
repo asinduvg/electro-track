@@ -31,7 +31,7 @@ const WithdrawItemsPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const {items, stocks, locations, createTransaction, removeItem, itemsError, refreshData} = useDatabase();
+    const {items, stocks, locations, createTransaction, refreshData} = useDatabase();
 
     useEffect(() => {
         // If itemId is provided in URL, pre-select that item
@@ -62,7 +62,8 @@ const WithdrawItemsPage: React.FC = () => {
                 quantity: 1,
                 projectId: '',
                 purpose: '',
-                notes: ''
+                notes: '',
+                locationId: ''
             }
         ]);
         setSearchTerm('');
@@ -119,7 +120,7 @@ const WithdrawItemsPage: React.FC = () => {
             const item = items.find(i => i.id === selectedItem.id);
             return !item ||
                 selectedItem.quantity <= 0 ||
-                selectedItem.quantity > item.quantity ||
+                selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId) ||
                 !selectedItem.projectId ||
                 !selectedItem.purpose;
         });
@@ -342,13 +343,6 @@ const WithdrawItemsPage: React.FC = () => {
                                                 <TableRow key={item.id}>
                                                     <TableCell className="font-medium">{item.sku}</TableCell>
                                                     <TableCell>{item.name}</TableCell>
-                                                    {/*<TableCell>*/}
-                                                    {/*    {item.location_id ? (*/}
-                                                    {/*        `${item.location.building} > ${item.location.room} > ${item.location.unit}`*/}
-                                                    {/*    ) : (*/}
-                                                    {/*        'No Location'*/}
-                                                    {/*    )}*/}
-                                                    {/*</TableCell>*/}
                                                     <TableCell>
                                                         <Badge
                                                             variant={getTotalQuantity(item.id) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
