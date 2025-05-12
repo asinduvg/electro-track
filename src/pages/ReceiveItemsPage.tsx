@@ -10,7 +10,6 @@ import {useAuth} from '../context/AuthContext';
 import {Item} from "../types";
 import {useDatabase} from "../context/DatabaseContext.tsx";
 
-
 interface ReceiveItem {
     id: string;
     quantity: number;

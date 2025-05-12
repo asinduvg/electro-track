@@ -197,8 +197,8 @@ export interface Database {
                     type: 'receive' | 'withdraw' | 'transfer' | 'dispose' | 'adjust'
                     item_id: string
                     quantity: number
-                    from_location_id: string | null
-                    to_location_id: string | null
+                    from_location_id?: string | null
+                    to_location_id?: string | null
                     notes?: string | null
                     project_id?: string | null
                     purpose?: string | null
