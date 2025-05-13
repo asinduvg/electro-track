@@ -34,7 +34,7 @@ const InventoryListPage: React.FC = () => {
 
     const {locations} = useLocations();
     const {stocks} = useStocks();
-    const {items, getTotalQuantity, stocksWithLocation, removeItem, error: itemsError} = useItems();
+    const {items, getTotalQuantity, stocksWithLocation, removeItem, hasStock, error: itemsError} = useItems();
 
     useEffect(() => {
         if (itemsError) {
@@ -48,6 +48,11 @@ const InventoryListPage: React.FC = () => {
     }, [items, itemsError]);
 
     const handleDelete = async (id: string) => {
+        if (hasStock(id, stocks)) {
+            alert('Item has stock. Please remove stock before deleting.');
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to delete this item?')) {
             return;
         }
@@ -245,6 +250,7 @@ const InventoryListPage: React.FC = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         leftIcon={<Trash size={16}/>}
+                                                        disabled={hasStock(item.id, stocks)}
                                                         onClick={() => handleDelete(item.id)}
                                                     />
                                                 </>

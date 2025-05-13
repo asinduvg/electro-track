@@ -74,41 +74,6 @@ function useItems() {
     const [items, setItems] = useState<Item[]>([]);
     const [error, setError] = useState<string | null>(null);
 
-    const getTotalQuantity = (itemId: string, stocks: Stock[]) => {
-        return stocks
-            .filter(stock => stock.item_id === itemId)
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    }
-
-    const getQtyInLocation = (itemId: string, locationId: string, stocks: Stock[]): number => {
-        return stocks
-            .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
-            .reduce((sum, stock) => sum + stock.quantity, 0);
-    }
-
-    const availableLocations = (itemId: string, locations: Location[], stocks: Stock[]): Location[] => {
-        return stocks
-            .filter(stock => stock.item_id === itemId && stock.quantity > 0)
-            .flatMap(stock => locations
-                .filter(location => location.id === stock.location_id)
-            )
-    }
-
-    // items with stock location details
-    const stocksWithLocation = (itemId: string, locations: Location[], stocks: Stock[]) => {
-        return (
-            stocks
-                .filter(stock => stock.item_id === itemId)
-                .flatMap(stock => locations
-                    .filter(location => location.id === stock.location_id)
-                    .map(location => ({...stock, location}))
-                ));
-    }
-
-    const refreshItems = async () => {
-        await dbOperation<Item[]>(db_getItems, setItems, setError, ERR_ITEMS_LOAD);
-    }
-
     const getItemById = async (id: string): Promise<Item | null> => {
         const existingItem = items.find(item => item.id === id);
         if (existingItem) return existingItem;
@@ -148,6 +113,45 @@ function useItems() {
         )
     }
 
+    const getTotalQuantity = (itemId: string, stocks: Stock[]) => {
+        return stocks
+            .filter(stock => stock.item_id === itemId)
+            .reduce((sum, stock) => sum + stock.quantity, 0);
+    }
+
+    const getQtyInLocation = (itemId: string, locationId: string, stocks: Stock[]): number => {
+        return stocks
+            .filter(stock => (stock.item_id === itemId) && (stock.location_id === locationId))
+            .reduce((sum, stock) => sum + stock.quantity, 0);
+    }
+
+    const availableLocations = (itemId: string, locations: Location[], stocks: Stock[]): Location[] => {
+        return stocks
+            .filter(stock => stock.item_id === itemId && stock.quantity > 0)
+            .flatMap(stock => locations
+                .filter(location => location.id === stock.location_id)
+            )
+    }
+
+    // items with stock location details
+    const stocksWithLocation = (itemId: string, locations: Location[], stocks: Stock[]) => {
+        return (
+            stocks
+                .filter(stock => stock.item_id === itemId)
+                .flatMap(stock => locations
+                    .filter(location => location.id === stock.location_id)
+                    .map(location => ({...stock, location}))
+                ));
+    }
+
+    const hasStock = (itemId: string, stocks: Stock[]) => {
+        return stocks.some(stock => stock.item_id === itemId);
+    }
+
+    const refreshItems = async () => {
+        await dbOperation<Item[]>(db_getItems, setItems, setError, ERR_ITEMS_LOAD);
+    }
+
     useEffect(() => {
         (async () => {
             await dbOperation<Item[]>(db_getItems, setItems, setError, ERR_ITEMS_LOAD);
@@ -164,6 +168,7 @@ function useItems() {
         getQtyInLocation,
         availableLocations,
         stocksWithLocation,
+        hasStock,
         error,
         refreshItems
     };
