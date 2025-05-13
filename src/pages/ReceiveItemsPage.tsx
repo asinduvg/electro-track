@@ -276,7 +276,7 @@ const ReceiveItemsPage: React.FC = () => {
                                                     <TableCell>{item.name}</TableCell>
                                                     <TableCell>
                                                         <Badge
-                                                            variant={getTotalQuantity(item.id, stocks) === 0 ? 'danger' : getTotalQuantity(item.id) < (item.minimum_stock || 0) ? 'warning' : 'success'}
+                                                            variant={getTotalQuantity(item.id, stocks) === 0 ? 'danger' : getTotalQuantity(item.id, stocks) < (item.minimum_stock || 0) ? 'warning' : 'success'}
                                                         >
                                                             {getTotalQuantity(item.id, stocks)}
                                                         </Badge>
