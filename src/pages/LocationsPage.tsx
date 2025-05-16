@@ -6,6 +6,7 @@ import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
+import {Link} from 'react-router-dom';
 import useLocations from "../hooks/useLocations.tsx";
 import useItems from "../hooks/useItems.tsx";
 import useStocks from "../hooks/useStocks.tsx";
@@ -256,11 +257,13 @@ const LocationsPage: React.FC = () => {
                                         {canManageLocations && (
                                             <TableCell>
                                                 <div className="flex space-x-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        leftIcon={<Edit size={16}/>}
-                                                    />
+                                                    <Link to={`/locations/edit/${location.id}`}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            leftIcon={<Edit size={16}/>}
+                                                        />
+                                                    </Link>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"

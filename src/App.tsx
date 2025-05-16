@@ -16,6 +16,7 @@ import TransferItemsPage from './pages/TransferItemsPage';
 import DisposeItemsPage from './pages/DisposeItemsPage';
 import WithdrawItemsPage from './pages/WithdrawItemsPage';
 import LocationsPage from './pages/LocationsPage';
+import EditLocationPage from './pages/EditLocationPage';
 import SettingsPage from './pages/SettingsPage';
 import ReportsPage from './pages/ReportsPage';
 import UsersPage from './pages/UsersPage';
@@ -46,6 +47,7 @@ function App() {
 
                             {/* Location Management */}
                             <Route path="locations" element={<LocationsPage/>}/>
+                            <Route path="locations/edit/:id" element={<EditLocationPage/>}/>
 
                             {/* Reports */}
                             <Route path="reports" element={<ReportsPage/>}/>
