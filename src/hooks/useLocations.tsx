@@ -1,6 +1,6 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
 import {supabase} from "../lib/supabase.ts";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import type {Database} from "../lib/database.types.ts";
 
 type Location = Database['public']['Tables']['locations']['Row'];
@@ -8,9 +8,12 @@ type Stock = Database['public']['Tables']['item_locations']['Row'];
 type Item = Database['public']['Tables']['items']['Row'];
 
 type LocationInsert = Database['public']['Tables']['locations']['Insert'];
+type LocationUpdate = Database['public']['Tables']['locations']['Update'];
 
 const ERR_LOCATION_INSERT = 'Failed to add location';
 const ERR_LOCATIONS_LOAD = 'Failed to load locations';
+const ERR_LOCATION_LOAD = 'Failed to load location';
+const ERR_LOCATION_UPDATE = 'Failed to update location';
 
 const db_getLocations = async () => {
     const {data, error} = await supabase
@@ -21,10 +24,34 @@ const db_getLocations = async () => {
     return data as Location[];
 }
 
+const db_getLocationById = async (id: string) => {
+    const {data: location, error: locationError} = await supabase
+        .from('locations')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (locationError) throw locationError;
+
+    return location as Location;
+}
+
 const db_createLocation = async (location: LocationInsert) => {
     const {data, error} = await supabase
         .from('locations')
         .insert(location)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data as Location;
+}
+
+const db_updateLocation = async (id: string, updates: LocationUpdate) => {
+    const {data, error} = await supabase
+        .from('locations')
+        .update(updates)
+        .eq('id', id)
         .select()
         .single();
 
@@ -52,6 +79,28 @@ function useLocations() {
         )
     }
 
+    const getLocationById = useCallback(async (id: string): Promise<Location | null> => {
+        const existingLocation = locations.find(location => location.id === id);
+
+        if (existingLocation) return existingLocation;
+
+        return await dbOperation<Location>(
+            () => db_getLocationById(id),
+            (location) => setLocations(prevLocations => [...prevLocations, location]),
+            setError,
+            ERR_LOCATION_LOAD
+        )
+    }, [dbOperation, locations]);
+
+    const updateLocation = async (id: string, updates: LocationUpdate): Promise<Location | null> => {
+        return await dbOperation<Location>(
+            () => db_updateLocation(id, updates),
+            (location) => setLocations(prevLocations => prevLocations.map(prevLocation => prevLocation.id === id ? location : prevLocation)),
+            setError,
+            ERR_LOCATION_UPDATE
+        )
+    }
+
     const itemsStoredInLocation = (locationId: string, stocks: Stock[]) => {
         return stocks
             .filter(stock => stock.location_id === locationId)
@@ -75,7 +124,16 @@ function useLocations() {
         .map(location => totalValueInLocation(location.id, stocks, items))
         .reduce((sum, value) => sum + value, 0);
 
-    return {locations, createLocation, itemsStoredInLocation, totalValueInLocation, totalInventoryValue, error};
+    return {
+        locations,
+        createLocation,
+        getLocationById,
+        updateLocation,
+        itemsStoredInLocation,
+        totalValueInLocation,
+        totalInventoryValue,
+        error
+    };
 }
 
 export default useLocations;

@@ -1,48 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
-import type { Database } from '../lib/database.types';
+import React, {useState, useEffect} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {Save, X} from 'lucide-react';
+import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
+import {Input} from '../components/ui/Input';
+import {Button} from '../components/ui/Button';
+import {useAuth} from '../context/AuthContext';
+import type {Database} from '../lib/database.types';
+import useLocations from "../hooks/useLocations.tsx";
 
-type Location = Database['public']['Tables']['locations']['Row'];
+type LocationUpdate = Database['public']['Tables']['locations']['Update'];
 
 const EditLocationPage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
+    const {currentUser} = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [location, setLocation] = useState<Location | null>(null);
+    const [formData, setFormData] = useState<LocationUpdate | null>(null);
+
+    const {getLocationById, error: locationsError, updateLocation} = useLocations();
 
     useEffect(() => {
-        loadLocation();
-    }, [id]);
+        (async () => {
+            try {
+                if (!id) throw new Error('Location ID is required');
 
-    const loadLocation = async () => {
-        if (!id) return;
+                if (locationsError) {
+                    setError(locationsError);
+                    return;
+                }
+                const location = await getLocationById(id);
 
-        try {
-            setIsLoading(true);
-            const { data, error } = await supabase
-                .from('locations')
-                .select('*')
-                .eq('id', id)
-                .single();
+                if (!location) throw new Error('Location not found');
 
-            if (error) throw error;
-            setLocation(data);
-        } catch (err) {
-            console.error('Error loading location:', err);
-            setError('Failed to load location details');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+                setFormData(location);
+            } catch (err) {
+                console.error('Error loading location:', err);
+                setError('Failed to load location details');
+            } finally {
+                setIsLoading(false);
+            }
+        })()
+
+    }, [getLocationById, id, locationsError]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,7 +53,7 @@ const EditLocationPage: React.FC = () => {
             return;
         }
 
-        if (!location?.unit.trim()) {
+        if (!formData?.unit?.trim()) {
             setError('Unit name is required');
             return;
         }
@@ -61,17 +62,9 @@ const EditLocationPage: React.FC = () => {
             setIsSubmitting(true);
             setError(null);
 
-            const { error: updateError } = await supabase
-                .from('locations')
-                .update({
-                    building: location.building,
-                    room: location.room,
-                    unit: location.unit,
-                    updated_by: currentUser.id,
-                })
-                .eq('id', id);
+            if (!id) throw new Error('Location ID is required');
 
-            if (updateError) throw updateError;
+            await updateLocation(id, formData);
 
             navigate('/locations');
         } catch (err) {
@@ -101,7 +94,7 @@ const EditLocationPage: React.FC = () => {
         );
     }
 
-    if (!location) {
+    if (!formData) {
         return (
             <div className="text-center py-12">
                 <h2 className="text-2xl font-semibold text-gray-700">Location Not Found</h2>
@@ -129,7 +122,7 @@ const EditLocationPage: React.FC = () => {
                 <div className="bg-red-50 border-l-4 border-red-500 p-4">
                     <div className="flex">
                         <div className="flex-shrink-0">
-                            <X className="h-5 w-5 text-red-400" />
+                            <X className="h-5 w-5 text-red-400"/>
                         </div>
                         <div className="ml-3">
                             <p className="text-sm text-red-700">{error}</p>
@@ -147,20 +140,22 @@ const EditLocationPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Input
                                 label="Building"
-                                value={location.building || ''}
-                                onChange={(e) => setLocation({ ...location, building: e.target.value })}
+                                value={formData?.building || ''}
+                                onChange={(e) => {
+                                    setFormData(prevData => prevData ? {...prevData, building: e.target.value} : null)
+                                }}
                                 placeholder="e.g., Main Warehouse"
                             />
                             <Input
                                 label="Room"
-                                value={location.room || ''}
-                                onChange={(e) => setLocation({ ...location, room: e.target.value })}
+                                value={formData?.room || ''}
+                                onChange={(e) => setFormData({...formData, room: e.target.value})}
                                 placeholder="e.g., Storage Room A"
                             />
                             <Input
                                 label="Unit"
-                                value={location.unit}
-                                onChange={(e) => setLocation({ ...location, unit: e.target.value })}
+                                value={formData?.unit}
+                                onChange={(e) => setFormData({...formData, unit: e.target.value})}
                                 placeholder="e.g., Shelf A1"
                                 required
                                 helperText="Specific storage unit identifier (required)"
@@ -178,7 +173,7 @@ const EditLocationPage: React.FC = () => {
                             <Button
                                 type="submit"
                                 variant="primary"
-                                leftIcon={<Save size={16} />}
+                                leftIcon={<Save size={16}/>}
                                 isLoading={isSubmitting}
                             >
                                 Save Changes
