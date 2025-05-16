@@ -9,23 +9,29 @@ import {
     Clock, BarChart, TrendingUp, TrendingDown,
     Truck, BoxesIcon
 } from 'lucide-react';
-import {dashboardStats, items, transactions} from '../data/mockData';
+import {dashboardStats} from '../data/mockData';
 import {UserRole, ItemStatus} from '../types';
+import useItems from "../hooks/useItems.tsx";
+import useTransactions from "../hooks/useTransactions.tsx";
+import useStocks from "../hooks/useStocks.tsx";
 
 const DashboardPage: React.FC = () => {
     const {currentUser} = useAuth();
+    const {items, getTotalQuantity} = useItems();
+    const {stocks} = useStocks();
+    const {transactions, getItemDetailsForTransactions} = useTransactions();
 
     console.log('Dashboard page', currentUser)
-
-    if (!currentUser) return null;
 
     // Get low stock items
     const lowStockItems = items.filter(item => item.status === ItemStatus.LOW_STOCK);
 
     // Get recent transactions (last 5)
     const recentTransactions = [...transactions]
-        .sort((a, b) => b.performedAt.getTime() - a.performedAt.getTime())
+        .sort((a, b) => new Date(b.performed_at).getTime() - new Date(a.performed_at).getTime())
         .slice(0, 5);
+
+    if (!currentUser) return null;
 
     return (
         <div className="space-y-6">
@@ -153,8 +159,9 @@ const DashboardPage: React.FC = () => {
                                                     {item.name}
                                                 </Link>
                                             </TableCell>
-                                            <TableCell className="text-red-600 font-medium">{item.quantity}</TableCell>
-                                            <TableCell>{item.minimumStock}</TableCell>
+                                            <TableCell
+                                                className="text-red-600 font-medium">{getTotalQuantity(item.id, stocks)}</TableCell>
+                                            <TableCell>{item.minimum_stock}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -189,11 +196,10 @@ const DashboardPage: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {recentTransactions.map((transaction) => {
-                                    const item = items.find(i => i.id === transaction.itemId);
+                                {getItemDetailsForTransactions(recentTransactions, items).map((txnWithItem) => {
                                     let badgeVariant: 'primary' | 'success' | 'danger' | 'warning';
 
-                                    switch (transaction.type) {
+                                    switch (txnWithItem.type) {
                                         case 'receive':
                                             badgeVariant = 'success';
                                             break;
@@ -208,21 +214,21 @@ const DashboardPage: React.FC = () => {
                                     }
 
                                     return (
-                                        <TableRow key={transaction.id}>
+                                        <TableRow key={txnWithItem.id}>
                                             <TableCell>
-                                                {transaction.performedAt.toLocaleDateString()}
+                                                {new Date(txnWithItem.performed_at).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={badgeVariant} className="capitalize">
-                                                    {transaction.type}
+                                                    {txnWithItem.type}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                {item ? item.name : 'Unknown Item'}
+                                                {txnWithItem.item ? txnWithItem.item.name : 'Unknown Item'}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {transaction.type === 'receive' ? '+' : ''}
-                                                {transaction.quantity}
+                                                {txnWithItem.type === 'receive' ? '+' : ''}
+                                                {txnWithItem.quantity}
                                             </TableCell>
                                         </TableRow>
                                     );

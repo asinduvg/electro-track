@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useSearchParams} from 'react-router-dom';
 import {
     Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown
 } from 'lucide-react';
@@ -23,6 +23,7 @@ type Item = Database['public']['Tables']['items']['Row'];
 
 const InventoryListPage: React.FC = () => {
     const {currentUser} = useAuth();
+    const [searchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredItems, setFilteredItems] = useState<Item[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -46,6 +47,14 @@ const InventoryListPage: React.FC = () => {
             setIsLoading(false);
         }
     }, [items, itemsError]);
+
+    useEffect(() => {
+        // If itemId is provided in URL, pre-select that item
+        const filter = searchParams.get('filter');
+        if (filter) {
+            setStatusFilter(filter)
+        }
+    }, [searchParams]);
 
     const handleDelete = async (id: string) => {
         if (hasStock(id, stocks)) {

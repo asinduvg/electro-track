@@ -6,6 +6,8 @@ import {useEffect, useState} from "react";
 type Transaction = Database['public']['Tables']['transactions']['Row'];
 type TransactionInsert = Database['public']['Tables']['transactions']['Insert'];
 
+type Item = Database['public']['Tables']['items']['Row'];
+
 const ERR_TXN_INSERT = 'Failed to add transaction';
 const ERR_TXN_LOAD = 'Failed to load transactions';
 
@@ -57,7 +59,15 @@ function useTransactions() {
         )
     }
 
-    return {transactions, createTransaction, error};
+    const getItemDetailsForTransactions = (transactions: Transaction[], items: Item[]) => {
+        return transactions.flatMap(transaction => {
+            return items
+                .filter(item => item.id === transaction.item_id)
+                .map(item => ({...transaction, item}))
+        })
+    }
+
+    return {transactions, createTransaction, getItemDetailsForTransactions, error};
 }
 
 export default useTransactions;
