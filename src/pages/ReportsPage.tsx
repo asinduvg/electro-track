@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {
     BarChart as BarChartIcon, PieChart as PieChartIcon,
     LineChart as LineChartIcon, Download, Filter, ClipboardList,
-    Package, ArrowRightLeft, Trash2, ShoppingCart, Search
+    Package, ArrowRightLeft, Trash2, ShoppingCart, Search, User
 } from 'lucide-react';
 import {format, subDays, startOfDay, endOfDay} from 'date-fns';
 import {
@@ -14,11 +14,12 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Badge} from '../components/ui/Badge';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
-import {getItems, getTransactions} from '../lib/api';
+import {getItems, getTransactions, getUsers} from '../lib/api';
 import type {Database} from '../lib/database.types';
 
 type Item = Database['public']['Tables']['items']['Row'];
 type Transaction = Database['public']['Tables']['transactions']['Row'];
+type User = Database['public']['Tables']['users']['Row'];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -26,6 +27,7 @@ const ReportsPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'analytics' | 'logs'>('analytics');
     const [items, setItems] = useState<Item[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [dateRange, setDateRange] = useState({
         start: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
         end: format(new Date(), 'yyyy-MM-dd')
@@ -45,12 +47,14 @@ const ReportsPage: React.FC = () => {
     const loadData = async () => {
         try {
             setIsLoading(true);
-            const [itemsData, transactionsData] = await Promise.all([
+            const [itemsData, transactionsData, usersData] = await Promise.all([
                 getItems(),
-                getTransactions()
+                getTransactions(),
+                getUsers()
             ]);
             setItems(itemsData);
             setTransactions(transactionsData);
+            setUsers(usersData);
         } catch (err) {
             console.error('Error loading report data:', err);
             setError('Failed to load report data');
@@ -108,13 +112,22 @@ const ReportsPage: React.FC = () => {
     // Filter and sort transactions for logs
     const filteredTransactions = transactions
         .filter(transaction => {
-            const matchesSearch = searchTerm.toLowerCase().split(' ').every(term =>
-                transaction.type.toLowerCase().includes(term) ||
-                transaction.project_id?.toLowerCase().includes(term) ||
-                transaction.purpose?.toLowerCase().includes(term) ||
-                transaction.notes?.toLowerCase().includes(term)
-            );
+            const item = items.find(i => i.id === transaction.item_id);
+            const user = users.find(u => u.id === transaction.performed_by);
+            
+            const searchTerms = searchTerm.toLowerCase().split(' ');
+            const searchableText = [
+                transaction.type,
+                transaction.project_id,
+                transaction.purpose,
+                transaction.notes,
+                item?.name,
+                item?.sku,
+                user?.name,
+                user?.email
+            ].filter(Boolean).join(' ').toLowerCase();
 
+            const matchesSearch = searchTerms.every(term => searchableText.includes(term));
             const matchesType = !typeFilter || transaction.type === typeFilter;
 
             return matchesSearch && matchesType;
@@ -396,7 +409,7 @@ const ReportsPage: React.FC = () => {
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
                                     <Input
-                                        placeholder="Search transactions..."
+                                        placeholder="Search transactions (item name, SKU, user, type, etc.)..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         leftAddon={<Search className="h-5 w-5"/>}
@@ -432,6 +445,7 @@ const ReportsPage: React.FC = () => {
                                             <TableHeaderCell>Type</TableHeaderCell>
                                             <TableHeaderCell>Item</TableHeaderCell>
                                             <TableHeaderCell>Quantity</TableHeaderCell>
+                                            <TableHeaderCell>Performed By</TableHeaderCell>
                                             <TableHeaderCell>Project ID</TableHeaderCell>
                                             <TableHeaderCell>Purpose</TableHeaderCell>
                                             <TableHeaderCell>Notes</TableHeaderCell>
@@ -440,6 +454,7 @@ const ReportsPage: React.FC = () => {
                                     <TableBody>
                                         {filteredTransactions.map((transaction) => {
                                             const item = items.find(i => i.id === transaction.item_id);
+                                            const user = users.find(u => u.id === transaction.performed_by);
                                             return (
                                                 <TableRow key={transaction.id}>
                                                     <TableCell>
@@ -466,13 +481,22 @@ const ReportsPage: React.FC = () => {
                                                         {transaction.quantity}
                                                     </TableCell>
                                                     <TableCell>
+                                                        <div className="flex items-center space-x-2">
+                                                            <User size={16} className="text-gray-400"/>
+                                                            <div>
+                                                                <p className="font-medium">{user?.name}</p>
+                                                                <p className="text-xs text-gray-500">{user?.role}</p>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
                                                         {transaction.project_id || '-'}
                                                     </TableCell>
                                                     <TableCell>
                                                         {transaction.purpose || '-'}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <p className="max-w-xs truncate">
+                                                        <p className="max-w-xs truncate" title={transaction.notes || ''}>
                                                             {transaction.notes || '-'}
                                                         </p>
                                                     </TableCell>
