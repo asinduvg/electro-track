@@ -6,7 +6,7 @@ import {useAuth} from '../../context/AuthContext';
 
 const Layout: React.FC = () => {
     const {isAuthenticated, isLoading} = useAuth();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
@@ -30,13 +30,26 @@ const Layout: React.FC = () => {
 
     return (
         <div className="flex h-screen bg-gray-100">
-            <div className={`md:flex ${sidebarOpen ? 'flex' : 'hidden'} fixed inset-y-0 z-50 md:static md:h-screen`}>
+            {/* Sidebar Backdrop */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-gray-600 bg-opacity-50 z-20 md:hidden"
+                    onClick={toggleSidebar}
+                ></div>
+            )}
+
+            {/* Sidebar */}
+            <div
+                className={`fixed inset-y-0 left-0 transform ${
+                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                } md:relative md:translate-x-0 transition duration-200 ease-in-out z-30`}
+            >
                 <Sidebar/>
             </div>
 
+            {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header toggleSidebar={toggleSidebar}/>
-
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                     <Outlet/>
                 </main>
