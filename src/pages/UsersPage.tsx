@@ -10,17 +10,15 @@ import {Button} from '../components/ui/Button';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {getUsers, updateUser} from '../lib/api';
-import type {Database} from '../lib/database.types';
-
-type User = Database['public']['Tables']['users']['Row'];
+import useUsers from '../hooks/useUsers';
 
 const UsersPage: React.FC = () => {
     const {currentUser} = useAuth();
-    const [users, setUsers] = useState<User[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const {users, updateUser, deleteUser, error: usersError} = useUsers();
 
     // New User Form State
     const [isAddingUser, setIsAddingUser] = useState(false);
@@ -33,21 +31,18 @@ const UsersPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        loadUsers();
-    }, []);
-
-    const loadUsers = async () => {
-        try {
-            setIsLoading(true);
-            const data = await getUsers();
-            setUsers(data);
-        } catch (err) {
-            console.error('Error loading users:', err);
-            setError('Failed to load users');
-        } finally {
+        if (users.length > 0) {
             setIsLoading(false);
         }
-    };
+    }, [users]);
+
+    useEffect(() => {
+        if (usersError) {
+            setError(usersError);
+            setIsLoading(false);
+            return;
+        }
+    }, [usersError]);
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -79,29 +74,15 @@ const UsersPage: React.FC = () => {
         }
     };
 
-    const handleUpdateUserRole = async (userId: string, newRole: string) => {
-        try {
-            await updateUser(userId, {role: newRole as any});
-            loadUsers(); // Reload users to get updated data
-        } catch (err) {
-            console.error('Error updating user role:', err);
-            setError('Failed to update user role');
-        }
+    const handleUpdateUserRole = async (userId: string, newRole: "department_user" | "admin" | "inventory_manager" | "warehouse_staff") => {
+            await updateUser(userId, {role: newRole});
     };
 
     const handleDeleteUser = async (userId: string) => {
         if (!window.confirm('Are you sure you want to delete this user?')) {
             return;
         }
-
-        try {
-            // In a real app, you would delete the user here
-            console.log('Deleting user:', userId);
-            loadUsers();
-        } catch (err) {
-            console.error('Error deleting user:', err);
-            setError('Failed to delete user');
-        }
+        await deleteUser(userId);
     };
 
     const filteredUsers = users.filter(user => {
@@ -313,8 +294,7 @@ const UsersPage: React.FC = () => {
                                                     variant="ghost"
                                                     size="sm"
                                                     leftIcon={<Edit size={16}/>}
-                                                    onClick={() => {/* Handle edit */
-                                                    }}
+                                                    onClick={() => {/* Handle edit */}}
                                                 />
                                                 <Button
                                                     variant="ghost"

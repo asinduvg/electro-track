@@ -14,20 +14,21 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Badge} from '../components/ui/Badge';
 import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
-import {getItems, getTransactions, getUsers} from '../lib/api';
 import type {Database} from '../lib/database.types';
+import useItems from "../hooks/useItems.tsx";
+import useStocks from "../hooks/useStocks.tsx";
+import useTransactions from "../hooks/useTransactions.tsx";
+import useUsers from "../hooks/useUsers.tsx";
 
-type Item = Database['public']['Tables']['items']['Row'];
-type Transaction = Database['public']['Tables']['transactions']['Row'];
-type User = Database['public']['Tables']['users']['Row'];
+// type User = Database['public']['Tables']['users']['Row'];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const ReportsPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'analytics' | 'logs'>('analytics');
-    const [items, setItems] = useState<Item[]>([]);
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
+    // const [items, setItems] = useState<Item[]>([]);
+    // const [transactions, setTransactions] = useState<Transaction[]>([]);
+    // const [users, setUsers] = useState<User[]>([]);
     const [dateRange, setDateRange] = useState({
         start: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
         end: format(new Date(), 'yyyy-MM-dd')
@@ -40,33 +41,44 @@ const ReportsPage: React.FC = () => {
     const [typeFilter, setTypeFilter] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    const {items, getTotalQuantity} = useItems();
+    const {stocks} = useStocks();
+    const {transactions} = useTransactions();
+    const {users} = useUsers();
 
-    const loadData = async () => {
-        try {
-            setIsLoading(true);
-            const [itemsData, transactionsData, usersData] = await Promise.all([
-                getItems(),
-                getTransactions(),
-                getUsers()
-            ]);
-            setItems(itemsData);
-            setTransactions(transactionsData);
-            setUsers(usersData);
-        } catch (err) {
-            console.error('Error loading report data:', err);
-            setError('Failed to load report data');
-        } finally {
+    useEffect(() => {
+        if (items.length > 0) {
             setIsLoading(false);
         }
-    };
+    }, [items]);
+
+    // useEffect(() => {
+    //     loadData();
+    // }, []);
+
+    // const loadData = async () => {
+    //     try {
+    //         setIsLoading(true);
+    //         const [itemsData, transactionsData, usersData] = await Promise.all([
+    //             getItems(),
+    //             getTransactions(),
+    //             getUsers()
+    //         ]);
+    //         setItems(itemsData);
+    //         setTransactions(transactionsData);
+    //         setUsers(usersData);
+    //     } catch (err) {
+    //         console.error('Error loading report data:', err);
+    //         setError('Failed to load report data');
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     // Calculate inventory value by category
     const inventoryByCategory = items.reduce((acc, item) => {
         const category = item.category;
-        const value = item.quantity * item.unit_cost;
+        const value = getTotalQuantity(item.id, stocks) * item.unit_cost;
         acc[category] = (acc[category] || 0) + value;
         return acc;
     }, {} as Record<string, number>);
@@ -114,7 +126,7 @@ const ReportsPage: React.FC = () => {
         .filter(transaction => {
             const item = items.find(i => i.id === transaction.item_id);
             const user = users.find(u => u.id === transaction.performed_by);
-            
+
             const searchTerms = searchTerm.toLowerCase().split(' ');
             const searchableText = [
                 transaction.type,
@@ -229,7 +241,7 @@ const ReportsPage: React.FC = () => {
                                     <div>
                                         <p className="text-blue-200 font-medium">Total Items</p>
                                         <p className="text-3xl font-bold mt-1">
-                                            {items.reduce((sum, item) => sum + item.quantity, 0)}
+                                            {items.reduce((sum, item) => sum + getTotalQuantity(item.id, stocks), 0)}
                                         </p>
                                     </div>
                                     <div className="bg-blue-700 p-3 rounded-full">
@@ -245,7 +257,7 @@ const ReportsPage: React.FC = () => {
                                     <div>
                                         <p className="text-green-200 font-medium">Total Value</p>
                                         <p className="text-3xl font-bold mt-1">
-                                            ${items.reduce((sum, item) => sum + (item.quantity * item.unit_cost), 0).toLocaleString()}
+                                            ${items.reduce((sum, item) => sum + (getTotalQuantity(item.id, stocks) * item.unit_cost), 0).toLocaleString()}
                                         </p>
                                     </div>
                                     <div className="bg-green-600 p-3 rounded-full">
@@ -334,7 +346,7 @@ const ReportsPage: React.FC = () => {
                                                     `${name} ${(percent * 100).toFixed(0)}%`
                                                 }
                                             >
-                                                {transactionTypeData.map((entry, index) => (
+                                                {transactionTypeData.map((_entry, index) => (
                                                     <Cell
                                                         key={`cell-${index}`}
                                                         fill={COLORS[index % COLORS.length]}
@@ -496,7 +508,8 @@ const ReportsPage: React.FC = () => {
                                                         {transaction.purpose || '-'}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <p className="max-w-xs truncate" title={transaction.notes || ''}>
+                                                        <p className="max-w-xs truncate"
+                                                           title={transaction.notes || ''}>
                                                             {transaction.notes || '-'}
                                                         </p>
                                                     </TableCell>
