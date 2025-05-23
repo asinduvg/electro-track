@@ -39,42 +39,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     useEffect(() => {
         if (usersError) {
             setError(usersError);
-            return;
+            setIsLoading(false);
         }
     }, [usersError]);
 
     useEffect(() => {
-        // Check active session
-        console.log('get session effect called')
-        supabase.auth.getSession().then(({data: {session}}) => {
-            console.log('active session found', session)
-            if (session) {
-                getUserProfile(session.user.id);
-            } else {
-                setIsLoading(false);
-            }
-        });
+        (async () => {
+            // Check active session
+            console.log('get session effect called')
+            supabase.auth.getSession().then(({data: {session}}) => {
+                console.log('active session found', session)
+                if (session) {
+                    getUserProfile(session.user.id);
+                } else {
+                    setIsLoading(false);
+                }
+            });
 
-        // Listen for auth changes
-        const {data: {subscription}} = supabase.auth.onAuthStateChange((_event, session) => {
-            console.log('on state change called')
-            if (session) {
-                getUserProfile(session.user.id);
-            } else {
-                setCurrentUser(null);
-                setIsLoading(false);
-            }
-        });
+            // Listen for auth changes
+            const {data: {subscription}} = supabase.auth.onAuthStateChange((_event, session) => {
+                console.log('on state change called')
+                if (session) {
+                    getUserProfile(session.user.id);
+                } else {
+                    setCurrentUser(null);
+                    setIsLoading(false);
+                }
+            });
 
-        return () => {
-            subscription.unsubscribe();
-        };
+            return () => {
+                subscription.unsubscribe();
+            };
+        })()
+
     }, []);
 
     const getUserProfile = async (userId: string) => {
         const user = await getUserById(userId)
         setCurrentUser(user)
         await updateUser(userId, {last_login: new Date().toISOString()})
+        setIsLoading(false);
     };
 
     const login = async (email: string, password: string): Promise<User | null> => {

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Package, Lock} from 'lucide-react';
 import {Input} from '../components/ui/Input';
@@ -12,12 +12,12 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const {login, isLoading, currentUser} = useAuth();
 
-    useEffect(() => {
-        console.log('this is from pages', currentUser)
-        if (currentUser) {
-            navigate('/dashboard');
-        }
-    }, [currentUser, navigate])
+    // useEffect(() => {
+    //     console.log('this is from pages', currentUser)
+    //     if (currentUser) {
+    //         navigate('/dashboard');
+    //     }
+    // }, [currentUser, navigate])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,6 +41,11 @@ const LoginPage: React.FC = () => {
             setError('An error occurred during login');
         }
     };
+
+    if (currentUser) {
+        navigate('/dashboard');
+        return null;
+    }
 
     return (
         <div

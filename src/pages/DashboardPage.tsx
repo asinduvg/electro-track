@@ -9,7 +9,6 @@ import {
     Clock, BarChart, TrendingUp, TrendingDown,
     Truck, BoxesIcon
 } from 'lucide-react';
-import {dashboardStats} from '../data/mockData';
 import {UserRole, ItemStatus} from '../types';
 import useItems from "../hooks/useItems.tsx";
 import useTransactions from "../hooks/useTransactions.tsx";
@@ -31,6 +30,8 @@ const DashboardPage: React.FC = () => {
         .sort((a, b) => new Date(b.performed_at).getTime() - new Date(a.performed_at).getTime())
         .slice(0, 5);
 
+    const totalStocks = stocks.reduce((acc, stock) => acc + stock.quantity, 0);
+
     if (!currentUser) return null;
 
     return (
@@ -42,7 +43,7 @@ const DashboardPage: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-blue-200 font-medium">Total Inventory</p>
-                                <p className="text-3xl font-bold mt-1">{dashboardStats.totalItems}</p>
+                                <p className="text-3xl font-bold mt-1">{totalStocks}</p>
                             </div>
                             <div className="bg-blue-700 p-3 rounded-full">
                                 <Package size={24}/>
@@ -90,7 +91,7 @@ const DashboardPage: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-green-100 font-medium">Total Value</p>
-                                <p className="text-3xl font-bold mt-1">${dashboardStats.totalValue.toLocaleString()}</p>
+                                <p className="text-3xl font-bold mt-1">{items.reduce((sum, item) => sum + (getTotalQuantity(item.id, stocks) * item.unit_cost), 0).toLocaleString()}</p>
                             </div>
                             <div className="bg-green-600 p-3 rounded-full">
                                 <DollarSign size={24}/>
