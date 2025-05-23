@@ -13,6 +13,7 @@ import useItems from "../hooks/useItems.tsx";
 import useLocations from "../hooks/useLocations.tsx";
 import useTransactions from "../hooks/useTransactions.tsx";
 import useStocks from "../hooks/useStocks.tsx";
+import useCategories from "../hooks/useCategories.tsx";
 
 type Item = Database['public']['Tables']['items']['Row']
 
@@ -24,9 +25,10 @@ const ItemDetailPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const {getItem, getTotalQuantity, stocksWithLocation, error: itemsError} = useItems();
-    const {locations} = useLocations();
-    const {stocks} = useStocks();
-    const {transactions} = useTransactions();
+    const {locations, error: locationsError} = useLocations();
+    const {stocks, error: stocksError} = useStocks();
+    const {transactions, error: txnError} = useTransactions();
+    const {getCategory, getSubcategory, error: categoriesError} = useCategories();
 
     useEffect(() => {
         (async () => {
@@ -35,11 +37,31 @@ const ItemDetailPage: React.FC = () => {
                 setIsLoading(false);
                 return;
             }
+            if (locationsError) {
+                setError(locationsError);
+                setIsLoading(false);
+                return;
+            }
+            if (stocksError) {
+                setError(stocksError);
+                setIsLoading(false);
+                return;
+            }
+            if (txnError) {
+                setError(txnError);
+                setIsLoading(false);
+                return;
+            }
+            if (categoriesError) {
+                setError(categoriesError);
+                setIsLoading(false);
+                return;
+            }
             if (!id) return;
             setItem(await getItem(id));
             setIsLoading(false);
         })()
-    }, [getItem, id, itemsError]);
+    }, [getItem, id, itemsError, locationsError, stocksError, txnError]);
 
     if (isLoading) {
         return (
@@ -143,12 +165,12 @@ const ItemDetailPage: React.FC = () => {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell className="font-medium">Category</TableCell>
-                                        <TableCell>{item.category}</TableCell>
+                                        <TableCell>{getCategory(item.category_id)}</TableCell>
                                     </TableRow>
-                                    {item.subcategory && (
+                                    {getSubcategory(item.category_id) && (
                                         <TableRow>
                                             <TableCell className="font-medium">Subcategory</TableCell>
-                                            <TableCell>{item.subcategory}</TableCell>
+                                            <TableCell>{getSubcategory(item.category_id)}</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>

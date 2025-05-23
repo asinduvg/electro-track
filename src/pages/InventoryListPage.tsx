@@ -12,12 +12,12 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
-import {categories} from '../data/mockData';
 import {UserRole} from '../types';
 import type {Database} from "../lib/database.types.ts";
 import useItems from "../hooks/useItems.tsx";
 import useLocations from "../hooks/useLocations.tsx";
 import useStocks from "../hooks/useStocks.tsx";
+import useCategories from "../hooks/useCategories.tsx";
 
 type Item = Database['public']['Tables']['items']['Row'];
 
@@ -36,6 +36,7 @@ const InventoryListPage: React.FC = () => {
     const {locations} = useLocations();
     const {stocks} = useStocks();
     const {items, getTotalQuantity, stocksWithLocation, removeItem, hasStock, error: itemsError} = useItems();
+    const {categories} = useCategories();
 
     useEffect(() => {
         if (itemsError) {
@@ -340,8 +341,8 @@ const InventoryListPage: React.FC = () => {
                                 >
                                     <option value="">All Categories</option>
                                     {categories.map((category) => (
-                                        <option key={category.name} value={category.name}>
-                                            {category.name}
+                                        <option key={category.category} value={category.category}>
+                                            {category.category}
                                         </option>
                                     ))}
                                 </select>

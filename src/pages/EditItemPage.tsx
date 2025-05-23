@@ -4,10 +4,10 @@ import {Save, X} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {getCategoriesList, getSubcategoriesForCategory} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
 import type {Database} from '../lib/database.types';
 import useItems from "../hooks/useItems.tsx";
+import useCategories from "../hooks/useCategories.tsx";
 
 type ItemUpdate = Database['public']['Tables']['items']['Update'];
 
@@ -15,12 +15,12 @@ const EditItemPage: React.FC = () => {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
     const {currentUser} = useAuth();
-    const categories = getCategoriesList();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const {getItem, updateItem, error: itemsError} = useItems();
+    const {categories, getCategory, getSubcategoriesForCategory, getSubcategory, error: categoriesError} = useCategories();
 
     const [formData, setFormData] = useState<ItemUpdate | null>(null);
 
@@ -33,6 +33,11 @@ const EditItemPage: React.FC = () => {
                     setError(itemsError);
                     return;
                 }
+                if (categoriesError) {
+                    setError(categoriesError);
+                    return;
+                }
+
                 const item = await getItem(id);
                 if (!item) throw new Error('Item not found');
                 setFormData(item);
@@ -43,12 +48,12 @@ const EditItemPage: React.FC = () => {
                 setIsLoading(false);
             }
         })()
-    }, [getItem, id, itemsError]);
+    }, [categoriesError, getItem, id, itemsError]);
 
     // Get subcategories based on selected category
-    const subcategories = formData?.category
-        ? getSubcategoriesForCategory(formData.category)
-        : [];
+    // const subcategories = formData?.category
+    //     ? getSubcategoriesForCategory(formData.category)
+    //     : [];
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
@@ -194,14 +199,14 @@ const EditItemPage: React.FC = () => {
                                             id="category"
                                             name="category"
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={formData?.category}
+                                            value={formData?.category_id ? getCategory(formData.category_id) : ""}
                                             onChange={handleInputChange}
                                             required
                                         >
                                             <option value="">Select Category</option>
                                             {categories.map((category) => (
-                                                <option key={category} value={category}>
-                                                    {category}
+                                                <option key={category.category} value={category.category}>
+                                                    {category.category}
                                                 </option>
                                             ))}
                                         </select>
@@ -218,12 +223,12 @@ const EditItemPage: React.FC = () => {
                                             id="subcategory"
                                             name="subcategory"
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={formData?.subcategory || ''}
+                                            value={formData?.category_id ? getSubcategory(formData.category_id) : ""}
                                             onChange={handleInputChange}
-                                            disabled={!formData?.category}
+                                            disabled={!formData?.category_id}
                                         >
                                             <option value="">Select Subcategory</option>
-                                            {subcategories.map((subcategory) => (
+                                            {formData?.category_id && getSubcategoriesForCategory(getCategory(formData.category_id)).map((subcategory) => (
                                                 <option key={subcategory} value={subcategory}>
                                                     {subcategory}
                                                 </option>

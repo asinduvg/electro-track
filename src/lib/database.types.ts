@@ -53,8 +53,6 @@ export interface Database {
                     sku: string
                     name: string
                     description: string | null
-                    category: string
-                    subcategory: string | null
                     manufacturer: string
                     model: string | null
                     serial_number: string | null
@@ -65,6 +63,7 @@ export interface Database {
                     updated_at: string | null
                     created_by: string | null
                     updated_by: string | null
+                    category_id: number
                     image_url: string | null
                 }
                 Insert: {
@@ -72,8 +71,6 @@ export interface Database {
                     sku: string
                     name: string
                     description?: string | null
-                    category: string
-                    subcategory?: string | null
                     manufacturer: string
                     model?: string | null
                     serial_number?: string | null
@@ -85,14 +82,13 @@ export interface Database {
                     created_by?: string | null
                     updated_by?: string | null
                     image_url?: string | null
+                    category_id?: number
                 }
                 Update: {
                     id: string
                     sku?: string
                     name?: string
                     description?: string | null
-                    category?: string
-                    subcategory?: string | null
                     manufacturer?: string
                     model?: string | null
                     serial_number?: string | null
@@ -103,6 +99,7 @@ export interface Database {
                     updated_at?: string | null
                     created_by?: string | null
                     updated_by?: string | null
+                    category_id?: number
                     image_url?: string | null
                 }
             }
@@ -206,6 +203,18 @@ export interface Database {
                     project_id?: string | null
                     purpose?: string | null
                     performed_by: string
+                }
+            }
+            categories: {
+                Row: {
+                    id: number
+                    category: string
+                    subcategory: string
+                },
+                Insert: {
+                    id?: number
+                    category: string
+                    subcategory: string
                 }
             }
         }

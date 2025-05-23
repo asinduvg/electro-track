@@ -5,15 +5,14 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
 import {Modal} from '../components/ui/Modal';
-import {getCategoriesList, getSubcategoriesForCategory, categories} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
 import useItems from "../hooks/useItems.tsx";
 import {supabase} from '../lib/supabase';
+import useCategories from "../hooks/useCategories.tsx";
 
 const AddItemPage: React.FC = () => {
     const navigate = useNavigate();
     const {currentUser} = useAuth();
-    const allCategories = getCategoriesList();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -38,22 +37,22 @@ const AddItemPage: React.FC = () => {
         model: '',
         serial_number: '',
         minimum_stock: '',
-        unit_cost: ''
+        unit_cost: '',
     });
 
     const {items, addItem, error: itemsError} = useItems();
+    const {categories, createCategory, getSubcategoriesForCategory, error: categoriesError} = useCategories();
 
     useEffect(() => {
         if (itemsError) {
             setError(itemsError);
             return;
         }
-    }, [items, itemsError]);
-
-    // Get subcategories based on selected category
-    const subcategories = formData.category
-        ? getSubcategoriesForCategory(formData.category)
-        : [];
+        if (categoriesError) {
+            setError(categoriesError);
+            return;
+        }
+    }, [categoriesError, items, itemsError]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
@@ -125,26 +124,26 @@ const AddItemPage: React.FC = () => {
         }
     };
 
-    const handleAddCategory = () => {
+    const handleAddCategory = async () => {
         if (!newCategory.trim()) {
             setError('Category name is required');
             return;
         }
 
-        // Add the new category to the categories array
-        categories.push({
-            name: newCategory,
-            subcategories: []
-        });
+        if (categories.some(cat => cat.category === newCategory)) {
+            setError('Category already exists');
+            return;
+        }
+
+        // await createCategory({category: newCategory, subcategory: newSubcategory});
 
         // Update form data with the new category
-        setFormData({
-            ...formData,
-            category: newCategory,
-            subcategory: '' // Reset subcategory when changing category
-        });
+        // setFormData({
+        //     ...formData,
+        //     subcategory: '' // Reset subcategory when changing category
+        // });
 
-        setNewCategory('');
+        setNewSubcategory('');
         setIsAddingCategory(false);
     };
 
@@ -154,19 +153,28 @@ const AddItemPage: React.FC = () => {
             return;
         }
 
-        // Find the current category and add the new subcategory
-        const category = categories.find(cat => cat.name === formData.category);
-        if (category) {
-            category.subcategories.push(newSubcategory);
-
-            // Update form data with the new subcategory
-            setFormData({
-                ...formData,
-                subcategory: newSubcategory
-            });
+        if (categories.some(cat => cat.subcategory === newSubcategory)) {
+            setError('Sub category already exists');
+            return;
         }
 
-        setNewSubcategory('');
+        // Find the current category and add the new subcategory
+        // const category = categories.find(cat => cat.name === formData.category);
+        // if (category) {
+        //     category.subcategories.push(newSubcategory);
+        //
+        //     // Update form data with the new subcategory
+        //     setFormData({
+        //         ...formData,
+        //         subcategory: newSubcategory
+        //     });
+        // }
+
+        // setFormData({
+        //     ...formData,
+        //     subcategory: newSubcategory
+        // });
+
         setIsAddingSubcategory(false);
     };
 
@@ -182,11 +190,33 @@ const AddItemPage: React.FC = () => {
             setIsSubmitting(true);
             setError(null);
 
+            let categoryId: number;
+
+            if (newCategory) {
+                const category = await createCategory({category: newCategory, subcategory: newSubcategory});
+                if (!category) {
+                    setError('Failed to create category');
+                    return;
+                }
+                categoryId = category.id;
+            } else {
+                const category = categories.find(cat => cat.category === formData.category);
+                if (!category) {
+                    setError('Category does not exist');
+                    return;
+                }
+                categoryId = category.id;
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const {category, subcategory, ...itemFields} = formData;
+
             // Create the item first
             const itemData = {
-                ...formData,
+                ...itemFields,
                 minimum_stock: formData.minimum_stock ? parseInt(formData.minimum_stock) : 0,
                 unit_cost: formData.unit_cost ? parseFloat(formData.unit_cost) : 0,
+                category_id: categoryId,
                 created_by: currentUser.id
             };
 
@@ -279,11 +309,14 @@ const AddItemPage: React.FC = () => {
                                             required
                                         >
                                             <option value="">Select Category</option>
-                                            {allCategories.map((category) => (
-                                                <option key={category} value={category}>
-                                                    {category}
+                                            {categories.map((category) => (
+                                                <option key={category.category} value={category.category}>
+                                                    {category.category}
                                                 </option>
                                             ))}
+                                            {newCategory && (
+                                                <option value={newCategory}>{newCategory}</option>
+                                            )}
                                         </select>
                                         <Button
                                             type="button"
@@ -313,11 +346,13 @@ const AddItemPage: React.FC = () => {
                                             disabled={!formData.category}
                                         >
                                             <option value="">Select Subcategory</option>
-                                            {subcategories.map((subcategory) => (
-                                                <option key={subcategory} value={subcategory}>
-                                                    {subcategory}
-                                                </option>
-                                            ))}
+                                            {getSubcategoriesForCategory(formData.category)
+                                                .map(subCat => (
+                                                    <option key={subCat} value={subCat}>{subCat}</option>
+                                                ))}
+                                            {newSubcategory && (
+                                                <option value={newSubcategory}>{newSubcategory}</option>
+                                            )}
                                         </select>
                                         <Button
                                             type="button"
