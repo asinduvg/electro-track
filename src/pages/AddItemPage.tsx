@@ -158,7 +158,7 @@ const AddItemPage: React.FC = () => {
         const category = categories.find(cat => cat.name === formData.category);
         if (category) {
             category.subcategories.push(newSubcategory);
-            
+
             // Update form data with the new subcategory
             setFormData({
                 ...formData,
@@ -190,7 +190,7 @@ const AddItemPage: React.FC = () => {
                 created_by: currentUser.id
             };
 
-            const newItem = await addItem(itemData);
+            await addItem(itemData);
 
             navigate('/inventory/items');
         } catch (err) {
@@ -291,7 +291,7 @@ const AddItemPage: React.FC = () => {
                                             size="sm"
                                             onClick={() => setIsAddingCategory(true)}
                                         >
-                                            <Plus size={16} />
+                                            <Plus size={16}/>
                                         </Button>
                                     </div>
                                 </div>
@@ -326,7 +326,7 @@ const AddItemPage: React.FC = () => {
                                             onClick={() => setIsAddingSubcategory(true)}
                                             disabled={!formData.category}
                                         >
-                                            <Plus size={16} />
+                                            <Plus size={16}/>
                                         </Button>
                                     </div>
                                 </div>
