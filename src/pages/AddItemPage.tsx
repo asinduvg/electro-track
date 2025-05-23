@@ -1,10 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {Save, X, Upload, Image as ImageIcon} from 'lucide-react';
+import {Save, X, Upload, Image as ImageIcon, Plus} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {getCategoriesList, getSubcategoriesForCategory} from '../data/mockData';
+import {Modal} from '../components/ui/Modal';
+import {getCategoriesList, getSubcategoriesForCategory, categories} from '../data/mockData';
 import {useAuth} from '../context/AuthContext';
 import useItems from "../hooks/useItems.tsx";
 import {supabase} from '../lib/supabase';
@@ -12,12 +13,20 @@ import {supabase} from '../lib/supabase';
 const AddItemPage: React.FC = () => {
     const navigate = useNavigate();
     const {currentUser} = useAuth();
-    const categories = getCategoriesList();
+    const allCategories = getCategoriesList();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    // New category modal state
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [newCategory, setNewCategory] = useState('');
+
+    // New subcategory modal state
+    const [isAddingSubcategory, setIsAddingSubcategory] = useState(false);
+    const [newSubcategory, setNewSubcategory] = useState('');
 
     const [formData, setFormData] = useState({
         sku: '',
@@ -114,6 +123,51 @@ const AddItemPage: React.FC = () => {
             console.error('Error uploading image:', err);
             throw new Error('Failed to upload image');
         }
+    };
+
+    const handleAddCategory = () => {
+        if (!newCategory.trim()) {
+            setError('Category name is required');
+            return;
+        }
+
+        // Add the new category to the categories array
+        categories.push({
+            name: newCategory,
+            subcategories: []
+        });
+
+        // Update form data with the new category
+        setFormData({
+            ...formData,
+            category: newCategory,
+            subcategory: '' // Reset subcategory when changing category
+        });
+
+        setNewCategory('');
+        setIsAddingCategory(false);
+    };
+
+    const handleAddSubcategory = () => {
+        if (!newSubcategory.trim()) {
+            setError('Subcategory name is required');
+            return;
+        }
+
+        // Find the current category and add the new subcategory
+        const category = categories.find(cat => cat.name === formData.category);
+        if (category) {
+            category.subcategories.push(newSubcategory);
+            
+            // Update form data with the new subcategory
+            setFormData({
+                ...formData,
+                subcategory: newSubcategory
+            });
+        }
+
+        setNewSubcategory('');
+        setIsAddingSubcategory(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -215,21 +269,31 @@ const AddItemPage: React.FC = () => {
                                     >
                                         Category
                                     </label>
-                                    <select
-                                        id="category"
-                                        name="category"
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                        value={formData.category}
-                                        onChange={handleInputChange}
-                                        required
-                                    >
-                                        <option value="">Select Category</option>
-                                        {categories.map((category) => (
-                                            <option key={category} value={category}>
-                                                {category}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="flex space-x-2">
+                                        <select
+                                            id="category"
+                                            name="category"
+                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                            value={formData.category}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
+                                            <option value="">Select Category</option>
+                                            {allCategories.map((category) => (
+                                                <option key={category} value={category}>
+                                                    {category}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setIsAddingCategory(true)}
+                                        >
+                                            <Plus size={16} />
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -239,21 +303,32 @@ const AddItemPage: React.FC = () => {
                                     >
                                         Subcategory
                                     </label>
-                                    <select
-                                        id="subcategory"
-                                        name="subcategory"
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                        value={formData.subcategory}
-                                        onChange={handleInputChange}
-                                        disabled={!formData.category}
-                                    >
-                                        <option value="">Select Subcategory</option>
-                                        {subcategories.map((subcategory) => (
-                                            <option key={subcategory} value={subcategory}>
-                                                {subcategory}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="flex space-x-2">
+                                        <select
+                                            id="subcategory"
+                                            name="subcategory"
+                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                            value={formData.subcategory}
+                                            onChange={handleInputChange}
+                                            disabled={!formData.category}
+                                        >
+                                            <option value="">Select Subcategory</option>
+                                            {subcategories.map((subcategory) => (
+                                                <option key={subcategory} value={subcategory}>
+                                                    {subcategory}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setIsAddingSubcategory(true)}
+                                            disabled={!formData.category}
+                                        >
+                                            <Plus size={16} />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -344,6 +419,70 @@ const AddItemPage: React.FC = () => {
                     </Button>
                 </div>
             </form>
+
+            {/* Add Category Modal */}
+            <Modal
+                isOpen={isAddingCategory}
+                onClose={() => setIsAddingCategory(false)}
+                title="Add New Category"
+            >
+                <div className="space-y-4">
+                    <Input
+                        label="Category Name"
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        placeholder="Enter new category name"
+                        required
+                    />
+
+                    <div className="flex justify-end space-x-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAddingCategory(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleAddCategory}
+                        >
+                            Add Category
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Add Subcategory Modal */}
+            <Modal
+                isOpen={isAddingSubcategory}
+                onClose={() => setIsAddingSubcategory(false)}
+                title="Add New Subcategory"
+            >
+                <div className="space-y-4">
+                    <Input
+                        label="Subcategory Name"
+                        value={newSubcategory}
+                        onChange={(e) => setNewSubcategory(e.target.value)}
+                        placeholder="Enter new subcategory name"
+                        required
+                    />
+
+                    <div className="flex justify-end space-x-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAddingSubcategory(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleAddSubcategory}
+                        >
+                            Add Subcategory
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
