@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {Save, X} from 'lucide-react';
+import {Save, X, Plus} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
+import {Modal} from '../components/ui/Modal';
 import {useAuth} from '../context/AuthContext';
 import type {Database} from '../lib/database.types';
 import useItems from "../hooks/useItems.tsx";
@@ -19,8 +20,16 @@ const EditItemPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // New category modal state
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [newCategory, setNewCategory] = useState('');
+
+    // New subcategory modal state
+    const [isAddingSubcategory, setIsAddingSubcategory] = useState(false);
+    const [newSubcategory, setNewSubcategory] = useState('');
+
     const {getItem, updateItem, error: itemsError} = useItems();
-    const {categories, getCategory, getSubcategoriesForCategory, getSubcategory, error: categoriesError} = useCategories();
+    const {categories, createCategory, getCategory, getSubcategoriesForCategory, getSubcategory, error: categoriesError} = useCategories();
 
     const [formData, setFormData] = useState<ItemUpdate | null>(null);
 
@@ -50,11 +59,6 @@ const EditItemPage: React.FC = () => {
         })()
     }, [categoriesError, getItem, id, itemsError]);
 
-    // Get subcategories based on selected category
-    // const subcategories = formData?.category
-    //     ? getSubcategoriesForCategory(formData.category)
-    //     : [];
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
 
@@ -70,6 +74,41 @@ const EditItemPage: React.FC = () => {
                 [name]: value
             });
         }
+    };
+
+    const handleAddCategory = async () => {
+        if (!newCategory.trim()) {
+            setError('Category name is required');
+            return;
+        }
+
+        if (categories.some(cat => cat.category === newCategory)) {
+            setError('Category already exists');
+            return;
+        }
+
+        await createCategory({category: newCategory, subcategory: newSubcategory});
+        setNewSubcategory('');
+        setIsAddingCategory(false);
+    };
+
+    const handleAddSubcategory = async () => {
+        if (!newSubcategory.trim()) {
+            setError('Subcategory name is required');
+            return;
+        }
+
+        if (categories.some(cat => cat.subcategory === newSubcategory)) {
+            setError('Sub category already exists');
+            return;
+        }
+
+        const category = getCategory(formData?.category_id || 0);
+        if (category) {
+            await createCategory({category, subcategory: newSubcategory});
+        }
+
+        setIsAddingSubcategory(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -195,21 +234,31 @@ const EditItemPage: React.FC = () => {
                                         >
                                             Category
                                         </label>
-                                        <select
-                                            id="category"
-                                            name="category"
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={formData?.category_id ? getCategory(formData.category_id) : ""}
-                                            onChange={handleInputChange}
-                                            required
-                                        >
-                                            <option value="">Select Category</option>
-                                            {categories.map((category) => (
-                                                <option key={category.category} value={category.category}>
-                                                    {category.category}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="flex space-x-2">
+                                            <select
+                                                id="category"
+                                                name="category"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                value={formData?.category_id ? getCategory(formData.category_id) : ""}
+                                                onChange={handleInputChange}
+                                                required
+                                            >
+                                                <option value="">Select Category</option>
+                                                {categories.map((category) => (
+                                                    <option key={category.category} value={category.category}>
+                                                        {category.category}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setIsAddingCategory(true)}
+                                            >
+                                                <Plus size={16}/>
+                                            </Button>
+                                        </div>
                                     </div>
 
                                     <div>
@@ -219,21 +268,32 @@ const EditItemPage: React.FC = () => {
                                         >
                                             Subcategory
                                         </label>
-                                        <select
-                                            id="subcategory"
-                                            name="subcategory"
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={formData?.category_id ? getSubcategory(formData.category_id) : ""}
-                                            onChange={handleInputChange}
-                                            disabled={!formData?.category_id}
-                                        >
-                                            <option value="">Select Subcategory</option>
-                                            {formData?.category_id && getSubcategoriesForCategory(getCategory(formData.category_id)).map((subcategory) => (
-                                                <option key={subcategory} value={subcategory}>
-                                                    {subcategory}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="flex space-x-2">
+                                            <select
+                                                id="subcategory"
+                                                name="subcategory"
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                value={formData?.category_id ? getSubcategory(formData.category_id) : ""}
+                                                onChange={handleInputChange}
+                                                disabled={!formData?.category_id}
+                                            >
+                                                <option value="">Select Subcategory</option>
+                                                {formData?.category_id && getSubcategoriesForCategory(getCategory(formData.category_id)).map((subcategory) => (
+                                                    <option key={subcategory} value={subcategory}>
+                                                        {subcategory}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setIsAddingSubcategory(true)}
+                                                disabled={!formData?.category_id}
+                                            >
+                                                <Plus size={16}/>
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -281,16 +341,6 @@ const EditItemPage: React.FC = () => {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 gap-4">
-                                    {/*<Input*/}
-                                    {/*    label="Quantity"*/}
-                                    {/*    id="quantity"*/}
-                                    {/*    name="quantity"*/}
-                                    {/*    type="number"*/}
-                                    {/*    min="0"*/}
-                                    {/*    value={formData.quantity?.toString()}*/}
-                                    {/*    onChange={handleInputChange}*/}
-                                    {/*    required*/}
-                                    {/*/>*/}
                                     <Input
                                         label="Minimum Stock"
                                         id="minimum_stock"
@@ -312,30 +362,6 @@ const EditItemPage: React.FC = () => {
                                         onChange={handleInputChange}
                                         required
                                     />
-                                </div>
-
-                                <div>
-                                    {/*<label*/}
-                                    {/*    htmlFor="location_id"*/}
-                                    {/*    className="block text-sm font-medium text-gray-700 mb-1"*/}
-                                    {/*>*/}
-                                    {/*    Storage Location*/}
-                                    {/*</label>*/}
-                                    {/*<select*/}
-                                    {/*    id="location_id"*/}
-                                    {/*    name="location_id"*/}
-                                    {/*    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"*/}
-                                    {/*    value={formData.location_id || ''}*/}
-                                    {/*    onChange={handleInputChange}*/}
-                                    {/*    required*/}
-                                    {/*>*/}
-                                    {/*    <option value="">Select Location</option>*/}
-                                    {/*    {locations.map((location) => (*/}
-                                    {/*        <option key={location.id} value={location.id}>*/}
-                                    {/*            {location.building} &gt; {location.room} &gt; {location.unit}*/}
-                                    {/*        </option>*/}
-                                    {/*    ))}*/}
-                                    {/*</select>*/}
                                 </div>
 
                                 <div>
@@ -380,6 +406,70 @@ const EditItemPage: React.FC = () => {
                     </Button>
                 </div>
             </form>
+
+            {/* Add Category Modal */}
+            <Modal
+                isOpen={isAddingCategory}
+                onClose={() => setIsAddingCategory(false)}
+                title="Add New Category"
+            >
+                <div className="space-y-4">
+                    <Input
+                        label="Category Name"
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        placeholder="Enter new category name"
+                        required
+                    />
+
+                    <div className="flex justify-end space-x-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAddingCategory(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleAddCategory}
+                        >
+                            Add Category
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Add Subcategory Modal */}
+            <Modal
+                isOpen={isAddingSubcategory}
+                onClose={() => setIsAddingSubcategory(false)}
+                title="Add New Subcategory"
+            >
+                <div className="space-y-4">
+                    <Input
+                        label="Subcategory Name"
+                        value={newSubcategory}
+                        onChange={(e) => setNewSubcategory(e.target.value)}
+                        placeholder="Enter new subcategory name"
+                        required
+                    />
+
+                    <div className="flex justify-end space-x-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAddingSubcategory(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleAddSubcategory}
+                        >
+                            Add Subcategory
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
