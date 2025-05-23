@@ -59,35 +59,36 @@ const UsersPage: React.FC = () => {
     }
   }, [usersError]);
 
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newUser.email.trim() || !newUser.name.trim()) {
-      setError('Email and name are required');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      // In a real app, you would create the user here
-      console.log('Creating user:', newUser);
-
-      setIsAddingUser(false);
-      setNewUser({
-        email: '',
-        name: '',
-        role: 'department_user',
-        department: ''
-      });
-    } catch (err) {
-      console.error('Error creating user:', err);
-      setError('Failed to create user');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  // todo:
+  // const handleCreateUser = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //
+  //   if (!newUser.email.trim() || !newUser.name.trim()) {
+  //     setError('Email and name are required');
+  //     return;
+  //   }
+  //
+  //   try {
+  //     setIsSubmitting(true);
+  //     setError(null);
+  //
+  //     // In a real app, you would create the user here
+  //     console.log('Creating user:', newUser);
+  //
+  //     setIsAddingUser(false);
+  //     setNewUser({
+  //       email: '',
+  //       name: '',
+  //       role: 'department_user',
+  //       department: ''
+  //     });
+  //   } catch (err) {
+  //     console.error('Error creating user:', err);
+  //     setError('Failed to create user');
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,16 +166,17 @@ const UsersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">User Management</h1>
-        <Button
-          variant="primary"
-          leftIcon={<UserPlus size={16} />}
-          onClick={() => setIsAddingUser(true)}
-        >
-          Add User
-        </Button>
-      </div>
+      {/* todo: */}
+      {/*<div className="flex items-center justify-between">*/}
+      {/*  <h1 className="text-2xl font-bold">User Management</h1>*/}
+      {/*  <Button*/}
+      {/*    variant="primary"*/}
+      {/*    leftIcon={<UserPlus size={16} />}*/}
+      {/*    onClick={() => setIsAddingUser(true)}*/}
+      {/*  >*/}
+      {/*    Add User*/}
+      {/*  </Button>*/}
+      {/*</div>*/}
 
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4">
@@ -189,76 +191,76 @@ const UsersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Add User Form */}
-      {isAddingUser && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New User</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Email"
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                  required
-                />
-                <Input
-                  label="Name"
-                  value={newUser.name}
-                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                  required
-                />
-              </div>
+      {/* Add User Form todo: */}
+      {/*{isAddingUser && (*/}
+      {/*  <Card>*/}
+      {/*    <CardHeader>*/}
+      {/*      <CardTitle>Add New User</CardTitle>*/}
+      {/*    </CardHeader>*/}
+      {/*    <CardContent>*/}
+      {/*      <form onSubmit={handleCreateUser} className="space-y-4">*/}
+      {/*        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">*/}
+      {/*          <Input*/}
+      {/*            label="Email"*/}
+      {/*            type="email"*/}
+      {/*            value={newUser.email}*/}
+      {/*            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}*/}
+      {/*            required*/}
+      {/*          />*/}
+      {/*          <Input*/}
+      {/*            label="Name"*/}
+      {/*            value={newUser.name}*/}
+      {/*            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}*/}
+      {/*            required*/}
+      {/*          />*/}
+      {/*        </div>*/}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Role
-                  </label>
-                  <select
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    value={newUser.role}
-                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value as any })}
-                    required
-                  >
-                    <option value="department_user">Department User</option>
-                    <option value="warehouse_staff">Warehouse Staff</option>
-                    <option value="inventory_manager">Inventory Manager</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
+      {/*        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">*/}
+      {/*          <div>*/}
+      {/*            <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+      {/*              Role*/}
+      {/*            </label>*/}
+      {/*            <select*/}
+      {/*              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"*/}
+      {/*              value={newUser.role}*/}
+      {/*              onChange={(e) => setNewUser({ ...newUser, role: e.target.value as any })}*/}
+      {/*              required*/}
+      {/*            >*/}
+      {/*              <option value="department_user">Department User</option>*/}
+      {/*              <option value="warehouse_staff">Warehouse Staff</option>*/}
+      {/*              <option value="inventory_manager">Inventory Manager</option>*/}
+      {/*              <option value="admin">Admin</option>*/}
+      {/*            </select>*/}
+      {/*          </div>*/}
 
-                <Input
-                  label="Department"
-                  value={newUser.department}
-                  onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
-                  placeholder="Optional"
-                />
-              </div>
+      {/*          <Input*/}
+      {/*            label="Department"*/}
+      {/*            value={newUser.department}*/}
+      {/*            onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}*/}
+      {/*            placeholder="Optional"*/}
+      {/*          />*/}
+      {/*        </div>*/}
 
-              <div className="flex justify-end space-x-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddingUser(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  isLoading={isSubmitting}
-                >
-                  Create User
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+      {/*        <div className="flex justify-end space-x-3">*/}
+      {/*          <Button*/}
+      {/*            type="button"*/}
+      {/*            variant="outline"*/}
+      {/*            onClick={() => setIsAddingUser(false)}*/}
+      {/*          >*/}
+      {/*            Cancel*/}
+      {/*          </Button>*/}
+      {/*          <Button*/}
+      {/*            type="submit"*/}
+      {/*            variant="primary"*/}
+      {/*            isLoading={isSubmitting}*/}
+      {/*          >*/}
+      {/*            Create User*/}
+      {/*          </Button>*/}
+      {/*        </div>*/}
+      {/*      </form>*/}
+      {/*    </CardContent>*/}
+      {/*  </Card>*/}
+      {/*)}*/}
 
       {/* Edit User Modal */}
       <Modal

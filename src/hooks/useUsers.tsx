@@ -7,8 +7,9 @@ type User = Database['public']['Tables']['users']['Row'];
 type UserUpdate = Database['public']['Tables']['users']['Update'];
 
 const ERR_USERS_LOAD = 'Failed to load users';
+const ERR_USER_LOAD = 'Failed to load user';
 const ERR_USER_UPDATE = 'Failed to update user';
-const ERR_USER_DELTE = 'Failed to delete user';
+const ERR_USER_DELETE = 'Failed to delete user';
 
 const db_getUsers = async () => {
     const {data: users, error: usersError} = await supabase
@@ -17,6 +18,17 @@ const db_getUsers = async () => {
 
     if (usersError) throw usersError;
     return users as User[];
+}
+
+const db_getUserById = async (id: string) => {
+    const {data: user, error: userError} = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (userError) throw userError;
+    return user as User;
 }
 
 const db_updateUser = async (id: string, updates: UserUpdate) => {
@@ -46,6 +58,18 @@ function useUsers() {
     const [users, setUsers] = useState<User[]>([]);
     const [error, setError] = useState<string | null>(null);
 
+    const getUserById = async (id: string): Promise<User | null> => {
+        const existingUser = users.find(user => user.id === id);
+        if (existingUser) return existingUser;
+
+        return await dbOperation<User>(
+            () => db_getUserById(id),
+            (user) => setUsers(prevUsers => [...prevUsers, user]),
+            setError,
+            ERR_USER_LOAD
+        )
+    }
+
     const updateUser = async (id: string, updates: UserUpdate): Promise<User | null> => {
         return await dbOperation<User>(
             () => db_updateUser(id, updates),
@@ -60,7 +84,7 @@ function useUsers() {
             () => db_deleteUser(id),
             () => setUsers(prevUsers => prevUsers.filter(user => user.id !== id)),
             setError,
-            ERR_USER_DELTE
+            ERR_USER_DELETE
         )
     }
 
@@ -70,7 +94,7 @@ function useUsers() {
         })()
     }, [dbOperation]);
 
-    return {users, updateUser, deleteUser, error};
+    return {users, updateUser, getUserById, deleteUser, error};
 }
 
 export default useUsers;

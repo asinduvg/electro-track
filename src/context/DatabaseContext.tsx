@@ -1,5 +1,4 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
-import {useAuth} from "./AuthContext.tsx";
 
 interface DatabaseContextType {
     isLoading: boolean;
@@ -19,7 +18,6 @@ interface PostgreSQLError extends Error {
 const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
 
 export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
-    const {isAuthenticated} = useAuth();
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -35,8 +33,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({child
         errorCb: React.Dispatch<React.SetStateAction<string | null>>,
         errorMsg: string): Promise<T | null> {
         try {
-            if (!isAuthenticated) return null;
-
             errorCb(null);
             setIsLoading(true);
 
@@ -51,7 +47,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({child
         } finally {
             setIsLoading(false);
         }
-    }, [isAuthenticated])
+    }, [])
 
     // load data from database
     useEffect(() => {

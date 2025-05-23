@@ -24,8 +24,8 @@ import {DatabaseProvider} from "./context/DatabaseContext.tsx";
 
 function App() {
     return (
-        <AuthProvider>
-            <DatabaseProvider>
+        <DatabaseProvider>
+            <AuthProvider>
                 <Router>
                     <Routes>
                         <Route path="/login" element={<LoginPage/>}/>
@@ -62,8 +62,8 @@ function App() {
                         <Route path="*" element={<Navigate to="/dashboard" replace/>}/>
                     </Routes>
                 </Router>
-            </DatabaseProvider>
-        </AuthProvider>
+            </AuthProvider>
+        </DatabaseProvider>
     );
 }
 

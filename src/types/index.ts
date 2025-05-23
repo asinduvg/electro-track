@@ -6,15 +6,15 @@ export enum UserRole {
     DEPARTMENT_USER = 'department_user'
 }
 
-export interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    department?: string;
-    createdAt: Date;
-    lastLogin?: Date;
-}
+// export interface User {
+//     id: string;
+//     name: string;
+//     email: string;
+//     role: UserRole;
+//     department?: string;
+//     createdAt: Date;
+//     lastLogin?: Date;
+// }
 
 // Item related types
 export interface Item {

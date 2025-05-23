@@ -1,7 +1,10 @@
 import React, {createContext, useContext, useState, useEffect} from 'react';
-import {User, UserRole} from '../types';
 import {supabase} from '../lib/supabase';
 import {signIn, signOut} from '../lib/auth';
+import useUsers from "../hooks/useUsers.tsx";
+import {Database} from "../lib/database.types.ts";
+
+type User = Database['public']['Tables']['users']['Row'];
 
 interface AuthContextType {
     currentUser: User | null;
@@ -30,6 +33,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const {getUserById, updateUser, error: usersError} = useUsers();
+
+    useEffect(() => {
+        if (usersError) {
+            setError(usersError);
+            return;
+        }
+    }, [usersError]);
 
     useEffect(() => {
         // Check active session
@@ -60,47 +72,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     }, []);
 
     const getUserProfile = async (userId: string) => {
-        try {
-            const {data} = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', userId)
-                .single();
-
-            console.log("data isss, ", data)
-
-            if (error) {
-                console.error('Error fetching user profile:', error);
-                setCurrentUser(null);
-                setError('Failed to fetch user profile');
-                setIsLoading(false);
-                return;
-            }
-
-            if (data) {
-                setCurrentUser({
-                    id: data.id,
-                    email: data.email,
-                    name: data.name,
-                    role: data.role as UserRole,
-                    department: data.department || undefined,
-                    createdAt: new Date(data.created_at || ''),
-                    lastLogin: data.last_login ? new Date(data.last_login) : undefined
-                });
-
-                // Update last login time
-                await supabase
-                    .from('users')
-                    .update({last_login: new Date().toISOString()})
-                    .eq('id', data.id);
-            }
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-            setCurrentUser(null);
-            setError('Failed to fetch user profile');
-        } finally {
-            setIsLoading(false);
-        }
+        const user = await getUserById(userId)
+        setCurrentUser(user)
+        await updateUser(userId, {last_login: new Date().toISOString()})
     };
 
     const login = async (email: string, password: string): Promise<User | null> => {
