@@ -1,7 +1,7 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
 import {Database} from "../lib/database.types.ts";
 import {supabase} from "../lib/supabase.ts";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 
 type Category = Database['public']['Tables']['categories']['Row'];
 type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
@@ -49,13 +49,13 @@ function useCategories() {
             .map(category => category.subcategory)
     }
 
-    const getCategory = (id: number) => {
+    const getCategory = useCallback((id: number) => {
         return categories.find(category => category.id === id)?.category;
-    }
+    }, [categories]);
 
-    const getSubcategory = (id: number) => {
+    const getSubcategory = useCallback((id: number) => {
         return categories.find(category => category.id === id)?.subcategory;
-    }
+    }, [categories]);
 
     useEffect(() => {
         (async () => {

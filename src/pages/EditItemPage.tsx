@@ -33,6 +33,9 @@ const EditItemPage: React.FC = () => {
 
     const [formData, setFormData] = useState<ItemUpdate | null>(null);
 
+    const [category, setCategory] = useState('');
+    const [subcategory, setSubcategory] = useState('');
+
     useEffect(() => {
         (async () => {
             try {
@@ -47,8 +50,16 @@ const EditItemPage: React.FC = () => {
                     return;
                 }
 
-                const item = await getItem(id);
+                const item = await getItem(id); // todo: dependency array
+
                 if (!item) throw new Error('Item not found');
+
+                const category = getCategory(item.category_id);
+                const subcategory = getSubcategory(item.category_id);
+
+                setCategory(category || '');
+                setSubcategory(subcategory || '');
+
                 setFormData(item);
             } catch (err) {
                 console.error('Error loading item:', err);
@@ -57,7 +68,7 @@ const EditItemPage: React.FC = () => {
                 setIsLoading(false);
             }
         })()
-    }, [categoriesError, getItem, id, itemsError]);
+    }, [categoriesError, getCategory, getSubcategory, id, itemsError]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
@@ -87,7 +98,9 @@ const EditItemPage: React.FC = () => {
             return;
         }
 
-        await createCategory({category: newCategory, subcategory: newSubcategory});
+        setCategory(newCategory);
+
+        // await createCategory({category: newCategory, subcategory: newSubcategory});
         setNewSubcategory('');
         setIsAddingCategory(false);
     };
@@ -103,11 +116,7 @@ const EditItemPage: React.FC = () => {
             return;
         }
 
-        const category = getCategory(formData?.category_id || 0);
-        if (category) {
-            await createCategory({category, subcategory: newSubcategory});
-        }
-
+        setSubcategory(newSubcategory);
         setIsAddingSubcategory(false);
     };
 
@@ -131,6 +140,16 @@ const EditItemPage: React.FC = () => {
             if (!formData) return;
 
             console.log('formData', formData)
+
+            const alreadyExistingCategory = categories.find(cat => cat.category === category)
+
+            if (alreadyExistingCategory) {
+                formData.category_id = alreadyExistingCategory.id;
+            } else {
+                const categoryData = await createCategory({category: newCategory, subcategory: newSubcategory});
+                if (!categoryData) return; // todo: check
+                formData.category_id = categoryData.id;
+            }
 
             await updateItem(id, formData);
             navigate(`/inventory/view/${id}`);
@@ -239,8 +258,8 @@ const EditItemPage: React.FC = () => {
                                                 id="category"
                                                 name="category"
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                value={formData?.category_id ? getCategory(formData.category_id) : ""}
-                                                onChange={handleInputChange}
+                                                value={category}
+                                                onChange={(e) => setCategory(e.target.value)}
                                                 required
                                             >
                                                 <option value="">Select Category</option>
@@ -249,6 +268,9 @@ const EditItemPage: React.FC = () => {
                                                         {category.category}
                                                     </option>
                                                 ))}
+                                                {newCategory && (
+                                                    <option value={newCategory}>{newCategory}</option>
+                                                )}
                                             </select>
                                             <Button
                                                 type="button"
@@ -273,16 +295,19 @@ const EditItemPage: React.FC = () => {
                                                 id="subcategory"
                                                 name="subcategory"
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                value={formData?.category_id ? getSubcategory(formData.category_id) : ""}
-                                                onChange={handleInputChange}
+                                                value={subcategory}
+                                                onChange={(e) => setSubcategory(e.target.value)}
                                                 disabled={!formData?.category_id}
                                             >
                                                 <option value="">Select Subcategory</option>
-                                                {formData?.category_id && getSubcategoriesForCategory(getCategory(formData.category_id)).map((subcategory) => (
+                                                {category && getSubcategoriesForCategory(category).map((subcategory) => (
                                                     <option key={subcategory} value={subcategory}>
                                                         {subcategory}
                                                     </option>
                                                 ))}
+                                                {newSubcategory && (
+                                                    <option value={newSubcategory}>{newSubcategory}</option>
+                                                )}
                                             </select>
                                             <Button
                                                 type="button"
