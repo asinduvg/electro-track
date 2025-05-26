@@ -244,14 +244,6 @@ const EditItemPage: React.FC = () => {
                                 <CardTitle>Basic Information</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {/* Image Upload */}
-                                <ImageUpload
-                                    currentImageUrl={formData?.image_url}
-                                    onImageChange={handleImageChange}
-                                    onError={handleImageError}
-                                    disabled={isSubmitting}
-                                />
-
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Input
                                         label="SKU"
@@ -365,6 +357,14 @@ const EditItemPage: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Image Upload */}
+                                <ImageUpload
+                                    currentImageUrl={formData?.image_url}
+                                    onImageChange={handleImageChange}
+                                    onError={handleImageError}
+                                    disabled={isSubmitting}
+                                />
                             </CardContent>
                         </Card>
 
