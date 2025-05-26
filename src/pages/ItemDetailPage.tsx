@@ -141,30 +141,6 @@ const ItemDetailPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Item Image */}
-                    <Card>
-                        <CardContent className="p-6">
-                            <div className="max-w-2xl mx-auto">
-                                {item.image_url ? (
-                                    <div className="aspect-video w-full relative rounded-lg overflow-hidden bg-gray-100">
-                                        <img
-                                            src={item.image_url}
-                                            alt={item.name}
-                                            className="object-contain w-full h-full"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="aspect-video w-full flex items-center justify-center rounded-lg bg-gray-100">
-                                        <div className="text-center text-gray-400">
-                                            <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                            <p>No image preview available</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
                     {/* Basic Information */}
                     <Card>
                         <CardHeader>
@@ -362,6 +338,26 @@ const ItemDetailPage: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
+                                {/* Item Image */}
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    {item.image_url ? (
+                                        <div className="aspect-square w-full relative rounded-lg overflow-hidden bg-white">
+                                            <img
+                                                src={item.image_url}
+                                                alt={item.name}
+                                                className="object-contain w-full h-full"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="aspect-square w-full flex items-center justify-center rounded-lg bg-white">
+                                            <div className="text-center text-gray-400">
+                                                <ImageIcon className="h-8 w-8 mx-auto mb-2"/>
+                                                <p className="text-sm">No image available</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <p className="text-sm text-gray-500">Current Quantity</p>
                                     <p className={`text-2xl font-bold ${
