@@ -1,23 +1,29 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {Save, X, Upload, Image as ImageIcon, Plus} from 'lucide-react';
+import {Save, X, Plus} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
 import {Modal} from '../components/ui/Modal';
 import {useAuth} from '../context/AuthContext';
 import useItems from "../hooks/useItems.tsx";
-import {supabase} from '../lib/supabase';
 import useCategories from "../hooks/useCategories.tsx";
+import {ImageUpload} from "../components/ui/ImageUpload.tsx";
+import {uploadItemImage} from "../lib/imageUpload.ts";
 
 const AddItemPage: React.FC = () => {
     const navigate = useNavigate();
     const {currentUser} = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
+    // const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+    // Image state
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
+    // const [imageFile, setImageFile] = useState<File | null>(null);
+    // const [uploadProgress, setUploadProgress] = useState(0);
 
     // New category modal state
     const [isAddingCategory, setIsAddingCategory] = useState(false);
@@ -40,7 +46,7 @@ const AddItemPage: React.FC = () => {
         unit_cost: '',
     });
 
-    const {items, addItem, error: itemsError} = useItems();
+    const {items, addItem, updateItem, error: itemsError} = useItems();
     const {categories, createCategory, getSubcategoriesForCategory, error: categoriesError} = useCategories();
 
     useEffect(() => {
@@ -73,55 +79,64 @@ const AddItemPage: React.FC = () => {
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                setError('Please upload an image file');
-                return;
-            }
+    // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const file = e.target.files?.[0];
+    //     if (file) {
+    //         // Validate file type
+    //         if (!file.type.startsWith('image/')) {
+    //             setError('Please upload an image file');
+    //             return;
+    //         }
+    //
+    //         // Validate file size (max 5MB)
+    //         if (file.size > 5 * 1024 * 1024) {
+    //             setError('Image size should be less than 5MB');
+    //             return;
+    //         }
+    //
+    //         setImageFile(file);
+    //         setImageUrl(URL.createObjectURL(file));
+    //         setError(null);
+    //     }
+    // };
 
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                setError('Image size should be less than 5MB');
-                return;
-            }
+    // const uploadImage = async (itemId: string): Promise<string | null> => {
+    //     if (!imageFile) return null;
+    //
+    //     try {
+    //         const fileExt = imageFile.name.split('.').pop();
+    //         const fileName = `${itemId}.${fileExt}`;
+    //         const filePath = `items/${fileName}`;
+    //
+    //         const {error: uploadError, data} = await supabase.storage
+    //             .from('items')
+    //             .upload(filePath, imageFile, {
+    //                 upsert: true,
+    //                 onUploadProgress: (progress) => {
+    //                     setUploadProgress((progress.loaded / progress.total) * 100);
+    //                 }
+    //             });
+    //
+    //         if (uploadError) throw uploadError;
+    //
+    //         const {data: {publicUrl}} = supabase.storage
+    //             .from('items')
+    //             .getPublicUrl(filePath);
+    //
+    //         return publicUrl;
+    //     } catch (err) {
+    //         console.error('Error uploading image:', err);
+    //         throw new Error('Failed to upload image');
+    //     }
+    // };
 
-            setImageFile(file);
-            setImageUrl(URL.createObjectURL(file));
-            setError(null);
-        }
+    const handleImageChange = (file: File | null, previewUrl: string | null) => {
+        setSelectedImageFile(file);
+        setImagePreviewUrl(previewUrl);
     };
 
-    const uploadImage = async (itemId: string): Promise<string | null> => {
-        if (!imageFile) return null;
-
-        try {
-            const fileExt = imageFile.name.split('.').pop();
-            const fileName = `${itemId}.${fileExt}`;
-            const filePath = `items/${fileName}`;
-
-            const {error: uploadError, data} = await supabase.storage
-                .from('items')
-                .upload(filePath, imageFile, {
-                    upsert: true,
-                    onUploadProgress: (progress) => {
-                        setUploadProgress((progress.loaded / progress.total) * 100);
-                    }
-                });
-
-            if (uploadError) throw uploadError;
-
-            const {data: {publicUrl}} = supabase.storage
-                .from('items')
-                .getPublicUrl(filePath);
-
-            return publicUrl;
-        } catch (err) {
-            console.error('Error uploading image:', err);
-            throw new Error('Failed to upload image');
-        }
+    const handleImageError = (errorMessage: string) => {
+        setError(errorMessage);
     };
 
     const handleAddCategory = async () => {
@@ -134,14 +149,6 @@ const AddItemPage: React.FC = () => {
             setError('Category already exists');
             return;
         }
-
-        // await createCategory({category: newCategory, subcategory: newSubcategory});
-
-        // Update form data with the new category
-        // setFormData({
-        //     ...formData,
-        //     subcategory: '' // Reset subcategory when changing category
-        // });
 
         setNewSubcategory('');
         setIsAddingCategory(false);
@@ -157,23 +164,6 @@ const AddItemPage: React.FC = () => {
             setError('Sub category already exists');
             return;
         }
-
-        // Find the current category and add the new subcategory
-        // const category = categories.find(cat => cat.name === formData.category);
-        // if (category) {
-        //     category.subcategories.push(newSubcategory);
-        //
-        //     // Update form data with the new subcategory
-        //     setFormData({
-        //         ...formData,
-        //         subcategory: newSubcategory
-        //     });
-        // }
-
-        // setFormData({
-        //     ...formData,
-        //     subcategory: newSubcategory
-        // });
 
         setIsAddingSubcategory(false);
     };
@@ -220,7 +210,29 @@ const AddItemPage: React.FC = () => {
                 created_by: currentUser.id
             };
 
-            await addItem(itemData);
+            const newItem = await addItem(itemData);
+
+            if (!newItem) {
+                setError('Failed to create item');
+                return;
+            }
+
+            // Upload image if one was selected
+            let imageUrl: string | null = null;
+            if (selectedImageFile) {
+                try {
+                    imageUrl = await uploadItemImage(selectedImageFile, newItem.id);
+
+                    // Update the item with the image URL
+                    // You might want to add an updateItem call here if needed
+                    await updateItem(newItem.id, { image_url: imageUrl });
+                } catch (imageError) {
+                    console.error('Image upload failed:', imageError);
+                    // Item was created successfully, but image upload failed
+                    // You might want to show a warning instead of an error
+                    setError('Item created successfully, but image upload failed. You can edit the item to add an image later.');
+                }
+            }
 
             navigate('/inventory/items');
         } catch (err) {
@@ -230,6 +242,12 @@ const AddItemPage: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+
+    // Generate a temporary ID for image upload (you might want to improve this)
+    const tempItemId = React.useMemo(() =>
+            `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        []
+    );
 
     return (
         <div className="space-y-6">
@@ -366,6 +384,68 @@ const AddItemPage: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Image Upload */}
+                            {/*<div className="mt-4">*/}
+                            {/*    <label className="block text-sm font-medium text-gray-700 mb-2">*/}
+                            {/*        Item Image (Optional)*/}
+                            {/*    </label>*/}
+                            {/*    <div className="flex items-center space-x-4">*/}
+                            {/*        <div*/}
+                            {/*            className={`w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center ${*/}
+                            {/*                imageUrl ? 'border-blue-500' : 'border-gray-300'*/}
+                            {/*            }`}*/}
+                            {/*        >*/}
+                            {/*            {imageUrl ? (*/}
+                            {/*                <img*/}
+                            {/*                    src={imageUrl}*/}
+                            {/*                    alt="Preview"*/}
+                            {/*                    className="w-full h-full object-cover rounded-lg"*/}
+                            {/*                />*/}
+                            {/*            ) : (*/}
+                            {/*                <ImageIcon className="w-8 h-8 text-gray-400"/>*/}
+                            {/*            )}*/}
+                            {/*        </div>*/}
+                            {/*        <div className="flex-1">*/}
+                            {/*            <input*/}
+                            {/*                type="file"*/}
+                            {/*                accept="image/*"*/}
+                            {/*                onChange={handleImageChange}*/}
+                            {/*                className="hidden"*/}
+                            {/*                id="item-image"*/}
+                            {/*            />*/}
+                            {/*            <label*/}
+                            {/*                htmlFor="item-image"*/}
+                            {/*                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"*/}
+                            {/*            >*/}
+                            {/*                <Upload className="w-4 h-4 mr-2"/>*/}
+                            {/*                {imageUrl ? 'Change Image' : 'Upload Image'}*/}
+                            {/*            </label>*/}
+                            {/*            {imageFile && (*/}
+                            {/*                <p className="mt-2 text-sm text-gray-500">*/}
+                            {/*                    {imageFile.name}*/}
+                            {/*                </p>*/}
+                            {/*            )}*/}
+                            {/*            {uploadProgress > 0 && uploadProgress < 100 && (*/}
+                            {/*                <div className="mt-2">*/}
+                            {/*                    <div className="bg-gray-200 rounded-full h-2.5">*/}
+                            {/*                        <div*/}
+                            {/*                            className="bg-blue-600 h-2.5 rounded-full"*/}
+                            {/*                            style={{width: `${uploadProgress}%`}}*/}
+                            {/*                        ></div>*/}
+                            {/*                    </div>*/}
+                            {/*                </div>*/}
+                            {/*            )}*/}
+                            {/*        </div>*/}
+                            {/*    </div>*/}
+                            {/*</div>*/}
+
+                            <ImageUpload
+                                onImageChange={handleImageChange}
+                                onError={handleImageError}
+                                disabled={isSubmitting}
+                            />
+
                         </CardContent>
                     </Card>
 
