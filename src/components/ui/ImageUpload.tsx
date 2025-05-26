@@ -1,4 +1,3 @@
-// src/components/ui/ImageUpload.tsx - Deferred upload version
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, Camera } from 'lucide-react';
 import { Button } from './Button';
@@ -29,7 +28,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     // Cleanup preview URL on unmount
     useEffect(() => {
         return () => {
-            if (previewUrl && !currentImageUrl) {
+            if (previewUrl && previewUrl !== currentImageUrl) {
                 cleanupImagePreview(previewUrl);
             }
         };
@@ -41,8 +40,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             validateImage(file);
             onError(''); // Clear previous errors
 
-            // Clean up previous preview if it was a local URL
-            if (previewUrl && !currentImageUrl) {
+            // Clean up previous preview if it was a local URL (not the current image URL)
+            if (previewUrl && previewUrl !== currentImageUrl) {
                 cleanupImagePreview(previewUrl);
             }
 
@@ -98,8 +97,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     };
 
     const handleRemoveImage = () => {
-        // Clean up preview URL if it's a local URL
-        if (previewUrl && !currentImageUrl) {
+        // Clean up preview URL if it's a local URL (not the current image URL)
+        if (previewUrl && previewUrl !== currentImageUrl) {
             cleanupImagePreview(previewUrl);
         }
 
@@ -116,9 +115,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         onImageChange(null, null);
     };
 
-    const triggerFileInput = () => {
-        if (!disabled) {
-            fileInputRef.current?.click();
+    const triggerFileInput = (e?: React.MouseEvent) => {
+        // Prevent event bubbling if called from button click
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        if (!disabled && fileInputRef.current) {
+            // Reset the input value to allow selecting the same file again
+            fileInputRef.current.value = '';
+            fileInputRef.current.click();
         }
     };
 
@@ -127,6 +134,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             <label className="block text-sm font-medium text-gray-700">
                 Item Image
             </label>
+
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileInputChange}
+                disabled={disabled}
+            />
 
             {/* Image Preview */}
             {previewUrl && (
@@ -162,24 +179,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             {!previewUrl && (
                 <div
                     className={`
-            relative border-2 border-dashed rounded-lg p-6 text-center transition-colors
-            ${isDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300'}
-            ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'}
-          `}
+                        relative border-2 border-dashed rounded-lg p-6 text-center transition-colors
+                        ${isDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300'}
+                        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'}
+                    `}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onClick={triggerFileInput}
                 >
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleFileInputChange}
-                        disabled={disabled}
-                    />
-
                     <div className="flex flex-col items-center space-y-2">
                         <Camera className="h-8 w-8 text-gray-400" />
                         <div>
