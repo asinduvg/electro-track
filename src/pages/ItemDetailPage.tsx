@@ -328,6 +328,33 @@ const ItemDetailPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-6">
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
+                            <ShoppingCart size={18} className="mr-2 text-blue-600"/>
+                            Image
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {/* Item Image */}
+                        <div className="bg-gray-50 rounded-lg">
+                            {item.image_url ? (
+                                <div className="aspect-square w-full relative rounded-lg overflow-hidden bg-white">
+                                    <img
+                                        src={item.image_url}
+                                        alt={item.name}
+                                        className="object-contain w-full h-full"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="aspect-square w-full flex items-center justify-center rounded-lg bg-white">
+                                    <div className="text-center text-gray-400">
+                                        <ImageIcon className="h-8 w-8 mx-auto mb-2"/>
+                                        <p className="text-sm">No image available</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
                     {/* Inventory Details */}
                     <Card>
                         <CardHeader>
@@ -338,26 +365,6 @@ const ItemDetailPage: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {/* Item Image */}
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    {item.image_url ? (
-                                        <div className="aspect-square w-full relative rounded-lg overflow-hidden bg-white">
-                                            <img
-                                                src={item.image_url}
-                                                alt={item.name}
-                                                className="object-contain w-full h-full"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="aspect-square w-full flex items-center justify-center rounded-lg bg-white">
-                                            <div className="text-center text-gray-400">
-                                                <ImageIcon className="h-8 w-8 mx-auto mb-2"/>
-                                                <p className="text-sm">No image available</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <p className="text-sm text-gray-500">Current Quantity</p>
                                     <p className={`text-2xl font-bold ${

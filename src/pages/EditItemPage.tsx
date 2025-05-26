@@ -180,6 +180,16 @@ const EditItemPage: React.FC = () => {
                 
                 // Upload new image
                 imageUrl = await uploadItemImage(selectedImageFile, id);
+            } else if (!imagePreviewUrl) {
+                // Delete old image if it exists
+                if (formData.image_url) {
+                    try {
+                        await deleteItemImage(formData.image_url);
+                    } catch (error) {
+                        console.error('Error deleting old image:', error);
+                    }
+                }
+                imageUrl = null;
             }
 
             // Update item with new data including image URL
