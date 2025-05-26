@@ -144,22 +144,24 @@ const ItemDetailPage: React.FC = () => {
                     {/* Item Image */}
                     <Card>
                         <CardContent className="p-6">
-                            {item.image_url ? (
-                                <div className="aspect-video w-full relative rounded-lg overflow-hidden bg-gray-100">
-                                    <img
-                                        src={item.image_url}
-                                        alt={item.name}
-                                        className="object-contain w-full h-full"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="aspect-video w-full flex items-center justify-center rounded-lg bg-gray-100">
-                                    <div className="text-center text-gray-400">
-                                        <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                        <p>No image preview available</p>
+                            <div className="max-w-2xl mx-auto">
+                                {item.image_url ? (
+                                    <div className="aspect-video w-full relative rounded-lg overflow-hidden bg-gray-100">
+                                        <img
+                                            src={item.image_url}
+                                            alt={item.name}
+                                            className="object-contain w-full h-full"
+                                        />
                                     </div>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="aspect-video w-full flex items-center justify-center rounded-lg bg-gray-100">
+                                        <div className="text-center text-gray-400">
+                                            <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
+                                            <p>No image preview available</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
 
