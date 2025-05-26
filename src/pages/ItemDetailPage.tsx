@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, Link} from 'react-router-dom';
 import {
-    Edit, ArrowLeft, Package, ShoppingCart, Truck, Info, Clipboard, BarChart
+    Edit, ArrowLeft, Package, ShoppingCart, Truck, Info, Clipboard, BarChart,
+    Image as ImageIcon
 } from 'lucide-react';
-import {Card, CardContent, CardHeader, CardTitle} from '../components/ui/Card';
+import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
 import {Badge} from '../components/ui/Badge';
 import {Button} from '../components/ui/Button';
 import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
@@ -140,6 +141,21 @@ const ItemDetailPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
+                    {/* Item Image */}
+                    {item.image_url && (
+                        <Card>
+                            <CardContent className="p-6">
+                                <div className="aspect-video w-full relative rounded-lg overflow-hidden bg-gray-100">
+                                    <img
+                                        src={item.image_url}
+                                        alt={item.name}
+                                        className="object-contain w-full h-full"
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Basic Information */}
                     <Card>
                         <CardHeader>
@@ -248,7 +264,7 @@ const ItemDetailPage: React.FC = () => {
                                                 title = 'Withdrawn';
                                                 break;
                                             default:
-                                                icon = <BarChart className="h-5 w-5 text-yellow-500"/>;
+                                                icon = <Package className="h-5 w-5 text-gray-500"/>;
                                                 bgColor = 'bg-yellow-50';
                                                 title = 'Adjusted';
                                         }
