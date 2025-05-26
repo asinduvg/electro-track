@@ -142,9 +142,9 @@ const ItemDetailPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
                     {/* Item Image */}
-                    {item.image_url && (
-                        <Card>
-                            <CardContent className="p-6">
+                    <Card>
+                        <CardContent className="p-6">
+                            {item.image_url ? (
                                 <div className="aspect-video w-full relative rounded-lg overflow-hidden bg-gray-100">
                                     <img
                                         src={item.image_url}
@@ -152,9 +152,16 @@ const ItemDetailPage: React.FC = () => {
                                         className="object-contain w-full h-full"
                                     />
                                 </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                            ) : (
+                                <div className="aspect-video w-full flex items-center justify-center rounded-lg bg-gray-100">
+                                    <div className="text-center text-gray-400">
+                                        <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
+                                        <p>No image preview available</p>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
 
                     {/* Basic Information */}
                     <Card>
