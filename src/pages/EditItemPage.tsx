@@ -9,6 +9,8 @@ import {useAuth} from '../context/AuthContext';
 import type {Database} from '../lib/database.types';
 import useItems from "../hooks/useItems.tsx";
 import useCategories from "../hooks/useCategories.tsx";
+import {ImageUpload} from "../components/ui/ImageUpload";
+import {uploadItemImage, deleteItemImage} from "../lib/imageUpload";
 
 type ItemUpdate = Database['public']['Tables']['items']['Update'];
 
@@ -19,6 +21,10 @@ const EditItemPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Image state
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
     // New category modal state
     const [isAddingCategory, setIsAddingCategory] = useState(false);
@@ -50,7 +56,7 @@ const EditItemPage: React.FC = () => {
                     return;
                 }
 
-                const item = await getItem(id); // todo: dependency array
+                const item = await getItem(id);
 
                 if (!item) throw new Error('Item not found');
 
@@ -59,8 +65,12 @@ const EditItemPage: React.FC = () => {
 
                 setCategory(category || '');
                 setSubcategory(subcategory || '');
-
                 setFormData(item);
+                
+                // Set initial image preview if item has an image
+                if (item.image_url) {
+                    setImagePreviewUrl(item.image_url);
+                }
             } catch (err) {
                 console.error('Error loading item:', err);
                 setError('Failed to load item details');
@@ -87,6 +97,15 @@ const EditItemPage: React.FC = () => {
         }
     };
 
+    const handleImageChange = (file: File | null, previewUrl: string | null) => {
+        setSelectedImageFile(file);
+        setImagePreviewUrl(previewUrl);
+    };
+
+    const handleImageError = (errorMessage: string) => {
+        setError(errorMessage);
+    };
+
     const handleAddCategory = async () => {
         if (!newCategory.trim()) {
             setError('Category name is required');
@@ -99,8 +118,6 @@ const EditItemPage: React.FC = () => {
         }
 
         setCategory(newCategory);
-
-        // await createCategory({category: newCategory, subcategory: newSubcategory});
         setNewSubcategory('');
         setIsAddingCategory(false);
     };
@@ -139,19 +156,38 @@ const EditItemPage: React.FC = () => {
 
             if (!formData) return;
 
-            console.log('formData', formData)
-
             const alreadyExistingCategory = categories.find(cat => cat.category === category)
 
             if (alreadyExistingCategory) {
                 formData.category_id = alreadyExistingCategory.id;
             } else {
                 const categoryData = await createCategory({category: newCategory, subcategory: newSubcategory});
-                if (!categoryData) return; // todo: check
+                if (!categoryData) return;
                 formData.category_id = categoryData.id;
             }
 
-            await updateItem(id, formData);
+            // Handle image update
+            let imageUrl = formData.image_url;
+            if (selectedImageFile) {
+                // Delete old image if it exists
+                if (formData.image_url) {
+                    try {
+                        await deleteItemImage(formData.image_url);
+                    } catch (error) {
+                        console.error('Error deleting old image:', error);
+                    }
+                }
+                
+                // Upload new image
+                imageUrl = await uploadItemImage(selectedImageFile, id);
+            }
+
+            // Update item with new data including image URL
+            await updateItem(id, {
+                ...formData,
+                image_url: imageUrl
+            });
+
             navigate(`/inventory/view/${id}`);
         } catch (err) {
             console.error('Error updating item:', err);
@@ -208,6 +244,14 @@ const EditItemPage: React.FC = () => {
                                 <CardTitle>Basic Information</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                {/* Image Upload */}
+                                <ImageUpload
+                                    currentImageUrl={formData?.image_url}
+                                    onImageChange={handleImageChange}
+                                    onError={handleImageError}
+                                    disabled={isSubmitting}
+                                />
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Input
                                         label="SKU"
