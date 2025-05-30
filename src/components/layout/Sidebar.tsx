@@ -1,6 +1,7 @@
 import React from 'react';
 import {useNavigate, useLocation} from 'react-router-dom';
 import {useAuth} from '../../context/AuthContext';
+import {useSettings} from '../../context/SettingsContext';
 import {UserRole} from '../../types';
 import {
     Home, Package, Map, Clipboard, BarChart3, Settings, Users,
@@ -59,6 +60,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
 
 const Sidebar: React.FC = () => {
     const {currentUser, logout} = useAuth();
+    const {companyName} = useSettings();
     const location = useLocation();
     const navigate = useNavigate();
     const [inventoryOpen, setInventoryOpen] = React.useState(false);
@@ -78,7 +80,7 @@ const Sidebar: React.FC = () => {
             <div className="px-6 py-6 border-b border-blue-800">
                 <h1 className="text-2xl font-bold flex items-center">
                     <Package className="mr-2"/>
-                    ElectroTrack
+                    {companyName}
                 </h1>
                 <p className="text-blue-300 text-sm mt-1">Inventory Management</p>
             </div>
@@ -190,9 +192,9 @@ const Sidebar: React.FC = () => {
             <div className="p-4 border-t border-blue-800">
                 <div className="flex items-center mb-4">
                     <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center mr-3">
-            <span className="font-medium text-lg">
-              {currentUser.name.charAt(0)}
-            </span>
+                        <span className="font-medium text-lg">
+                            {currentUser.name.charAt(0)}
+                        </span>
                     </div>
                     <div>
                         <p className="font-medium">{currentUser.name}</p>
