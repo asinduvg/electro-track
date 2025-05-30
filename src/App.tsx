@@ -31,7 +31,7 @@ function App() {
                         <Route path="/login" element={<LoginPage/>}/>
 
                         <Route path="/" element={<Layout/>}>
-                            <Route index element={<Navigate to="/dashboard" replace/>}/>
+                            <Route index element={<Navigate to="/dashboard\" replace/>}/>
                             <Route path="dashboard" element={<DashboardPage/>}/>
                             {/* Inventory Routes */}
                             <Route path="inventory">
@@ -59,7 +59,7 @@ function App() {
                             <Route path="settings" element={<SettingsPage/>}/>
                         </Route>
 
-                        <Route path="*" element={<Navigate to="/dashboard" replace/>}/>
+                        <Route path="*" element={<Navigate to="/dashboard\" replace/>}/>
                     </Routes>
                 </Router>
             </AuthProvider>
