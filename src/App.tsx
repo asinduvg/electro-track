@@ -33,7 +33,7 @@ function App() {
                             <Route path="/login" element={<LoginPage/>}/>
 
                             <Route path="/" element={<Layout/>}>
-                                <Route index element={<Navigate to="/dashboard" replace/>}/>
+                                <Route index element={<Navigate to="/dashboard\" replace/>}/>
                                 <Route path="dashboard" element={<DashboardPage/>}/>
                                 <Route path="inventory">
                                     <Route path="items" element={<InventoryListPage/>}/>
@@ -53,7 +53,7 @@ function App() {
                                 <Route path="settings" element={<SettingsPage/>}/>
                             </Route>
 
-                            <Route path="*" element={<Navigate to="/dashboard" replace/>}/>
+                            <Route path="*" element={<Navigate to="/dashboard\" replace/>}/>
                         </Routes>
                     </Router>
                 </SettingsProvider>
