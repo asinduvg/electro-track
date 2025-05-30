@@ -2,12 +2,22 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type FontSize = 'small' | 'medium' | 'large';
 type Theme = 'light' | 'dark' | 'system';
+type DateFormat = 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY';
 
 interface SettingsContextType {
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  companyName: string;
+  setCompanyName: (name: string) => void;
+  timezone: string;
+  setTimezone: (tz: string) => void;
+  dateFormat: DateFormat;
+  setDateFormat: (format: DateFormat) => void;
+  currency: Currency;
+  setCurrency: (currency: Currency) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -32,6 +42,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return (localStorage.getItem('theme') as Theme) || 'system';
     }
     return 'system';
+  });
+
+  const [companyName, setCompanyName] = useState(() => {
+    return localStorage.getItem('companyName') || 'ElectroTrack';
+  });
+
+  const [timezone, setTimezone] = useState(() => {
+    return localStorage.getItem('timezone') || 'UTC';
+  });
+
+  const [dateFormat, setDateFormat] = useState<DateFormat>(() => {
+    return (localStorage.getItem('dateFormat') as DateFormat) || 'MM/DD/YYYY';
+  });
+
+  const [currency, setCurrency] = useState<Currency>(() => {
+    return (localStorage.getItem('currency') as Currency) || 'USD';
   });
 
   // Apply theme on mount and when theme changes
@@ -74,8 +100,40 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
 
+  // Save other settings to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('companyName', companyName);
+  }, [companyName]);
+
+  useEffect(() => {
+    localStorage.setItem('timezone', timezone);
+  }, [timezone]);
+
+  useEffect(() => {
+    localStorage.setItem('dateFormat', dateFormat);
+  }, [dateFormat]);
+
+  useEffect(() => {
+    localStorage.setItem('currency', currency);
+  }, [currency]);
+
   return (
-    <SettingsContext.Provider value={{ fontSize, setFontSize, theme, setTheme }}>
+    <SettingsContext.Provider 
+      value={{ 
+        fontSize, 
+        setFontSize, 
+        theme, 
+        setTheme,
+        companyName,
+        setCompanyName,
+        timezone,
+        setTimezone,
+        dateFormat,
+        setDateFormat,
+        currency,
+        setCurrency
+      }}
+    >
       {children}
     </SettingsContext.Provider>
   );
