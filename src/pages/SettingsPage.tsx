@@ -5,9 +5,11 @@ import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Badge} from '../components/ui/Badge';
 import {useAuth} from '../context/AuthContext';
+import {useSettings} from '../context/SettingsContext';
 
 const SettingsPage: React.FC = () => {
     const {currentUser} = useAuth();
+    const {fontSize, setFontSize} = useSettings();
     const [activeTab, setActiveTab] = useState('general');
 
     const [generalSettings, setGeneralSettings] = useState({
@@ -502,10 +504,12 @@ const SettingsPage: React.FC = () => {
                                         </label>
                                         <select
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                            value={fontSize}
+                                            onChange={(e) => setFontSize(e.target.value as 'small' | 'medium' | 'large')}
                                         >
-                                            <option>Small</option>
-                                            <option>Medium</option>
-                                            <option>Large</option>
+                                            <option value="small">Small</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="large">Large</option>
                                         </select>
                                     </div>
                                 </div>
