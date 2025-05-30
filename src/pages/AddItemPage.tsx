@@ -79,57 +79,6 @@ const AddItemPage: React.FC = () => {
         }
     };
 
-    // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const file = e.target.files?.[0];
-    //     if (file) {
-    //         // Validate file type
-    //         if (!file.type.startsWith('image/')) {
-    //             setError('Please upload an image file');
-    //             return;
-    //         }
-    //
-    //         // Validate file size (max 5MB)
-    //         if (file.size > 5 * 1024 * 1024) {
-    //             setError('Image size should be less than 5MB');
-    //             return;
-    //         }
-    //
-    //         setImageFile(file);
-    //         setImageUrl(URL.createObjectURL(file));
-    //         setError(null);
-    //     }
-    // };
-
-    // const uploadImage = async (itemId: string): Promise<string | null> => {
-    //     if (!imageFile) return null;
-    //
-    //     try {
-    //         const fileExt = imageFile.name.split('.').pop();
-    //         const fileName = `${itemId}.${fileExt}`;
-    //         const filePath = `items/${fileName}`;
-    //
-    //         const {error: uploadError, data} = await supabase.storage
-    //             .from('items')
-    //             .upload(filePath, imageFile, {
-    //                 upsert: true,
-    //                 onUploadProgress: (progress) => {
-    //                     setUploadProgress((progress.loaded / progress.total) * 100);
-    //                 }
-    //             });
-    //
-    //         if (uploadError) throw uploadError;
-    //
-    //         const {data: {publicUrl}} = supabase.storage
-    //             .from('items')
-    //             .getPublicUrl(filePath);
-    //
-    //         return publicUrl;
-    //     } catch (err) {
-    //         console.error('Error uploading image:', err);
-    //         throw new Error('Failed to upload image');
-    //     }
-    // };
-
     const handleImageChange = (file: File | null, previewUrl: string | null) => {
         setSelectedImageFile(file);
         setImagePreviewUrl(previewUrl);
