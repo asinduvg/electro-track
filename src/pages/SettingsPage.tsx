@@ -9,15 +9,21 @@ import {useSettings} from '../context/SettingsContext';
 
 const SettingsPage: React.FC = () => {
     const {currentUser} = useAuth();
-    const {fontSize, setFontSize, theme, setTheme} = useSettings();
+    const {
+        fontSize,
+        setFontSize,
+        theme,
+        setTheme,
+        companyName,
+        setCompanyName,
+        timezone,
+        setTimezone,
+        dateFormat,
+        setDateFormat,
+        currency,
+        setCurrency
+    } = useSettings();
     const [activeTab, setActiveTab] = useState('general');
-
-    const [generalSettings, setGeneralSettings] = useState({
-        companyName: 'ElectroTrack',
-        timezone: 'UTC',
-        dateFormat: 'MM/DD/YYYY',
-        currency: 'USD'
-    });
 
     const [notificationSettings, setNotificationSettings] = useState({
         lowStockAlerts: true,
@@ -34,8 +40,8 @@ const SettingsPage: React.FC = () => {
     });
 
     const handleSaveSettings = () => {
-        // Here we would save the settings to the database
-        console.log('Saving settings...');
+        // Settings are automatically saved via context
+        console.log('Settings saved');
     };
 
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'inventory_manager')) {
@@ -109,11 +115,8 @@ const SettingsPage: React.FC = () => {
                             <CardContent className="space-y-4">
                                 <Input
                                     label="Company Name"
-                                    value={generalSettings.companyName}
-                                    onChange={(e) => setGeneralSettings({
-                                        ...generalSettings,
-                                        companyName: e.target.value
-                                    })}
+                                    value={companyName}
+                                    onChange={(e) => setCompanyName(e.target.value)}
                                 />
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -123,16 +126,16 @@ const SettingsPage: React.FC = () => {
                                         </label>
                                         <select
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={generalSettings.timezone}
-                                            onChange={(e) => setGeneralSettings({
-                                                ...generalSettings,
-                                                timezone: e.target.value
-                                            })}
+                                            value={timezone}
+                                            onChange={(e) => setTimezone(e.target.value)}
                                         >
                                             <option value="UTC">UTC</option>
-                                            <option value="EST">Eastern Time</option>
-                                            <option value="CST">Central Time</option>
-                                            <option value="PST">Pacific Time</option>
+                                            <option value="America/New_York">Eastern Time</option>
+                                            <option value="America/Chicago">Central Time</option>
+                                            <option value="America/Los_Angeles">Pacific Time</option>
+                                            <option value="Europe/London">London</option>
+                                            <option value="Europe/Paris">Paris</option>
+                                            <option value="Asia/Tokyo">Tokyo</option>
                                         </select>
                                     </div>
 
@@ -142,11 +145,8 @@ const SettingsPage: React.FC = () => {
                                         </label>
                                         <select
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={generalSettings.dateFormat}
-                                            onChange={(e) => setGeneralSettings({
-                                                ...generalSettings,
-                                                dateFormat: e.target.value
-                                            })}
+                                            value={dateFormat}
+                                            onChange={(e) => setDateFormat(e.target.value as any)}
                                         >
                                             <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                                             <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -160,11 +160,8 @@ const SettingsPage: React.FC = () => {
                                         </label>
                                         <select
                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            value={generalSettings.currency}
-                                            onChange={(e) => setGeneralSettings({
-                                                ...generalSettings,
-                                                currency: e.target.value
-                                            })}
+                                            value={currency}
+                                            onChange={(e) => setCurrency(e.target.value as any)}
                                         >
                                             <option value="USD">USD ($)</option>
                                             <option value="EUR">EUR (€)</option>
