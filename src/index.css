@@ -28,4 +28,53 @@
         font-size: 1.125rem;
         line-height: 1.75rem;
     }
+
+    /* Dark mode styles */
+    .dark {
+        color-scheme: dark;
+    }
+
+    .dark body {
+        @apply bg-gray-900 text-gray-100;
+    }
+
+    .dark .bg-white {
+        @apply bg-gray-800;
+    }
+
+    .dark .bg-gray-50 {
+        @apply bg-gray-900;
+    }
+
+    .dark .bg-gray-100 {
+        @apply bg-gray-800;
+    }
+
+    .dark .border-gray-200 {
+        @apply border-gray-700;
+    }
+
+    .dark .text-gray-500 {
+        @apply text-gray-400;
+    }
+
+    .dark .text-gray-600 {
+        @apply text-gray-300;
+    }
+
+    .dark .text-gray-700 {
+        @apply text-gray-200;
+    }
+
+    .dark .text-gray-900 {
+        @apply text-white;
+    }
+
+    .dark .hover\:bg-gray-50:hover {
+        @apply hover:bg-gray-800;
+    }
+
+    .dark .hover\:bg-gray-100:hover {
+        @apply hover:bg-gray-700;
+    }
 }

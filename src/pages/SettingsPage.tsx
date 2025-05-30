@@ -9,7 +9,7 @@ import {useSettings} from '../context/SettingsContext';
 
 const SettingsPage: React.FC = () => {
     const {currentUser} = useAuth();
-    const {fontSize, setFontSize} = useSettings();
+    const {fontSize, setFontSize, theme, setTheme} = useSettings();
     const [activeTab, setActiveTab] = useState('general');
 
     const [generalSettings, setGeneralSettings] = useState({
@@ -469,31 +469,20 @@ const SettingsPage: React.FC = () => {
                                             Theme
                                         </label>
                                         <div className="grid grid-cols-3 gap-4">
-                                            {['Light', 'Dark', 'System'].map((theme) => (
+                                            {['light', 'dark', 'system'].map((themeOption) => (
                                                 <button
-                                                    key={theme}
-                                                    className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    key={themeOption}
+                                                    onClick={() => setTheme(themeOption as 'light' | 'dark' | 'system')}
+                                                    className={`p-4 border-2 rounded-lg hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                                        theme === themeOption ? 'border-blue-500' : 'border-gray-200'
+                                                    }`}
                                                 >
                                                     <div className={`h-12 rounded-md mb-2 ${
-                                                        theme === 'Light' ? 'bg-white border border-gray-200' :
-                                                            theme === 'Dark' ? 'bg-gray-900' : 'bg-gradient-to-r from-white to-gray-900'
+                                                        themeOption === 'light' ? 'bg-white border border-gray-200' :
+                                                            themeOption === 'dark' ? 'bg-gray-900' : 'bg-gradient-to-r from-white to-gray-900'
                                                     }`}/>
-                                                    <p className="text-sm font-medium">{theme}</p>
+                                                    <p className="text-sm font-medium capitalize">{themeOption}</p>
                                                 </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Accent Color
-                                        </label>
-                                        <div className="grid grid-cols-6 gap-4">
-                                            {['blue', 'green', 'purple', 'red', 'orange', 'pink'].map((color) => (
-                                                <button
-                                                    key={color}
-                                                    className={`w-full h-12 rounded-lg bg-${color}-500 hover:ring-2 hover:ring-${color}-400 focus:outline-none focus:ring-2 focus:ring-${color}-500`}
-                                                />
                                             ))}
                                         </div>
                                     </div>
