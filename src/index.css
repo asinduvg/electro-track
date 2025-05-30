@@ -3,14 +3,34 @@
 @tailwind utilities;
 
 @layer base {
+    :root {
+        color-scheme: light;
+    }
+
+    .dark {
+        color-scheme: dark;
+    }
+
+    body {
+        @apply bg-gray-100 text-gray-900 transition-colors duration-200;
+    }
+
+    .dark body {
+        @apply bg-gray-900 text-gray-100;
+    }
+
     select {
-        @apply block w-full px-3 py-2 border-2 rounded-md shadow-sm text-gray-900 placeholder-gray-400;
-        @apply border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none;
+        @apply block w-full px-3 py-2 border-2 rounded-md shadow-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500;
+        @apply bg-white dark:bg-gray-800;
+        @apply border-gray-300 dark:border-gray-600;
+        @apply focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none;
     }
 
     textarea {
-        @apply block w-full px-3 py-2 border-2 rounded-md shadow-sm text-gray-900 placeholder-gray-400;
-        @apply border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none;
+        @apply block w-full px-3 py-2 border-2 rounded-md shadow-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500;
+        @apply bg-white dark:bg-gray-800;
+        @apply border-gray-300 dark:border-gray-600;
+        @apply focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none;
     }
 
     /* Font size classes */
@@ -29,15 +49,7 @@
         line-height: 1.75rem;
     }
 
-    /* Dark mode styles */
-    .dark {
-        color-scheme: dark;
-    }
-
-    .dark body {
-        @apply bg-gray-900 text-gray-100;
-    }
-
+    /* Dark mode component styles */
     .dark .bg-white {
         @apply bg-gray-800;
     }
@@ -76,5 +88,24 @@
 
     .dark .hover\:bg-gray-100:hover {
         @apply hover:bg-gray-700;
+    }
+
+    /* Input styles */
+    .dark input {
+        @apply bg-gray-800 border-gray-600 text-gray-100;
+    }
+
+    /* Card styles */
+    .dark .card {
+        @apply bg-gray-800 border-gray-700;
+    }
+
+    /* Button styles */
+    .dark .btn-primary {
+        @apply bg-blue-600 hover:bg-blue-700;
+    }
+
+    .dark .btn-secondary {
+        @apply bg-gray-700 hover:bg-gray-600;
     }
 }

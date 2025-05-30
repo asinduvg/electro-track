@@ -1,7 +1,6 @@
 import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
 import {AuthProvider} from './context/AuthContext';
 import {DatabaseProvider} from "./context/DatabaseContext.tsx";
-import {SettingsProvider} from "./context/SettingsContext.tsx";
 
 // Layout
 import Layout from './components/layout/Layout';
@@ -27,36 +26,42 @@ function App() {
     return (
         <DatabaseProvider>
             <AuthProvider>
-                <SettingsProvider>
-                    <Router>
-                        <Routes>
-                            <Route path="/login" element={<LoginPage/>}/>
+                <Router>
+                    <Routes>
+                        <Route path="/login" element={<LoginPage/>}/>
 
-                            <Route path="/" element={<Layout/>}>
-                                <Route index element={<Navigate to="/dashboard\" replace/>}/>
-                                <Route path="dashboard" element={<DashboardPage/>}/>
-                                <Route path="inventory">
-                                    <Route path="items" element={<InventoryListPage/>}/>
-                                    <Route path="add" element={<AddItemPage/>}/>
-                                    <Route path="edit/:id" element={<EditItemPage/>}/>
-                                    <Route path="view/:id" element={<ItemDetailPage/>}/>
-                                    <Route path="receive" element={<ReceiveItemsPage/>}/>
-                                    <Route path="transfer" element={<TransferItemsPage/>}/>
-                                    <Route path="dispose" element={<DisposeItemsPage/>}/>
-                                    <Route path="withdraw" element={<WithdrawItemsPage/>}/>
-                                </Route>
-
-                                <Route path="locations" element={<LocationsPage/>}/>
-                                <Route path="locations/edit/:id" element={<EditLocationPage/>}/>
-                                <Route path="reports" element={<ReportsPage/>}/>
-                                <Route path="users" element={<UsersPage/>}/>
-                                <Route path="settings" element={<SettingsPage/>}/>
+                        <Route path="/" element={<Layout/>}>
+                            <Route index element={<Navigate to="/dashboard" replace/>}/>
+                            <Route path="dashboard" element={<DashboardPage/>}/>
+                            {/* Inventory Routes */}
+                            <Route path="inventory">
+                                <Route path="items" element={<InventoryListPage/>}/>
+                                <Route path="add" element={<AddItemPage/>}/>
+                                <Route path="edit/:id" element={<EditItemPage/>}/>
+                                <Route path="view/:id" element={<ItemDetailPage/>}/>
+                                <Route path="receive" element={<ReceiveItemsPage/>}/>
+                                <Route path="transfer" element={<TransferItemsPage/>}/>
+                                <Route path="dispose" element={<DisposeItemsPage/>}/>
+                                <Route path="withdraw" element={<WithdrawItemsPage/>}/>
                             </Route>
 
-                            <Route path="*" element={<Navigate to="/dashboard\" replace/>}/>
-                        </Routes>
-                    </Router>
-                </SettingsProvider>
+                            {/* Location Management */}
+                            <Route path="locations" element={<LocationsPage/>}/>
+                            <Route path="locations/edit/:id" element={<EditLocationPage/>}/>
+
+                            {/* Reports */}
+                            <Route path="reports" element={<ReportsPage/>}/>
+
+                            {/* User Management */}
+                            <Route path="users" element={<UsersPage/>}/>
+
+                            {/* Settings */}
+                            <Route path="settings" element={<SettingsPage/>}/>
+                        </Route>
+
+                        <Route path="*" element={<Navigate to="/dashboard" replace/>}/>
+                    </Routes>
+                </Router>
             </AuthProvider>
         </DatabaseProvider>
     );

@@ -21,52 +21,58 @@ export const useSettings = () => {
 };
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize state from localStorage or default values
   const [fontSize, setFontSize] = useState<FontSize>(() => {
     const saved = localStorage.getItem('fontSize');
     return (saved as FontSize) || 'medium';
   });
 
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme');
-    return (saved as Theme) || 'system';
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('theme') as Theme) || 'system';
+    }
+    return 'system';
   });
 
-  // Handle font size changes
+  // Apply theme on mount and when theme changes
   useEffect(() => {
-    localStorage.setItem('fontSize', fontSize);
-    document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
-    switch (fontSize) {
-      case 'small':
-        document.documentElement.classList.add('text-sm');
-        break;
-      case 'medium':
-        document.documentElement.classList.add('text-base');
-        break;
-      case 'large':
-        document.documentElement.classList.add('text-lg');
-        break;
-    }
-  }, [fontSize]);
-
-  // Handle theme changes
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
+    const root = window.document.documentElement;
     
-    const updateTheme = () => {
-      const isDark = theme === 'dark' || 
-        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      
-      document.documentElement.classList.toggle('dark', isDark);
+    const applyTheme = () => {
+      if (theme === 'system') {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.classList.toggle('dark', systemTheme === 'dark');
+      } else {
+        root.classList.toggle('dark', theme === 'dark');
+      }
     };
 
-    updateTheme();
+    applyTheme();
+    localStorage.setItem('theme', theme);
 
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', updateTheme);
-      return () => mediaQuery.removeEventListener('change', updateTheme);
-    }
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      if (theme === 'system') {
+        applyTheme();
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
+
+  // Apply font size on mount and when fontSize changes
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('text-sm', 'text-base', 'text-lg');
+    root.classList.add(
+      fontSize === 'small' ? 'text-sm' : 
+      fontSize === 'large' ? 'text-lg' : 
+      'text-base'
+    );
+    localStorage.setItem('fontSize', fontSize);
+  }, [fontSize]);
 
   return (
     <SettingsContext.Provider value={{ fontSize, setFontSize, theme, setTheme }}>
