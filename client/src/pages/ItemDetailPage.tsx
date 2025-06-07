@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Edit, ArrowLeft, Package, MapPin, DollarSign, Warehouse } from 'lucide-react';
+import { Edit, ArrowLeft, Package, MapPin, DollarSign, Warehouse, Clock, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -10,6 +10,7 @@ import useItems from "../hooks/useItems";
 import useLocations from "../hooks/useLocations";
 import useStocks from "../hooks/useStocks";
 import useCategories from "../hooks/useCategories";
+import useTransactions from "../hooks/useTransactions";
 
 const ItemDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -21,10 +22,12 @@ const ItemDetailPage: React.FC = () => {
     const { locations } = useLocations();
     const { stocks } = useStocks();
     const { categories } = useCategories();
+    const { transactions } = useTransactions();
 
     const item = items.find(item => item.id === id);
     const category = categories.find(cat => cat.id === item?.category_id);
     const itemStocks = stocks.filter(stock => stock.item_id === id);
+    const itemTransactions = transactions.filter(txn => txn.item_id === id).slice(0, 10); // Latest 10 transactions
 
     useEffect(() => {
         if (!id) {
@@ -173,8 +176,8 @@ const ItemDetailPage: React.FC = () => {
                                                 <div className="flex items-center space-x-3">
                                                     <Warehouse className="h-5 w-5 text-gray-400" />
                                                     <div>
-                                                        <div className="font-medium">{location?.name || 'Unknown Location'}</div>
-                                                        <div className="text-sm text-gray-500">{location?.description}</div>
+                                                        <div className="font-medium">{location?.unit || 'Unknown Location'}</div>
+                                                        <div className="text-sm text-gray-500">{location?.building} {location?.room}</div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
@@ -189,6 +192,89 @@ const ItemDetailPage: React.FC = () => {
                                 <div className="text-center py-8 text-gray-500">
                                     <Warehouse className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                                     <p>No stock locations found for this item</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Recent Transactions */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center">
+                                <Clock className="mr-2 h-5 w-5" />
+                                Recent Transactions
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {itemTransactions.length > 0 ? (
+                                <div className="space-y-3">
+                                    {itemTransactions.map((transaction) => {
+                                        const fromLocation = locations.find(loc => loc.id === transaction.from_location_id);
+                                        const toLocation = locations.find(loc => loc.id === transaction.to_location_id);
+                                        
+                                        const getTransactionIcon = (type: string) => {
+                                            switch (type) {
+                                                case 'receive':
+                                                    return <TrendingUp className="h-4 w-4 text-green-600" />;
+                                                case 'withdraw':
+                                                    return <TrendingDown className="h-4 w-4 text-red-600" />;
+                                                case 'transfer':
+                                                    return <RefreshCw className="h-4 w-4 text-blue-600" />;
+                                                case 'adjust':
+                                                    return <Package className="h-4 w-4 text-purple-600" />;
+                                                default:
+                                                    return <Clock className="h-4 w-4 text-gray-400" />;
+                                            }
+                                        };
+
+                                        const getTransactionColor = (type: string) => {
+                                            switch (type) {
+                                                case 'receive':
+                                                    return 'text-green-600 bg-green-50';
+                                                case 'withdraw':
+                                                    return 'text-red-600 bg-red-50';
+                                                case 'transfer':
+                                                    return 'text-blue-600 bg-blue-50';
+                                                case 'adjust':
+                                                    return 'text-purple-600 bg-purple-50';
+                                                default:
+                                                    return 'text-gray-600 bg-gray-50';
+                                            }
+                                        };
+
+                                        return (
+                                            <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className={`p-2 rounded-full ${getTransactionColor(transaction.type)}`}>
+                                                        {getTransactionIcon(transaction.type)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-medium capitalize">{transaction.type}</div>
+                                                        <div className="text-sm text-gray-500">
+                                                            {transaction.type === 'transfer' 
+                                                                ? `${fromLocation?.unit || 'Unknown'} → ${toLocation?.unit || 'Unknown'}`
+                                                                : transaction.type === 'receive' 
+                                                                ? `To: ${toLocation?.unit || 'Unknown'}`
+                                                                : `From: ${fromLocation?.unit || 'Unknown'}`
+                                                            }
+                                                        </div>
+                                                        <div className="text-xs text-gray-400">
+                                                            {new Date(transaction.performed_at || '').toLocaleDateString()}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-medium">{transaction.quantity}</div>
+                                                    <div className="text-sm text-gray-500">units</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-gray-500">
+                                    <Clock className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                    <p>No recent transactions for this item</p>
                                 </div>
                             )}
                         </CardContent>
