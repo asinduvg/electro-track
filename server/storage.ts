@@ -12,7 +12,7 @@ import {
   type PurchaseOrder, type InsertPurchaseOrder, type PurchaseOrderItem, type InsertPurchaseOrderItem
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, or, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -234,8 +234,8 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  async bulkCreateItems(items: InsertItem[]): Promise<Item[]> {
-    const result = await db.insert(items).values(items).returning();
+  async bulkCreateItems(itemsList: InsertItem[]): Promise<Item[]> {
+    const result = await db.insert(items).values(itemsList).returning();
     return result;
   }
 
@@ -268,6 +268,11 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async deleteItemLocation(id: string): Promise<boolean> {
+    const result = await db.delete(itemLocations).where(eq(itemLocations.id, id)).returning();
+    return result.length > 0;
+  }
+
   // Transactions
   async getAllTransactions(): Promise<Transaction[]> {
     return await db.select().from(transactions).orderBy(desc(transactions.performed_at));
@@ -275,6 +280,197 @@ export class DatabaseStorage implements IStorage {
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const result = await db.insert(transactions).values(transaction).returning();
+    return result[0];
+  }
+
+  async getTransactionsByItem(itemId: string): Promise<Transaction[]> {
+    return await db.select().from(transactions).where(eq(transactions.item_id, itemId)).orderBy(desc(transactions.performed_at));
+  }
+
+  // Suppliers
+  async getAllSuppliers(): Promise<Supplier[]> {
+    return await db.select().from(suppliers).orderBy(asc(suppliers.name));
+  }
+
+  async getSupplier(id: string): Promise<Supplier | undefined> {
+    const result = await db.select().from(suppliers).where(eq(suppliers.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createSupplier(supplier: InsertSupplier): Promise<Supplier> {
+    const result = await db.insert(suppliers).values(supplier).returning();
+    return result[0];
+  }
+
+  async updateSupplier(id: string, updates: Partial<InsertSupplier>): Promise<Supplier | undefined> {
+    const result = await db.update(suppliers).set(updates).where(eq(suppliers.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteSupplier(id: string): Promise<boolean> {
+    const result = await db.delete(suppliers).where(eq(suppliers.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Supplier Items
+  async getAllSupplierItems(): Promise<SupplierItem[]> {
+    return await db.select().from(supplierItems);
+  }
+
+  async getSupplierItemsBySupplier(supplierId: string): Promise<SupplierItem[]> {
+    return await db.select().from(supplierItems).where(eq(supplierItems.supplier_id, supplierId));
+  }
+
+  async getSupplierItemsByItem(itemId: string): Promise<SupplierItem[]> {
+    return await db.select().from(supplierItems).where(eq(supplierItems.item_id, itemId));
+  }
+
+  async createSupplierItem(supplierItem: InsertSupplierItem): Promise<SupplierItem> {
+    const result = await db.insert(supplierItems).values(supplierItem).returning();
+    return result[0];
+  }
+
+  async updateSupplierItem(id: string, updates: Partial<InsertSupplierItem>): Promise<SupplierItem | undefined> {
+    const result = await db.update(supplierItems).set(updates).where(eq(supplierItems.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteSupplierItem(id: string): Promise<boolean> {
+    const result = await db.delete(supplierItems).where(eq(supplierItems.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Stock Reservations
+  async getAllStockReservations(): Promise<StockReservation[]> {
+    return await db.select().from(stockReservations);
+  }
+
+  async getActiveReservations(): Promise<StockReservation[]> {
+    return await db.select().from(stockReservations).where(eq(stockReservations.status, 'active'));
+  }
+
+  async createStockReservation(reservation: InsertStockReservation): Promise<StockReservation> {
+    const result = await db.insert(stockReservations).values(reservation).returning();
+    return result[0];
+  }
+
+  async updateStockReservation(id: string, updates: Partial<InsertStockReservation>): Promise<StockReservation | undefined> {
+    const result = await db.update(stockReservations).set(updates).where(eq(stockReservations.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteStockReservation(id: string): Promise<boolean> {
+    const result = await db.delete(stockReservations).where(eq(stockReservations.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Alerts
+  async getAllAlerts(): Promise<Alert[]> {
+    return await db.select().from(alerts).orderBy(desc(alerts.created_at));
+  }
+
+  async getActiveAlerts(): Promise<Alert[]> {
+    return await db.select().from(alerts).where(eq(alerts.status, 'active')).orderBy(desc(alerts.created_at));
+  }
+
+  async createAlert(alert: InsertAlert): Promise<Alert> {
+    const result = await db.insert(alerts).values(alert).returning();
+    return result[0];
+  }
+
+  async updateAlert(id: string, updates: Partial<InsertAlert>): Promise<Alert | undefined> {
+    const result = await db.update(alerts).set(updates).where(eq(alerts.id, id)).returning();
+    return result[0];
+  }
+
+  async acknowledgeAlert(id: string, userId: string): Promise<Alert | undefined> {
+    const result = await db.update(alerts).set({ 
+      status: 'acknowledged', 
+      acknowledged_by: userId, 
+      acknowledged_at: new Date() 
+    }).where(eq(alerts.id, id)).returning();
+    return result[0];
+  }
+
+  async resolveAlert(id: string): Promise<Alert | undefined> {
+    const result = await db.update(alerts).set({ 
+      status: 'resolved', 
+      resolved_at: new Date() 
+    }).where(eq(alerts.id, id)).returning();
+    return result[0];
+  }
+
+  // User Activity
+  async getAllUserActivity(): Promise<UserActivity[]> {
+    return await db.select().from(userActivity).orderBy(desc(userActivity.timestamp));
+  }
+
+  async getUserActivity(userId: string): Promise<UserActivity[]> {
+    return await db.select().from(userActivity).where(eq(userActivity.user_id, userId)).orderBy(desc(userActivity.timestamp));
+  }
+
+  async createUserActivity(activity: InsertUserActivity): Promise<UserActivity> {
+    const result = await db.insert(userActivity).values(activity).returning();
+    return result[0];
+  }
+
+  // Saved Searches
+  async getSavedSearches(userId: string): Promise<SavedSearch[]> {
+    return await db.select().from(savedSearches).where(eq(savedSearches.user_id, userId));
+  }
+
+  async createSavedSearch(search: InsertSavedSearch): Promise<SavedSearch> {
+    const result = await db.insert(savedSearches).values(search).returning();
+    return result[0];
+  }
+
+  async deleteSavedSearch(id: string): Promise<boolean> {
+    const result = await db.delete(savedSearches).where(eq(savedSearches.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Item History
+  async getItemHistory(itemId: string): Promise<ItemHistory[]> {
+    return await db.select().from(itemHistory).where(eq(itemHistory.item_id, itemId)).orderBy(desc(itemHistory.changed_at));
+  }
+
+  async createItemHistory(history: Partial<ItemHistory>): Promise<ItemHistory> {
+    const result = await db.insert(itemHistory).values(history as any).returning();
+    return result[0];
+  }
+
+  // Purchase Orders
+  async getAllPurchaseOrders(): Promise<PurchaseOrder[]> {
+    return await db.select().from(purchaseOrders).orderBy(desc(purchaseOrders.created_at));
+  }
+
+  async getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {
+    const result = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createPurchaseOrder(order: InsertPurchaseOrder): Promise<PurchaseOrder> {
+    const result = await db.insert(purchaseOrders).values(order).returning();
+    return result[0];
+  }
+
+  async updatePurchaseOrder(id: string, updates: Partial<InsertPurchaseOrder>): Promise<PurchaseOrder | undefined> {
+    const result = await db.update(purchaseOrders).set(updates).where(eq(purchaseOrders.id, id)).returning();
+    return result[0];
+  }
+
+  // Purchase Order Items
+  async getPurchaseOrderItems(orderId: string): Promise<PurchaseOrderItem[]> {
+    return await db.select().from(purchaseOrderItems).where(eq(purchaseOrderItems.purchase_order_id, orderId));
+  }
+
+  async createPurchaseOrderItem(item: InsertPurchaseOrderItem): Promise<PurchaseOrderItem> {
+    const result = await db.insert(purchaseOrderItems).values(item).returning();
+    return result[0];
+  }
+
+  async updatePurchaseOrderItem(id: string, updates: Partial<InsertPurchaseOrderItem>): Promise<PurchaseOrderItem | undefined> {
+    const result = await db.update(purchaseOrderItems).set(updates).where(eq(purchaseOrderItems.id, id)).returning();
     return result[0];
   }
 }

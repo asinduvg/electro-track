@@ -145,13 +145,15 @@ const BulkOperationsPage: React.FC = () => {
 
                 {/* Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleBulkExport}>
-                        <CardContent className="p-6 text-center">
-                            <Download className="h-12 w-12 text-[#008489] mx-auto mb-4" />
-                            <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Export Inventory</h3>
-                            <p className="text-sm text-[#717171]">Download complete inventory as CSV</p>
-                        </CardContent>
-                    </Card>
+                    <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleBulkExport}>
+                        <Card>
+                            <CardContent className="p-6 text-center">
+                                <Download className="h-12 w-12 text-[#008489] mx-auto mb-4" />
+                                <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Export Inventory</h3>
+                                <p className="text-sm text-[#717171]">Download complete inventory as CSV</p>
+                            </CardContent>
+                        </Card>
+                    </div>
 
                     <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                         <CardContent className="p-6 text-center">
