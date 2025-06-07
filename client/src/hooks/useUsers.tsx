@@ -15,36 +15,16 @@ const db_getUsers = async () => {
 }
 
 const db_getUserById = async (id: string) => {
-    const {data: user, error: userError} = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-    if (userError) throw userError;
-    return user as User;
+    return await apiClient.getUser(id) as User;
 }
 
 const db_updateUser = async (id: string, updates: UserUpdate) => {
-    const {data: user, error: usersError} = await supabase
-        .from('users')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-    if (usersError) throw usersError;
-    return user as User;
+    return await apiClient.updateUser(id, updates) as User;
 }
 
 const db_deleteUser = async (id: string) => {
-    const {error: usersError} = await supabase
-        .from('users')
-        .delete()
-        .eq('id', id);
-
-    if (usersError) throw usersError;
-    return;
+    // Note: Delete user functionality not implemented in API yet
+    throw new Error('Delete user functionality not implemented');
 }
 
 function useUsers() {

@@ -32,7 +32,7 @@ function useTransactions() {
     }, [dbOperation]);
 
     // WARNING!! refresh or navigation to another page is necessary after a txn to keep the state upto date
-    const createTransaction = async (transaction: TransactionInsert): Promise<Transaction | null> => {
+    const createTransaction = async (transaction: InsertTransaction): Promise<Transaction | null> => {
         return await dbOperation<Transaction>(
             () => db_createTransaction(transaction),
             (transaction) => setTransactions(prevTransactions => [...prevTransactions, transaction]),

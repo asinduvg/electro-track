@@ -85,7 +85,7 @@ function useLocations() {
                     .filter(item => item.id === stock.item_id)
                     .map(item => ({...stock, item}))
             )
-            .map(stock => stock.quantity * stock.item.unit_cost)
+            .map(stock => stock.quantity * Number(stock.item.unit_cost))
             .reduce((sum, quantity) => sum + quantity, 0);
     }
 
