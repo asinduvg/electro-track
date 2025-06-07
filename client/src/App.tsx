@@ -9,6 +9,8 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import InventoryListPage from './pages/InventoryListPage';
 import AddItemPage from './pages/AddItemPage';
+import EditItemPage from './pages/EditItemPage';
+import ItemDetailPage from './pages/ItemDetailPage';
 import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import ReportsPage from './pages/ReportsPage';
@@ -91,6 +93,26 @@ function App() {
                                     <ProtectedRoute>
                                         <Layout>
                                             <AddItemPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/inventory/edit/:id" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <EditItemPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/inventory/view/:id" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <ItemDetailPage />
                                         </Layout>
                                     </ProtectedRoute>
                                 } 

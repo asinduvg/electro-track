@@ -104,8 +104,12 @@ const InventoryListPage: React.FC = () => {
                                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                                     <TableCell>
                                         <div className="flex space-x-2">
-                                            <Button variant="outline" size="sm">Edit</Button>
-                                            <Button variant="outline" size="sm">View</Button>
+                                            <Link to={`/inventory/edit/${item.id}`}>
+                                                <Button variant="outline" size="sm">Edit</Button>
+                                            </Link>
+                                            <Link to={`/inventory/view/${item.id}`}>
+                                                <Button variant="outline" size="sm">View</Button>
+                                            </Link>
                                         </div>
                                     </TableCell>
                                 </TableRow>

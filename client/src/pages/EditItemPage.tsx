@@ -1,18 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {Save, X, Plus} from 'lucide-react';
+import {Save, X, Plus, ArrowLeft} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {Modal} from '../components/ui/Modal';
 import {useAuth} from '../context/AuthContext';
-import type {Database} from '../lib/database.types';
 import useItems from "../hooks/useItems.tsx";
 import useCategories from "../hooks/useCategories.tsx";
-import {ImageUpload} from "../components/ui/ImageUpload";
-import {uploadItemImage, deleteItemImage} from "../lib/imageUpload";
-
-type ItemUpdate = Database['public']['Tables']['items']['Update'];
+import type { Item, InsertItem } from '../../shared/schema';
 
 const EditItemPage: React.FC = () => {
     const {id} = useParams<{ id: string }>();
@@ -22,25 +17,18 @@ const EditItemPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Image state
-    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+    const {items, updateItem} = useItems();
+    const {categories} = useCategories();
 
-    // New category modal state
-    const [isAddingCategory, setIsAddingCategory] = useState(false);
-    const [newCategory, setNewCategory] = useState('');
-
-    // New subcategory modal state
-    const [isAddingSubcategory, setIsAddingSubcategory] = useState(false);
-    const [newSubcategory, setNewSubcategory] = useState('');
-
-    const {getItem, updateItem, error: itemsError} = useItems();
-    const {categories, createCategory, getCategory, getSubcategoriesForCategory, getSubcategory, error: categoriesError} = useCategories();
-
-    const [formData, setFormData] = useState<ItemUpdate | null>(null);
-
-    const [category, setCategory] = useState('');
-    const [subcategory, setSubcategory] = useState('');
+    const [formData, setFormData] = useState<Partial<Item>>({
+        sku: '',
+        name: '',
+        description: '',
+        category_id: '',
+        unit_cost: 0,
+        minimum_stock: 0,
+        status: 'in_stock'
+    });
 
     useEffect(() => {
         (async () => {
