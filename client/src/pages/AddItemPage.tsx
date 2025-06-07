@@ -236,20 +236,20 @@ const AddItemPage: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Item Images
                                 </label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center relative">
                                     <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                                     <div className="text-sm text-gray-600 mb-4">
-                                        <span className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
+                                        <label className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
                                             Click to upload
-                                        </span> or drag and drop
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="sr-only"
+                                            />
+                                        </label> or drag and drop
                                     </div>
-                                    <input
-                                        type="file"
-                                        multiple
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    />
                                     <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB each</p>
                                 </div>
                                 
