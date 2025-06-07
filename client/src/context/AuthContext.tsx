@@ -1,10 +1,6 @@
 import React, {createContext, useContext, useState, useEffect} from 'react';
-import {supabase} from '../lib/supabase';
-import {signIn, signOut} from '../lib/auth';
-import useUsers from "../hooks/useUsers.tsx";
-import {Database} from "../lib/database.types.ts";
-
-type User = Database['public']['Tables']['users']['Row'];
+import {apiClient} from '../lib/api';
+import type {User} from '@shared/schema';
 
 interface AuthContextType {
     currentUser: User | null;
@@ -34,87 +30,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {getUserById, updateUser, error: usersError} = useUsers();
-
     useEffect(() => {
-        if (usersError) {
-            setError(usersError);
-            setIsLoading(false);
-        }
-    }, [usersError]);
-
-    useEffect(() => {
-        (async () => {
-            // Check active session
-            console.log('get session effect called')
-            supabase.auth.getSession().then(({data: {session}}) => {
-                console.log('active session found', session)
-                if (session) {
-                    getUserProfile(session.user.id);
-                } else {
-                    setIsLoading(false);
+        // For demo purposes, check localStorage for stored user session
+        const checkStoredUser = () => {
+            try {
+                const storedUser = localStorage.getItem('currentUser');
+                if (storedUser) {
+                    setCurrentUser(JSON.parse(storedUser));
                 }
-            });
+            } catch (error) {
+                console.error('Error checking stored user:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-            // Listen for auth changes
-            const {data: {subscription}} = supabase.auth.onAuthStateChange((_event, session) => {
-                console.log('on state change called')
-                if (session) {
-                    getUserProfile(session.user.id);
-                } else {
-                    setCurrentUser(null);
-                    setIsLoading(false);
-                }
-            });
-
-            return () => {
-                subscription.unsubscribe();
-            };
-        })()
-
+        checkStoredUser();
     }, []);
-
-    const getUserProfile = async (userId: string) => {
-        const user = await getUserById(userId)
-        setCurrentUser(user)
-        await updateUser(userId, {last_login: new Date().toISOString()})
-        setIsLoading(false);
-    };
 
     const login = async (email: string, password: string): Promise<User | null> => {
         try {
-            setIsLoading(true);
             setError(null);
-
-            const {user} = await signIn(email, password);
-
-            if (user) {
-                console.log('User is ', user)
-                console.log('now calling getUserProfile')
-                await getUserProfile(user.id);
-                return currentUser;
-            }
-
-            return null;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            setIsLoading(true);
+            
+            const response = await apiClient.login(email, password) as { user: User };
+            const user = response.user;
+            
+            setCurrentUser(user);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            return user;
         } catch (error) {
-            setError('Invalid email or password');
+            setError(error instanceof Error ? error.message : 'Login failed');
             return null;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const logout = async () => {
+    const logout = async (): Promise<void> => {
         try {
-            await signOut();
             setCurrentUser(null);
+            localStorage.removeItem('currentUser');
         } catch (error) {
-            console.error('Logout error:', error);
+            setError(error instanceof Error ? error.message : 'Logout failed');
         }
     };
 
-    const value = {
+    const value: AuthContextType = {
         currentUser,
         login,
         logout,
@@ -123,5 +86,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         error,
     };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
 };

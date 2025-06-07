@@ -1,19 +1,14 @@
-import {supabase} from "../lib/supabase.ts";
-import type {Database} from "../lib/database.types.ts";
+import {apiClient} from "../lib/api";
+import type {ItemLocation} from "@shared/schema";
 import {useEffect, useState} from "react";
 import {useDatabase} from "../context/DatabaseContext.tsx";
 
-type Stock = Database['public']['Tables']['item_locations']['Row'];
+type Stock = ItemLocation;
 
-const ERR_STOCKS_LOAD = 'Failed to load locations';
+const ERR_STOCKS_LOAD = 'Failed to load item locations';
 
 const db_getStocks = async () => {
-    const {data, error} = await supabase
-        .from('item_locations')
-        .select('*');
-
-    if (error) throw error;
-    return data as Stock[];
+    return await apiClient.getItemLocations() as Stock[];
 }
 
 function useStocks() {
