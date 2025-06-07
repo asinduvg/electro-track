@@ -193,7 +193,7 @@ const ItemDetailPage: React.FC = () => {
                                                         </div>
                                                         <div>
                                                             <p className="font-semibold text-slate-900">{location?.unit || 'Unknown Location'}</p>
-                                                            <p className="text-sm text-slate-500">{location?.description || ''}</p>
+                                                            <p className="text-sm text-slate-500">{location?.building || location?.room || 'Storage location'}</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">

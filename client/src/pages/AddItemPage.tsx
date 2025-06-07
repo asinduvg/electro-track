@@ -323,11 +323,11 @@ const AddItemPage: React.FC = () => {
                                 )}
                             </div>
                             
-                            <div className="flex space-x-4">
+                            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200">
                                 <Button 
                                     type="submit" 
                                     disabled={isSubmitting}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-medium transition-colors"
                                 >
                                     {isSubmitting ? 'Creating...' : 'Create Item'}
                                 </Button>
@@ -338,6 +338,7 @@ const AddItemPage: React.FC = () => {
                                         e.preventDefault();
                                         navigate('/inventory/items');
                                     }}
+                                    className="bg-white border-slate-200 hover:bg-slate-50 px-8 py-3 rounded-xl font-medium transition-colors"
                                 >
                                     Cancel
                                 </Button>
