@@ -25,12 +25,21 @@ export interface IStorage {
   // Categories
   getAllCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | undefined>;
+  deleteCategory(id: number): Promise<boolean>;
+  
+  // Category Hierarchy
+  getAllCategoryHierarchy(): Promise<CategoryHierarchy[]>;
+  createCategoryHierarchy(category: InsertCategoryHierarchy): Promise<CategoryHierarchy>;
+  updateCategoryHierarchy(id: string, updates: Partial<InsertCategoryHierarchy>): Promise<CategoryHierarchy | undefined>;
+  deleteCategoryHierarchy(id: string): Promise<boolean>;
   
   // Locations
   getAllLocations(): Promise<Location[]>;
   getLocation(id: string): Promise<Location | undefined>;
   createLocation(location: InsertLocation): Promise<Location>;
   updateLocation(id: string, updates: Partial<InsertLocation>): Promise<Location | undefined>;
+  deleteLocation(id: string): Promise<boolean>;
   
   // Items
   getAllItems(): Promise<Item[]>;
@@ -38,16 +47,75 @@ export interface IStorage {
   createItem(item: InsertItem): Promise<Item>;
   updateItem(id: string, updates: Partial<InsertItem>): Promise<Item | undefined>;
   deleteItem(id: string): Promise<boolean>;
+  bulkCreateItems(items: InsertItem[]): Promise<Item[]>;
+  searchItems(query: string): Promise<Item[]>;
   
   // Item Locations
   getAllItemLocations(): Promise<ItemLocation[]>;
   getItemLocations(itemId: string): Promise<ItemLocation[]>;
   createItemLocation(itemLocation: InsertItemLocation): Promise<ItemLocation>;
   updateItemLocation(id: string, updates: Partial<InsertItemLocation>): Promise<ItemLocation | undefined>;
+  deleteItemLocation(id: string): Promise<boolean>;
   
   // Transactions
   getAllTransactions(): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  getTransactionsByItem(itemId: string): Promise<Transaction[]>;
+  
+  // Suppliers
+  getAllSuppliers(): Promise<Supplier[]>;
+  getSupplier(id: string): Promise<Supplier | undefined>;
+  createSupplier(supplier: InsertSupplier): Promise<Supplier>;
+  updateSupplier(id: string, updates: Partial<InsertSupplier>): Promise<Supplier | undefined>;
+  deleteSupplier(id: string): Promise<boolean>;
+  
+  // Supplier Items
+  getAllSupplierItems(): Promise<SupplierItem[]>;
+  getSupplierItemsBySupplier(supplierId: string): Promise<SupplierItem[]>;
+  getSupplierItemsByItem(itemId: string): Promise<SupplierItem[]>;
+  createSupplierItem(supplierItem: InsertSupplierItem): Promise<SupplierItem>;
+  updateSupplierItem(id: string, updates: Partial<InsertSupplierItem>): Promise<SupplierItem | undefined>;
+  deleteSupplierItem(id: string): Promise<boolean>;
+  
+  // Stock Reservations
+  getAllStockReservations(): Promise<StockReservation[]>;
+  getActiveReservations(): Promise<StockReservation[]>;
+  createStockReservation(reservation: InsertStockReservation): Promise<StockReservation>;
+  updateStockReservation(id: string, updates: Partial<InsertStockReservation>): Promise<StockReservation | undefined>;
+  deleteStockReservation(id: string): Promise<boolean>;
+  
+  // Alerts
+  getAllAlerts(): Promise<Alert[]>;
+  getActiveAlerts(): Promise<Alert[]>;
+  createAlert(alert: InsertAlert): Promise<Alert>;
+  updateAlert(id: string, updates: Partial<InsertAlert>): Promise<Alert | undefined>;
+  acknowledgeAlert(id: string, userId: string): Promise<Alert | undefined>;
+  resolveAlert(id: string): Promise<Alert | undefined>;
+  
+  // User Activity
+  getAllUserActivity(): Promise<UserActivity[]>;
+  getUserActivity(userId: string): Promise<UserActivity[]>;
+  createUserActivity(activity: InsertUserActivity): Promise<UserActivity>;
+  
+  // Saved Searches
+  getSavedSearches(userId: string): Promise<SavedSearch[]>;
+  createSavedSearch(search: InsertSavedSearch): Promise<SavedSearch>;
+  deleteSavedSearch(id: string): Promise<boolean>;
+  
+  // Item History
+  getItemHistory(itemId: string): Promise<ItemHistory[]>;
+  createItemHistory(history: Partial<ItemHistory>): Promise<ItemHistory>;
+  
+  // Purchase Orders
+  getAllPurchaseOrders(): Promise<PurchaseOrder[]>;
+  getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined>;
+  createPurchaseOrder(order: InsertPurchaseOrder): Promise<PurchaseOrder>;
+  updatePurchaseOrder(id: string, updates: Partial<InsertPurchaseOrder>): Promise<PurchaseOrder | undefined>;
+  
+  // Purchase Order Items
+  getPurchaseOrderItems(orderId: string): Promise<PurchaseOrderItem[]>;
+  createPurchaseOrderItem(item: InsertPurchaseOrderItem): Promise<PurchaseOrderItem>;
+  updatePurchaseOrderItem(id: string, updates: Partial<InsertPurchaseOrderItem>): Promise<PurchaseOrderItem | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {

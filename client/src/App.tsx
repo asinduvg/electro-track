@@ -18,6 +18,11 @@ import SettingsPage from './pages/SettingsPage';
 import ReceiveItemsPage from './pages/ReceiveItemsPage';
 import WithdrawItemsPage from './pages/WithdrawItemsPage';
 import TransferItemsPage from './pages/TransferItemsPage';
+import SuppliersPage from './pages/SuppliersPage';
+import AlertsPage from './pages/AlertsPage';
+import BulkOperationsPage from './pages/BulkOperationsPage';
+import AdvancedAnalyticsPage from './pages/AdvancedAnalyticsPage';
+import CategoryManagementPage from './pages/CategoryManagementPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { currentUser, isLoading } = useAuth();
