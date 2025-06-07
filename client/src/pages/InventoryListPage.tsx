@@ -191,7 +191,7 @@ const InventoryListPage: React.FC = () => {
                                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                                     className={`flex items-center px-4 py-3 rounded-xl transition-colors ${
                                         showAdvancedFilters 
-                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                                            ? 'bg-[#FFE5E9] border-[#FF385C] text-[#FF385C]' 
                                             : 'bg-white border-slate-200 hover:bg-slate-50'
                                     }`}
                                 >

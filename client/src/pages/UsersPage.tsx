@@ -304,7 +304,7 @@ const UsersPage: React.FC = () => {
                                 <Button
                                     onClick={handleCreateUser}
                                     disabled={isLoading}
-                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    className="flex-1 bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg hover:shadow-xl disabled:bg-[#DDDDDD] disabled:text-[#717171]"
                                 >
                                     {isLoading ? 'Creating...' : 'Create User'}
                                 </Button>
@@ -386,7 +386,7 @@ const UsersPage: React.FC = () => {
                                 <Button
                                     onClick={handleEditUser}
                                     disabled={isLoading}
-                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    className="flex-1 bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg hover:shadow-xl disabled:bg-[#DDDDDD] disabled:text-[#717171]"
                                 >
                                     {isLoading ? 'Updating...' : 'Update User'}
                                 </Button>

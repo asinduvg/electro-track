@@ -53,8 +53,8 @@ const LocationsPage: React.FC = () => {
                     <Card className="bg-white border-0 shadow-lg">
                         <CardContent className="p-6">
                             <div className="flex items-center">
-                                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
-                                    <Building className="h-6 w-6 text-emerald-600" />
+                                <div className="w-12 h-12 bg-[#FFE5E9] rounded-xl flex items-center justify-center mr-4">
+                                    <Building className="h-6 w-6 text-[#FF385C]" />
                                 </div>
                                 <div>
                                     <p className="text-3xl font-bold text-slate-900">{locations.length}</p>
@@ -68,7 +68,7 @@ const LocationsPage: React.FC = () => {
                 <Card className="bg-white border-0 shadow-lg">
                     <CardHeader>
                         <CardTitle className="flex items-center text-slate-900">
-                            <MapPin className="mr-2 h-5 w-5 text-emerald-600" />
+                            <MapPin className="mr-2 h-5 w-5 text-[#FF385C]" />
                             All Locations
                         </CardTitle>
                     </CardHeader>
