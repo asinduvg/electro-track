@@ -160,7 +160,7 @@ const SettingsPage: React.FC = () => {
                             </label>
                             <select
                                 value={currency}
-                                onChange={(e) => setCurrency(e.target.value)}
+                                onChange={(e) => setCurrency(e.target.value as 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD')}
                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                             >
                                 {currencies.map((curr) => (
@@ -222,8 +222,8 @@ const SettingsPage: React.FC = () => {
                             </label>
                             <Input
                                 type="number"
-                                value={lowStockThreshold}
-                                onChange={(e) => setLowStockThreshold(e.target.value)}
+                                value={lowStockThreshold.toString()}
+                                onChange={(e) => setLowStockThreshold(parseInt(e.target.value) || 0)}
                                 placeholder="Default minimum stock level"
                             />
                         </div>
@@ -330,8 +330,8 @@ const SettingsPage: React.FC = () => {
                             </label>
                             <Input
                                 type="number"
-                                value={dataRetention}
-                                onChange={(e) => setDataRetention(e.target.value)}
+                                value={dataRetention.toString()}
+                                onChange={(e) => setDataRetention(parseInt(e.target.value) || 365)}
                                 placeholder="Number of days to retain data"
                             />
                         </div>
