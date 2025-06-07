@@ -37,6 +37,43 @@ const DashboardPage: React.FC = () => {
 
     const totalStocks = stocks.reduce((acc, stock) => acc + stock.quantity, 0);
 
+    const generateQuickReport = () => {
+        const reportData = items.map(item => {
+            const totalStock = getTotalQuantity(item.id, stocks);
+            return {
+                sku: item.sku,
+                name: item.name,
+                stock: totalStock,
+                unitCost: item.unit_cost,
+                totalValue: totalStock * Number(item.unit_cost || 0),
+                status: item.status,
+                minimumStock: item.minimum_stock || 0
+            };
+        });
+
+        let csvContent = `Inventory Quick Report - Generated: ${new Date().toLocaleString()}\n\n`;
+        csvContent += `Summary\n`;
+        csvContent += `Total Items,${items.length}\n`;
+        csvContent += `Total Value,$${items.reduce((sum, item) => sum + (getTotalQuantity(item.id, stocks) * Number(item.unit_cost)), 0).toFixed(2)}\n`;
+        csvContent += `Low Stock Items,${lowStockItems.length}\n\n`;
+        
+        csvContent += `Item Details\n`;
+        csvContent += `SKU,Name,Stock,Unit Cost,Total Value,Status,Minimum Stock\n`;
+        reportData.forEach((item: any) => {
+            csvContent += `${item.sku},"${item.name}",${item.stock},$${item.unitCost},$${item.totalValue.toFixed(2)},${item.status},${item.minimumStock}\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `inventory_report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // Authentication is now handled by routing
     if (!currentUser) {
         return <div>Loading...</div>;
@@ -351,21 +388,21 @@ const DashboardPage: React.FC = () => {
                                 </div>
                             </Link>
 
-                            <Link
-                                to="/reports"
-                                className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-violet-50 hover:from-purple-100 hover:to-violet-100 border border-purple-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-purple-100"
+                            <button
+                                onClick={() => generateQuickReport()}
+                                className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-violet-50 hover:from-purple-100 hover:to-violet-100 border border-purple-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-purple-100 w-full text-left"
                             >
                                 <div className="flex flex-col items-start">
                                     <div className="w-12 h-12 bg-purple-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                         <BarChart className="h-6 w-6"/>
                                     </div>
-                                    <h3 className="font-semibold text-slate-900 mb-2">Analytics</h3>
-                                    <p className="text-sm text-slate-600 leading-relaxed">Generate detailed inventory reports</p>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Generate Report</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Download inventory summary as CSV</p>
                                 </div>
                                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <ArrowUpRight className="h-5 w-5 text-purple-600" />
                                 </div>
-                            </Link>
+                            </button>
                         </div>
                     </CardContent>
                 </Card>
