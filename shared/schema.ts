@@ -5,8 +5,12 @@ import { z } from "zod";
 // Enums
 export const userRoleEnum = pgEnum('user_role', ['admin', 'inventory_manager', 'warehouse_staff', 'department_user']);
 export const itemStatusEnum = pgEnum('item_status', ['in_stock', 'low_stock', 'out_of_stock', 'discontinued']);
-export const transactionTypeEnum = pgEnum('transaction_type', ['receive', 'transfer', 'dispose', 'withdraw', 'adjust']);
-export const itemLocationStatusEnum = pgEnum('item_location_status', ['in_stock', 'ordered']);
+export const transactionTypeEnum = pgEnum('transaction_type', ['receive', 'transfer', 'dispose', 'withdraw', 'adjust', 'reserve', 'unreserve']);
+export const itemLocationStatusEnum = pgEnum('item_location_status', ['in_stock', 'ordered', 'reserved']);
+export const alertTypeEnum = pgEnum('alert_type', ['low_stock', 'expiring', 'out_of_stock', 'overstock']);
+export const alertStatusEnum = pgEnum('alert_status', ['active', 'acknowledged', 'resolved']);
+export const activityTypeEnum = pgEnum('activity_type', ['login', 'logout', 'create', 'update', 'delete', 'view', 'export', 'import']);
+export const supplierStatusEnum = pgEnum('supplier_status', ['active', 'inactive', 'pending']);
 
 // Tables
 export const users = pgTable("users", {
@@ -87,6 +91,124 @@ export const transactions = pgTable("transactions", {
   purpose: text("purpose"),
 });
 
+// New tables for enhanced functionality
+
+export const suppliers = pgTable("suppliers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  contact_name: text("contact_name"),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  website: text("website"),
+  status: supplierStatusEnum("status").notNull().default('active'),
+  rating: integer("rating"), // 1-5 rating
+  notes: text("notes"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const supplierItems = pgTable("supplier_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  supplier_id: uuid("supplier_id").notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
+  item_id: uuid("item_id").notNull().references(() => items.id, { onDelete: 'cascade' }),
+  supplier_sku: text("supplier_sku"),
+  unit_cost: numeric("unit_cost", { precision: 10, scale: 2 }),
+  minimum_order_quantity: integer("minimum_order_quantity"),
+  lead_time_days: integer("lead_time_days"),
+  is_preferred: boolean("is_preferred").default(false),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const stockReservations = pgTable("stock_reservations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  item_id: uuid("item_id").notNull().references(() => items.id, { onDelete: 'cascade' }),
+  location_id: uuid("location_id").notNull().references(() => locations.id),
+  quantity: integer("quantity").notNull(),
+  reserved_by: uuid("reserved_by").notNull().references(() => users.id),
+  reason: text("reason"),
+  expires_at: timestamp("expires_at"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const alerts = pgTable("alerts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  type: alertTypeEnum("type").notNull(),
+  status: alertStatusEnum("status").notNull().default('active'),
+  item_id: uuid("item_id").references(() => items.id),
+  location_id: uuid("location_id").references(() => locations.id),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  threshold_value: integer("threshold_value"),
+  current_value: integer("current_value"),
+  created_at: timestamp("created_at").defaultNow(),
+  acknowledged_at: timestamp("acknowledged_at"),
+  acknowledged_by: uuid("acknowledged_by").references(() => users.id),
+  resolved_at: timestamp("resolved_at"),
+});
+
+export const userActivity = pgTable("user_activity", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: uuid("user_id").notNull().references(() => users.id),
+  activity_type: activityTypeEnum("activity_type").notNull(),
+  resource_type: text("resource_type"), // item, location, user, etc.
+  resource_id: text("resource_id"),
+  description: text("description").notNull(),
+  ip_address: text("ip_address"),
+  user_agent: text("user_agent"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const savedSearches = pgTable("saved_searches", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: uuid("user_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  search_criteria: text("search_criteria").notNull(), // JSON string
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const categoryHierarchy = pgTable("category_hierarchy", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  parent_id: uuid("parent_id"),
+  description: text("description"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const itemHistory = pgTable("item_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  item_id: uuid("item_id").notNull().references(() => items.id, { onDelete: 'cascade' }),
+  field_name: text("field_name").notNull(),
+  old_value: text("old_value"),
+  new_value: text("new_value"),
+  changed_by: uuid("changed_by").notNull().references(() => users.id),
+  changed_at: timestamp("changed_at").defaultNow(),
+});
+
+export const purchaseOrders = pgTable("purchase_orders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  order_number: text("order_number").notNull().unique(),
+  supplier_id: uuid("supplier_id").notNull().references(() => suppliers.id),
+  status: text("status").notNull().default('draft'), // draft, sent, received, cancelled
+  total_amount: numeric("total_amount", { precision: 10, scale: 2 }),
+  order_date: timestamp("order_date").defaultNow(),
+  expected_delivery: timestamp("expected_delivery"),
+  actual_delivery: timestamp("actual_delivery"),
+  notes: text("notes"),
+  created_by: uuid("created_by").notNull().references(() => users.id),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const purchaseOrderItems = pgTable("purchase_order_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  purchase_order_id: uuid("purchase_order_id").notNull().references(() => purchaseOrders.id, { onDelete: 'cascade' }),
+  item_id: uuid("item_id").notNull().references(() => items.id),
+  quantity: integer("quantity").notNull(),
+  unit_cost: numeric("unit_cost", { precision: 10, scale: 2 }).notNull(),
+  received_quantity: integer("received_quantity").default(0),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -141,6 +263,88 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   purpose: true,
 });
 
+export const insertSupplierSchema = createInsertSchema(suppliers).pick({
+  name: true,
+  contact_name: true,
+  email: true,
+  phone: true,
+  address: true,
+  website: true,
+  status: true,
+  rating: true,
+  notes: true,
+});
+
+export const insertSupplierItemSchema = createInsertSchema(supplierItems).pick({
+  supplier_id: true,
+  item_id: true,
+  supplier_sku: true,
+  unit_cost: true,
+  minimum_order_quantity: true,
+  lead_time_days: true,
+  is_preferred: true,
+});
+
+export const insertStockReservationSchema = createInsertSchema(stockReservations).pick({
+  item_id: true,
+  location_id: true,
+  quantity: true,
+  reserved_by: true,
+  reason: true,
+  expires_at: true,
+});
+
+export const insertAlertSchema = createInsertSchema(alerts).pick({
+  type: true,
+  status: true,
+  item_id: true,
+  location_id: true,
+  title: true,
+  message: true,
+  threshold_value: true,
+  current_value: true,
+});
+
+export const insertUserActivitySchema = createInsertSchema(userActivity).pick({
+  user_id: true,
+  activity_type: true,
+  resource_type: true,
+  resource_id: true,
+  description: true,
+  ip_address: true,
+  user_agent: true,
+});
+
+export const insertSavedSearchSchema = createInsertSchema(savedSearches).pick({
+  user_id: true,
+  name: true,
+  search_criteria: true,
+});
+
+export const insertCategoryHierarchySchema = createInsertSchema(categoryHierarchy).pick({
+  name: true,
+  parent_id: true,
+  description: true,
+});
+
+export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrders).pick({
+  order_number: true,
+  supplier_id: true,
+  status: true,
+  total_amount: true,
+  expected_delivery: true,
+  notes: true,
+  created_by: true,
+});
+
+export const insertPurchaseOrderItemSchema = createInsertSchema(purchaseOrderItems).pick({
+  purchase_order_id: true,
+  item_id: true,
+  quantity: true,
+  unit_cost: true,
+  received_quantity: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -154,3 +358,23 @@ export type InsertItemLocation = z.infer<typeof insertItemLocationSchema>;
 export type ItemLocation = typeof itemLocations.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Transaction = typeof transactions.$inferSelect;
+export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
+export type Supplier = typeof suppliers.$inferSelect;
+export type InsertSupplierItem = z.infer<typeof insertSupplierItemSchema>;
+export type SupplierItem = typeof supplierItems.$inferSelect;
+export type InsertStockReservation = z.infer<typeof insertStockReservationSchema>;
+export type StockReservation = typeof stockReservations.$inferSelect;
+export type InsertAlert = z.infer<typeof insertAlertSchema>;
+export type Alert = typeof alerts.$inferSelect;
+export type InsertUserActivity = z.infer<typeof insertUserActivitySchema>;
+export type UserActivity = typeof userActivity.$inferSelect;
+export type InsertSavedSearch = z.infer<typeof insertSavedSearchSchema>;
+export type SavedSearch = typeof savedSearches.$inferSelect;
+export type InsertCategoryHierarchy = z.infer<typeof insertCategoryHierarchySchema>;
+export type CategoryHierarchy = typeof categoryHierarchy.$inferSelect;
+export type InsertItemHistory = typeof itemHistory.$inferSelect;
+export type ItemHistory = typeof itemHistory.$inferSelect;
+export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
+export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
+export type InsertPurchaseOrderItem = z.infer<typeof insertPurchaseOrderItemSchema>;
+export type PurchaseOrderItem = typeof purchaseOrderItems.$inferSelect;

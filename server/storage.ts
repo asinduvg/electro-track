@@ -1,8 +1,15 @@
 import { 
   users, items, locations, categories, itemLocations, transactions,
+  suppliers, supplierItems, stockReservations, alerts, userActivity,
+  savedSearches, categoryHierarchy, itemHistory, purchaseOrders, purchaseOrderItems,
   type User, type InsertUser, type Item, type InsertItem, 
   type Location, type InsertLocation, type Category, type InsertCategory,
-  type ItemLocation, type InsertItemLocation, type Transaction, type InsertTransaction
+  type ItemLocation, type InsertItemLocation, type Transaction, type InsertTransaction,
+  type Supplier, type InsertSupplier, type SupplierItem, type InsertSupplierItem,
+  type StockReservation, type InsertStockReservation, type Alert, type InsertAlert,
+  type UserActivity, type InsertUserActivity, type SavedSearch, type InsertSavedSearch,
+  type CategoryHierarchy, type InsertCategoryHierarchy, type ItemHistory,
+  type PurchaseOrder, type InsertPurchaseOrder, type PurchaseOrderItem, type InsertPurchaseOrderItem
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
