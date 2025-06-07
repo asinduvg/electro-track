@@ -384,7 +384,7 @@ const AddItemPage: React.FC = () => {
                                 <Button 
                                     type="submit" 
                                     disabled={isSubmitting}
-                                    className="bg-[#FF385C] hover:bg-[#E31C5F] text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl disabled:bg-[#DDDDDD] disabled:text-[#717171]"
+                                    className="bg-[#FF385C] hover:bg-[#E31C5F] text-white px-8 py-3 font-medium transition-colors shadow-lg hover:shadow-xl disabled:bg-[#DDDDDD] disabled:text-[#717171]"
                                 >
                                     {isSubmitting ? 'Creating...' : 'Create Item'}
                                 </Button>
@@ -395,7 +395,7 @@ const AddItemPage: React.FC = () => {
                                         e.preventDefault();
                                         navigate('/inventory/items');
                                     }}
-                                    className="bg-white border-slate-200 hover:bg-slate-50 px-8 py-3 rounded-xl font-medium transition-colors"
+                                    className="bg-white border-slate-200 hover:bg-slate-50 px-8 py-3 font-medium transition-colors"
                                 >
                                     Cancel
                                 </Button>

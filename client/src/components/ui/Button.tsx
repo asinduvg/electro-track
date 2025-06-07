@@ -25,7 +25,7 @@ export const Button: React.FC<ButtonProps> = ({
                                                   disabled,
                                                   ...props
                                               }) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 border';
+    const baseStyles = 'inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 border';
 
     const variantStyles: Record<ButtonVariant, string> = {
         primary: 'bg-[#FF385C] text-white hover:bg-[#E00B41] border-[#FF385C] hover:border-[#E00B41] focus:ring-[#FF385C] shadow-md hover:shadow-lg',

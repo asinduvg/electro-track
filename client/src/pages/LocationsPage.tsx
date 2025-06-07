@@ -42,7 +42,7 @@ const LocationsPage: React.FC = () => {
                     </div>
                     <Button 
                         onClick={() => setShowAddModal(true)}
-                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl"
+                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Add Location
