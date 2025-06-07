@@ -21,6 +21,11 @@ const InventoryListPage: React.FC = () => {
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortField, setSortField] = useState<'name' | 'sku' | 'stock' | 'cost'>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [priceRangeMin, setPriceRangeMin] = useState('');
+    const [priceRangeMax, setPriceRangeMax] = useState('');
+    const [stockRangeMin, setStockRangeMin] = useState('');
+    const [stockRangeMax, setStockRangeMax] = useState('');
     
     // Filtered and sorted items
     const filteredAndSortedItems = useMemo(() => {
@@ -37,7 +42,18 @@ const InventoryListPage: React.FC = () => {
             // Category filter
             const matchesCategory = categoryFilter === 'all' || item.category_id?.toString() === categoryFilter;
             
-            return matchesSearch && matchesStatus && matchesCategory;
+            // Price range filter
+            const itemPrice = Number(item.unit_cost) || 0;
+            const matchesPriceMin = !priceRangeMin || itemPrice >= Number(priceRangeMin);
+            const matchesPriceMax = !priceRangeMax || itemPrice <= Number(priceRangeMax);
+            
+            // Stock range filter
+            const itemStock = getTotalQuantity(item.id, stocks);
+            const matchesStockMin = !stockRangeMin || itemStock >= Number(stockRangeMin);
+            const matchesStockMax = !stockRangeMax || itemStock <= Number(stockRangeMax);
+            
+            return matchesSearch && matchesStatus && matchesCategory && 
+                   matchesPriceMin && matchesPriceMax && matchesStockMin && matchesStockMax;
         });
         
         // Sort items
@@ -72,7 +88,18 @@ const InventoryListPage: React.FC = () => {
         });
         
         return filtered;
-    }, [items, searchQuery, statusFilter, categoryFilter, sortField, sortDirection, stocks, getTotalQuantity]);
+    }, [items, searchQuery, statusFilter, categoryFilter, sortField, sortDirection, stocks, getTotalQuantity, 
+        priceRangeMin, priceRangeMax, stockRangeMin, stockRangeMax]);
+
+    const clearAllFilters = () => {
+        setSearchQuery('');
+        setStatusFilter('all');
+        setCategoryFilter('all');
+        setPriceRangeMin('');
+        setPriceRangeMax('');
+        setStockRangeMin('');
+        setStockRangeMax('');
+    };
     
     const handleSort = (field: typeof sortField) => {
         if (sortField === field) {
@@ -159,12 +186,87 @@ const InventoryListPage: React.FC = () => {
                                     ))}
                                 </select>
                                 
-                                <Button variant="outline" className="flex items-center bg-white border-slate-200 hover:bg-slate-50 px-4 py-3 rounded-xl">
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                                    className={`flex items-center px-4 py-3 rounded-xl transition-colors ${
+                                        showAdvancedFilters 
+                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                                            : 'bg-white border-slate-200 hover:bg-slate-50'
+                                    }`}
+                                >
                                     <Filter className="mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">Filters</span>
+                                    <span className="hidden sm:inline">
+                                        {showAdvancedFilters ? 'Hide Filters' : 'More Filters'}
+                                    </span>
                                 </Button>
                             </div>
                         </div>
+                        
+                        {/* Advanced Filters Panel */}
+                        {showAdvancedFilters && (
+                            <div className="mt-6 pt-6 border-t border-slate-200">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Min Price ($)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            placeholder="0.00"
+                                            value={priceRangeMin}
+                                            onChange={(e) => setPriceRangeMin(e.target.value)}
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Max Price ($)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            placeholder="999.99"
+                                            value={priceRangeMax}
+                                            onChange={(e) => setPriceRangeMax(e.target.value)}
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Min Stock
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            value={stockRangeMin}
+                                            onChange={(e) => setStockRangeMin(e.target.value)}
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Max Stock
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            placeholder="9999"
+                                            value={stockRangeMax}
+                                            onChange={(e) => setStockRangeMax(e.target.value)}
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="mt-4 flex justify-end">
+                                    <Button
+                                        variant="outline"
+                                        onClick={clearAllFilters}
+                                        className="px-4 py-2 text-sm bg-white border-slate-200 hover:bg-slate-50 rounded-xl"
+                                    >
+                                        Clear All Filters
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                         
                         <div className="mt-4 text-sm text-slate-600">
                             Showing {filteredAndSortedItems.length} of {items.length} items
