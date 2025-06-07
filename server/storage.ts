@@ -346,7 +346,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getActiveReservations(): Promise<StockReservation[]> {
-    return await db.select().from(stockReservations).where(eq(stockReservations.status, 'active'));
+    return await db.select().from(stockReservations);
   }
 
   async createStockReservation(reservation: InsertStockReservation): Promise<StockReservation> {
@@ -402,11 +402,11 @@ export class DatabaseStorage implements IStorage {
 
   // User Activity
   async getAllUserActivity(): Promise<UserActivity[]> {
-    return await db.select().from(userActivity).orderBy(desc(userActivity.timestamp));
+    return await db.select().from(userActivity).orderBy(desc(userActivity.created_at));
   }
 
   async getUserActivity(userId: string): Promise<UserActivity[]> {
-    return await db.select().from(userActivity).where(eq(userActivity.user_id, userId)).orderBy(desc(userActivity.timestamp));
+    return await db.select().from(userActivity).where(eq(userActivity.user_id, userId)).orderBy(desc(userActivity.created_at));
   }
 
   async createUserActivity(activity: InsertUserActivity): Promise<UserActivity> {
