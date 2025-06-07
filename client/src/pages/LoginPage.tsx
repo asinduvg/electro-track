@@ -8,7 +8,7 @@ const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const {login, isLoading, currentUser} = useAuth();
+    const {login, isLoading, currentUser, setCurrentUser} = useAuth();
 
     // useEffect(() => {
     //     console.log('this is from pages', currentUser)
@@ -140,8 +140,7 @@ const LoginPage: React.FC = () => {
                                         updated_by: null,
                                         last_login: null
                                     };
-                                    localStorage.setItem('currentUser', JSON.stringify(demoUser));
-                                    window.location.reload(); // Trigger auth context refresh
+                                    setCurrentUser(demoUser);
                                 }}
                             >
                                 Demo Login (Admin)
