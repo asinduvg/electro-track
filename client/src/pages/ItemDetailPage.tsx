@@ -1,73 +1,50 @@
-import React, {useState, useEffect} from 'react';
-import {useParams, Link} from 'react-router-dom';
-import {
-    Edit, ArrowLeft, Package, ShoppingCart, Truck, Info, Clipboard, BarChart,
-    Image as ImageIcon
-} from 'lucide-react';
-import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {Badge} from '../components/ui/Badge';
-import {Button} from '../components/ui/Button';
-import {Table, TableBody, TableCell, TableRow} from '../components/ui/Table';
-import {useAuth} from '../context/AuthContext';
-import type {Database} from "../lib/database.types.ts";
-import useItems from "../hooks/useItems.tsx";
-import useLocations from "../hooks/useLocations.tsx";
-import useTransactions from "../hooks/useTransactions.tsx";
-import useStocks from "../hooks/useStocks.tsx";
-import useCategories from "../hooks/useCategories.tsx";
-
-type Item = Database['public']['Tables']['items']['Row']
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Edit, ArrowLeft, Package, MapPin, DollarSign, Warehouse } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import { Table, TableBody, TableCell, TableRow } from '../components/ui/Table';
+import { useAuth } from '../context/AuthContext';
+import useItems from "../hooks/useItems";
+import useLocations from "../hooks/useLocations";
+import useStocks from "../hooks/useStocks";
+import useCategories from "../hooks/useCategories";
 
 const ItemDetailPage: React.FC = () => {
-    const {id} = useParams<{ id: string }>();
-    const {currentUser} = useAuth();
-    const [item, setItem] = useState<Item | null>(null);
+    const { id } = useParams<{ id: string }>();
+    const { currentUser } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const {getItem, getTotalQuantity, stocksWithLocation, error: itemsError} = useItems();
-    const {locations, error: locationsError} = useLocations();
-    const {stocks, error: stocksError} = useStocks();
-    const {transactions, error: txnError} = useTransactions();
-    const {getCategory, getSubcategory, error: categoriesError} = useCategories();
+    const { items, getTotalQuantity } = useItems();
+    const { locations } = useLocations();
+    const { stocks } = useStocks();
+    const { categories } = useCategories();
+
+    const item = items.find(item => item.id === id);
+    const category = categories.find(cat => cat.id === item?.category_id);
+    const itemStocks = stocks.filter(stock => stock.item_id === id);
 
     useEffect(() => {
-        (async () => {
-            if (itemsError) {
-                setError(itemsError);
-                setIsLoading(false);
-                return;
-            }
-            if (locationsError) {
-                setError(locationsError);
-                setIsLoading(false);
-                return;
-            }
-            if (stocksError) {
-                setError(stocksError);
-                setIsLoading(false);
-                return;
-            }
-            if (txnError) {
-                setError(txnError);
-                setIsLoading(false);
-                return;
-            }
-            if (categoriesError) {
-                setError(categoriesError);
-                setIsLoading(false);
-                return;
-            }
-            if (!id) return;
-            setItem(await getItem(id));
+        if (!id) {
+            setError('Item ID is required');
             setIsLoading(false);
-        })()
-    }, [getItem, id, itemsError, locationsError, stocksError, txnError]);
+            return;
+        }
+
+        if (items.length > 0) {
+            if (!item) {
+                setError('Item not found');
+            }
+            setIsLoading(false);
+        }
+    }, [id, items, item]);
 
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-800"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
             </div>
         );
     }
@@ -75,10 +52,11 @@ const ItemDetailPage: React.FC = () => {
     if (error || !item) {
         return (
             <div className="text-center py-12">
-                <h2 className="text-2xl font-semibold text-gray-700">Item Not Found</h2>
+                <h2 className="text-2xl font-semibold text-red-700">Item Not Found</h2>
                 <p className="mt-2 text-gray-500">The item you are looking for does not exist or has been removed.</p>
                 <Link to="/inventory/items">
-                    <Button variant="primary" className="mt-4">
+                    <Button variant="outline" className="mt-4">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Inventory
                     </Button>
                 </Link>
@@ -87,232 +65,121 @@ const ItemDetailPage: React.FC = () => {
     }
 
     const getStatusBadge = (status: string) => {
-        let variant: 'success' | 'danger' | 'warning' | 'info' | 'primary';
-
         switch (status) {
             case 'in_stock':
-                variant = 'success';
-                break;
+                return <Badge variant="success">In Stock</Badge>;
             case 'low_stock':
-                variant = 'warning';
-                break;
+                return <Badge variant="warning">Low Stock</Badge>;
             case 'out_of_stock':
-                variant = 'danger';
-                break;
-            case 'ordered':
-                variant = 'info';
-                break;
+                return <Badge variant="danger">Out of Stock</Badge>;
+            case 'discontinued':
+                return <Badge variant="secondary">Discontinued</Badge>;
             default:
-                variant = 'primary';
+                return <Badge variant="secondary">{status}</Badge>;
         }
-
-        return (
-            <Badge variant={variant} className="capitalize text-sm">
-                {status.replace('_', ' ')}
-            </Badge>
-        );
     };
 
-    const itemTransactions = transactions.filter(transaction => transaction.item_id === item.id);
+    const totalQuantity = getTotalQuantity(item.id, stocks);
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div className="flex items-center">
-                    <Link to="/inventory/items" className="mr-4">
-                        <Button variant="ghost" size="sm" leftIcon={<ArrowLeft size={16}/>}>
-                            Back
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <Link to="/inventory/items">
+                        <Button variant="outline" className="flex items-center">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Inventory
                         </Button>
                     </Link>
-                    <h1 className="text-2xl font-bold">{item.name}</h1>
-                    {getStatusBadge(item.status)}
-                </div>
-
-                {(currentUser?.role === 'admin' || currentUser?.role === 'inventory_manager') && (
-                    <div className="mt-4 sm:mt-0">
-                        <Link to={`/inventory/edit/${item.id}`}>
-                            <Button variant="primary" leftIcon={<Edit size={16}/>}>
-                                Edit Item
-                            </Button>
-                        </Link>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">{item.name}</h1>
+                        <p className="text-gray-500">SKU: {item.sku}</p>
                     </div>
+                </div>
+                {currentUser && (currentUser.role === 'admin' || currentUser.role === 'inventory_manager') && (
+                    <Link to={`/inventory/edit/${item.id}`}>
+                        <Button className="flex items-center">
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Item
+                        </Button>
+                    </Link>
                 )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Item Details */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Basic Information */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <Info size={18} className="mr-2 text-blue-600"/>
-                                Basic Information
+                                <Package className="mr-2 h-5 w-5" />
+                                Item Details
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium w-1/3">SKU</TableCell>
-                                        <TableCell>{item.sku}</TableCell>
-                                    </TableRow>
                                     <TableRow>
                                         <TableCell className="font-medium">Name</TableCell>
                                         <TableCell>{item.name}</TableCell>
                                     </TableRow>
                                     <TableRow>
+                                        <TableCell className="font-medium">SKU</TableCell>
+                                        <TableCell>{item.sku}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
                                         <TableCell className="font-medium">Description</TableCell>
-                                        <TableCell>{item.description}</TableCell>
+                                        <TableCell>{item.description || 'No description available'}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell className="font-medium">Category</TableCell>
-                                        <TableCell>{getCategory(item.category_id)}</TableCell>
+                                        <TableCell>
+                                            {category ? `${category.category} - ${category.subcategory}` : 'No category assigned'}
+                                        </TableCell>
                                     </TableRow>
-                                    {getSubcategory(item.category_id) && (
-                                        <TableRow>
-                                            <TableCell className="font-medium">Subcategory</TableCell>
-                                            <TableCell>{getSubcategory(item.category_id)}</TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-
-                    {/* Manufacturing Details */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center">
-                                <Package size={18} className="mr-2 text-blue-600"/>
-                                Manufacturing Details
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableBody>
                                     <TableRow>
-                                        <TableCell className="font-medium w-1/3">Manufacturer</TableCell>
-                                        <TableCell>{item.manufacturer}</TableCell>
+                                        <TableCell className="font-medium">Unit Cost</TableCell>
+                                        <TableCell>${Number(item.unit_cost).toFixed(2)}</TableCell>
                                     </TableRow>
-                                    {item.model && (
-                                        <TableRow>
-                                            <TableCell className="font-medium">Model</TableCell>
-                                            <TableCell>{item.model}</TableCell>
-                                        </TableRow>
-                                    )}
-                                    {item.serial_number && (
-                                        <TableRow>
-                                            <TableCell className="font-medium">Serial Number</TableCell>
-                                            <TableCell>{item.serial_number}</TableCell>
-                                        </TableRow>
-                                    )}
+                                    <TableRow>
+                                        <TableCell className="font-medium">Minimum Stock</TableCell>
+                                        <TableCell>{item.minimum_stock}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-medium">Status</TableCell>
+                                        <TableCell>{getStatusBadge(item.status)}</TableCell>
+                                    </TableRow>
                                 </TableBody>
                             </Table>
                         </CardContent>
                     </Card>
 
-                    {/* Transaction History */}
+                    {/* Stock Locations */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <Clipboard size={18} className="mr-2 text-blue-600"/>
-                                Transaction History
+                                <MapPin className="mr-2 h-5 w-5" />
+                                Stock Locations
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {itemTransactions.length > 0 ? (
+                            {itemStocks.length > 0 ? (
                                 <div className="space-y-4">
-                                    {itemTransactions.map((transaction) => {
-                                        let icon;
-                                        let bgColor;
-                                        let title;
-
-                                        switch (transaction.type) {
-                                            case 'receive':
-                                                icon = <Truck className="h-5 w-5 text-green-500"/>;
-                                                bgColor = 'bg-green-50';
-                                                title = 'Received';
-                                                break;
-                                            case 'transfer':
-                                                icon = <ArrowLeft className="h-5 w-5 text-blue-500"/>;
-                                                bgColor = 'bg-blue-50';
-                                                title = 'Transferred';
-                                                break;
-                                            case 'dispose':
-                                                icon = <Truck className="h-5 w-5 text-red-500"/>;
-                                                bgColor = 'bg-red-50';
-                                                title = 'Disposed';
-                                                break;
-                                            case 'withdraw':
-                                                icon = <ShoppingCart className="h-5 w-5 text-orange-500"/>;
-                                                bgColor = 'bg-orange-50';
-                                                title = 'Withdrawn';
-                                                break;
-                                            default:
-                                                icon = <Package className="h-5 w-5 text-gray-500"/>;
-                                                bgColor = 'bg-yellow-50';
-                                                title = 'Adjusted';
-                                        }
-
+                                    {itemStocks.map((stock) => {
+                                        const location = locations.find(loc => loc.id === stock.location_id);
                                         return (
-                                            <div key={transaction.id} className={`p-4 rounded-lg ${bgColor}`}>
-                                                <div className="flex items-start">
-                                                    <div className="mr-3">{icon}</div>
-                                                    <div className="flex-1">
-                                                        <div className="flex justify-between">
-                                                            <p className="font-medium">{title}</p>
-                                                            <p className="text-sm text-gray-500">
-                                                                {new Date(transaction.performed_at || '').toLocaleDateString()}
-                                                            </p>
-                                                        </div>
-                                                        <p className="mt-1 text-sm">
-                                                            {transaction.type === 'receive' && 'Received '}
-                                                            {transaction.type === 'transfer' && 'Transferred '}
-                                                            {transaction.type === 'dispose' && 'Disposed of '}
-                                                            {transaction.type === 'withdraw' && 'Withdrawn '}
-                                                            {transaction.type === 'adjust' && 'Adjusted '}
-                                                            <span className="font-medium">{transaction.quantity}</span>
-                                                            {' units'}
-                                                            {transaction.from_location_id && transaction.to_location_id && (
-                                                                <span> from {
-                                                                    locations
-                                                                        .filter(loc => loc.id === transaction.from_location_id)
-                                                                        .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
-                                                                } to {locations
-                                                                    .filter(loc => loc.id === transaction.to_location_id)
-                                                                    .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
-                                                                } </span>
-                                                            )}
-                                                            {!transaction.from_location_id && transaction.to_location_id && (
-                                                                <span> to {locations
-                                                                    .filter(loc => loc.id === transaction.to_location_id)
-                                                                    .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
-                                                                } </span>
-                                                            )}
-                                                            {transaction.from_location_id && !transaction.to_location_id && (
-                                                                <span> from {
-                                                                    locations
-                                                                        .filter(loc => loc.id === transaction.from_location_id)
-                                                                        .map(loc => `${loc.building} > ${loc.room} > ${loc.unit}`)
-                                                                } </span>
-                                                            )}
-                                                        </p>
-                                                        {transaction.project_id && (
-                                                            <p className="mt-1 text-sm">
-                                                                <span className="font-medium">Project: </span>
-                                                                {transaction.project_id}
-                                                            </p>
-                                                        )}
-                                                        {transaction.purpose && (
-                                                            <p className="mt-1 text-sm">
-                                                                <span className="font-medium">Purpose: </span>
-                                                                {transaction.purpose}
-                                                            </p>
-                                                        )}
-                                                        {transaction.notes && (
-                                                            <p className="mt-1 text-xs text-gray-500">{transaction.notes}</p>
-                                                        )}
+                                            <div key={stock.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                                <div className="flex items-center space-x-3">
+                                                    <Warehouse className="h-5 w-5 text-gray-400" />
+                                                    <div>
+                                                        <div className="font-medium">{location?.name || 'Unknown Location'}</div>
+                                                        <div className="text-sm text-gray-500">{location?.description}</div>
                                                     </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-medium text-lg">{stock.quantity}</div>
+                                                    <div className="text-sm text-gray-500">units</div>
                                                 </div>
                                             </div>
                                         );
@@ -320,177 +187,48 @@ const ItemDetailPage: React.FC = () => {
                                 </div>
                             ) : (
                                 <div className="text-center py-8 text-gray-500">
-                                    <p>No transaction history available for this item.</p>
+                                    <Warehouse className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                    <p>No stock locations found for this item</p>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
                 </div>
 
+                {/* Summary Sidebar */}
                 <div className="space-y-6">
-                    <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <ShoppingCart size={18} className="mr-2 text-blue-600"/>
-                            Image
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {/* Item Image */}
-                        <div className="bg-gray-50 rounded-lg">
-                            {item.image_url ? (
-                                <div className="aspect-square w-full relative rounded-lg overflow-hidden bg-white">
-                                    <img
-                                        src={item.image_url}
-                                        alt={item.name}
-                                        className="object-contain w-full h-full"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="aspect-square w-full flex items-center justify-center rounded-lg bg-white">
-                                    <div className="text-center text-gray-400">
-                                        <ImageIcon className="h-8 w-8 mx-auto mb-2"/>
-                                        <p className="text-sm">No image available</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                    {/* Inventory Details */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <ShoppingCart size={18} className="mr-2 text-blue-600"/>
-                                Inventory Details
+                                <DollarSign className="mr-2 h-5 w-5" />
+                                Quick Summary
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm text-gray-500">Current Quantity</p>
-                                    <p className={`text-2xl font-bold ${
-                                        item.minimum_stock && getTotalQuantity(item.id, stocks) < item.minimum_stock
-                                            ? 'text-red-600'
-                                            : 'text-gray-900'
-                                    }`}>
-                                        {getTotalQuantity(item.id, stocks)}
-                                    </p>
-                                    {item.minimum_stock ? (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Minimum stock: {item.minimum_stock}
-                                        </p>
-                                    ) : <p className="text-xs text-gray-500 mt-1">Minimum stock: Not set</p>}
+                        <CardContent className="space-y-4">
+                            <div className="text-center">
+                                <div className="text-3xl font-bold text-blue-600">{totalQuantity}</div>
+                                <div className="text-sm text-gray-500">Total Stock</div>
+                            </div>
+                            
+                            <div className="pt-4 border-t">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-500">Unit Cost</span>
+                                    <span className="font-medium">${Number(item.unit_cost).toFixed(2)}</span>
                                 </div>
-
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm text-gray-500">Unit Cost</p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        ${item.unit_cost.toFixed(2)}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Total value: ${(getTotalQuantity(item.id, stocks) * item.unit_cost).toFixed(2)}
-                                    </p>
+                                <div className="flex justify-between items-center mt-2">
+                                    <span className="text-sm text-gray-500">Total Value</span>
+                                    <span className="font-medium">${(totalQuantity * Number(item.unit_cost)).toFixed(2)}</span>
                                 </div>
-
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm text-gray-500">Locations</p>
-                                    {stocksWithLocation(item.id, locations, stocks).length > 0 ? (
-                                        <div className="space-y-2 mt-2">
-                                            {stocksWithLocation(item.id, locations, stocks).map((stockWithLocation, index) => (
-                                                <div key={index}
-                                                     className="border-b border-gray-200 last:border-0 pb-2 last:pb-0">
-                                                    <p className="text-lg font-medium text-gray-900">
-                                                        {stockWithLocation.location.building}
-                                                    </p>
-                                                    <p className="text-sm text-gray-700">
-                                                        {stockWithLocation.location.room} &gt; {stockWithLocation.location.unit}
-                                                    </p>
-                                                    <p className="text-sm font-medium text-blue-600 mt-1">
-                                                        Quantity: {stockWithLocation.quantity}
-                                                    </p>
-                                                    <p className="text-sm font-medium text-gray-600 mt-1">
-                                                        Added
-                                                        On: {new Date(stockWithLocation.created_at || '').toLocaleDateString()}
-                                                    </p>
-                                                    <p className="text-sm font-medium text-gray-600 mt-1">
-                                                        Last
-                                                        Updated: {new Date(stockWithLocation.updated_at || '').toLocaleDateString()}
-                                                    </p>
-                                                    <p className="text-sm font-medium text-gray-600 mt-1">
-                                                        Warranty Expiration: {
-                                                        stockWithLocation.warranty_expiration ?
-                                                            new Date(stockWithLocation.warranty_expiration || '').toLocaleDateString() :
-                                                            'N/A'
-                                                    }
-                                                    </p>
-                                                    <p className="text-sm font-medium text-gray-600 mt-1">
-                                                        Purchased Date: {
-                                                        stockWithLocation.purchased_date ?
-                                                            new Date(stockWithLocation.purchased_date || '').toLocaleDateString() :
-                                                            'N/A'
-                                                    }
-                                                    </p>
-                                                    <p className="text-sm font-medium text-gray-600 mt-1">
-                                                        Paid: {stockWithLocation.is_paid ? 'Yes' : 'No'}
-                                                    </p>
-                                                    <p className="text-sm font-medium text-gray-600 mt-1">
-                                                        Status: {getStatusBadge(stockWithLocation.status)}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-lg font-medium text-gray-900 mt-1">
-                                            No Location Assigned
-                                        </p>
-                                    )}
+                                <div className="flex justify-between items-center mt-2">
+                                    <span className="text-sm text-gray-500">Minimum Stock</span>
+                                    <span className="font-medium">{item.minimum_stock}</span>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
 
-                    {/* Quick Actions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Quick Actions</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                <Link to={`/inventory/receive?itemId=${item.id}`} className="block">
-                                    <Button
-                                        variant="outline"
-                                        fullWidth
-                                        leftIcon={<Truck size={16}/>}
-                                    >
-                                        Receive Stock
-                                    </Button>
-                                </Link>
-                                <Link to={`/inventory/transfer?itemId=${item.id}`} className="block">
-                                    <Button
-                                        variant="outline"
-                                        fullWidth
-                                        leftIcon={<ArrowLeft size={16}/>}
-                                    >
-                                        Transfer Stock
-                                    </Button>
-                                </Link>
-                                <Link to={`/inventory/withdraw?itemId=${item.id}`} className="block">
-                                    <Button
-                                        variant="outline"
-                                        fullWidth
-                                        leftIcon={<ShoppingCart size={16}/>}
-                                    >
-                                        Withdraw Stock
-                                    </Button>
-                                </Link>
-                                <Link to={`/reports?itemId=${item.id}`} className="block">
-                                    <Button
-                                        variant="outline"
-                                        fullWidth
-                                        leftIcon={<BarChart size={16}/>}
-                                    >
-                                        View Reports
-                                    </Button>
-                                </Link>
+                            <div className="pt-4 border-t">
+                                <div className="text-center">
+                                    {getStatusBadge(item.status)}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
