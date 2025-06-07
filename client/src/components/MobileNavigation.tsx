@@ -9,7 +9,6 @@ import { useAuth } from '../context/AuthContext';
 
 const MobileNavigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [location] = useLocation();
   const { currentUser, logout } = useAuth();
 
   const navigationItems = [
@@ -25,7 +24,8 @@ const MobileNavigation: React.FC = () => {
   ];
 
   const isActiveRoute = (path: string) => {
-    return location === path || (path !== '/' && location.startsWith(path));
+    const currentPath = window.location.pathname;
+    return currentPath === path || (path !== '/' && currentPath.startsWith(path));
   };
 
   const handleLogout = () => {
