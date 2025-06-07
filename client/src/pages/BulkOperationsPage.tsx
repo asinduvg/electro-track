@@ -287,8 +287,8 @@ const BulkOperationsPage: React.FC = () => {
                 {/* Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleBulkExport}>
-                        <Card>
-                            <CardContent className="p-6 text-center">
+                        <Card className="h-full">
+                            <CardContent className="p-6 text-center h-full flex flex-col justify-center">
                                 <Download className="h-12 w-12 text-[#008489] mx-auto mb-4" />
                                 <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Export Inventory</h3>
                                 <p className="text-sm text-[#717171]">Download complete inventory as CSV</p>
@@ -297,8 +297,8 @@ const BulkOperationsPage: React.FC = () => {
                     </div>
 
                     <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleBulkTransfer}>
-                        <Card>
-                            <CardContent className="p-6 text-center">
+                        <Card className="h-full">
+                            <CardContent className="p-6 text-center h-full flex flex-col justify-center">
                                 <ArrowRightLeft className="h-12 w-12 text-[#FF385C] mx-auto mb-4" />
                                 <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Bulk Transfer</h3>
                                 <p className="text-sm text-[#717171]">Transfer items between locations</p>
@@ -307,8 +307,8 @@ const BulkOperationsPage: React.FC = () => {
                     </div>
 
                     <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleStockAdjustment}>
-                        <Card>
-                            <CardContent className="p-6 text-center">
+                        <Card className="h-full">
+                            <CardContent className="p-6 text-center h-full flex flex-col justify-center">
                                 <RotateCcw className="h-12 w-12 text-[#FC642D] mx-auto mb-4" />
                                 <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Stock Adjustment</h3>
                                 <p className="text-sm text-[#717171]">Adjust quantities in bulk</p>
@@ -317,8 +317,8 @@ const BulkOperationsPage: React.FC = () => {
                     </div>
 
                     <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGenerateReports}>
-                        <Card>
-                            <CardContent className="p-6 text-center">
+                        <Card className="h-full">
+                            <CardContent className="p-6 text-center h-full flex flex-col justify-center">
                                 <Package className="h-12 w-12 text-[#FF385C] mx-auto mb-4" />
                                 <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Generate Reports</h3>
                                 <p className="text-sm text-[#717171]">Create custom inventory reports</p>

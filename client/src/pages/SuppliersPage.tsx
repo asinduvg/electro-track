@@ -52,6 +52,88 @@ const SuppliersPage: React.FC = () => {
         }
     };
 
+    const handleAddSupplier = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name.trim()) return;
+        
+        setIsSubmitting(true);
+        try {
+            await createSupplier(formData);
+            setShowAddModal(false);
+            setFormData({
+                name: '',
+                contact_name: '',
+                email: '',
+                phone: '',
+                address: '',
+                website: '',
+                status: 'active',
+                rating: 5,
+                notes: ''
+            });
+        } catch (error) {
+            console.error('Error adding supplier:', error);
+            alert('Failed to add supplier. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditSupplier = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedSupplier || !formData.name.trim()) return;
+        
+        setIsSubmitting(true);
+        try {
+            await updateSupplier(selectedSupplier.id, formData);
+            setShowEditModal(false);
+            setSelectedSupplier(null);
+            setFormData({
+                name: '',
+                contact_name: '',
+                email: '',
+                phone: '',
+                address: '',
+                website: '',
+                status: 'active',
+                rating: 5,
+                notes: ''
+            });
+        } catch (error) {
+            console.error('Error updating supplier:', error);
+            alert('Failed to update supplier. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteSupplier = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this supplier?')) return;
+        
+        try {
+            await deleteSupplier(id);
+        } catch (error) {
+            console.error('Error deleting supplier:', error);
+            alert('Failed to delete supplier. Please try again.');
+        }
+    };
+
+    const openEditModal = (supplier: any) => {
+        setSelectedSupplier(supplier);
+        setFormData({
+            name: supplier.name,
+            contact_name: supplier.contact_name || '',
+            email: supplier.email || '',
+            phone: supplier.phone || '',
+            address: supplier.address || '',
+            website: supplier.website || '',
+            status: supplier.status,
+            rating: supplier.rating || 5,
+            notes: supplier.notes || ''
+        });
+        setShowEditModal(true);
+    };
+
     const renderStars = (rating?: number) => {
         if (!rating) return <span className="text-[#717171]">No rating</span>;
         
@@ -198,10 +280,10 @@ const SuppliersPage: React.FC = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center space-x-2">
-                                                    <Button variant="outline" size="sm">
+                                                    <Button variant="outline" size="sm" onClick={() => openEditModal(supplier)}>
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm">
+                                                    <Button variant="outline" size="sm" onClick={() => handleDeleteSupplier(supplier.id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
@@ -213,6 +295,278 @@ const SuppliersPage: React.FC = () => {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Add Supplier Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white dark:bg-[#2A2A2A] rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-semibold text-[#222222] dark:text-white">Add New Supplier</h2>
+                                    <Button variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                
+                                <form onSubmit={handleAddSupplier} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Supplier Name *
+                                        </label>
+                                        <Input
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            placeholder="Enter supplier name"
+                                            required
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Contact Person
+                                        </label>
+                                        <Input
+                                            value={formData.contact_name}
+                                            onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                                            placeholder="Contact person name"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Email
+                                        </label>
+                                        <Input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            placeholder="email@example.com"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Phone
+                                        </label>
+                                        <Input
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            placeholder="Phone number"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Address
+                                        </label>
+                                        <Input
+                                            value={formData.address}
+                                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                            placeholder="Business address"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Website
+                                        </label>
+                                        <Input
+                                            value={formData.website}
+                                            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                                            placeholder="https://example.com"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Status
+                                        </label>
+                                        <select
+                                            value={formData.status}
+                                            onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' | 'pending' })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-[#2A2A2A] dark:border-gray-600 text-[#222222] dark:text-white"
+                                        >
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="pending">Pending</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Rating (1-5)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            max="5"
+                                            value={formData.rating}
+                                            onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) || 5 })}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Notes
+                                        </label>
+                                        <textarea
+                                            value={formData.notes}
+                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                            placeholder="Additional notes..."
+                                            rows={3}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-[#2A2A2A] dark:border-gray-600 text-[#222222] dark:text-white resize-none"
+                                        />
+                                    </div>
+                                    
+                                    <div className="flex gap-3 pt-4">
+                                        <Button type="submit" disabled={isSubmitting || !formData.name.trim()} className="flex-1">
+                                            {isSubmitting ? 'Adding...' : 'Add Supplier'}
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={() => setShowAddModal(false)} className="flex-1">
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Edit Supplier Modal */}
+                {showEditModal && selectedSupplier && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white dark:bg-[#2A2A2A] rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-semibold text-[#222222] dark:text-white">Edit Supplier</h2>
+                                    <Button variant="ghost" size="sm" onClick={() => setShowEditModal(false)}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                
+                                <form onSubmit={handleEditSupplier} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Supplier Name *
+                                        </label>
+                                        <Input
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            placeholder="Enter supplier name"
+                                            required
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Contact Person
+                                        </label>
+                                        <Input
+                                            value={formData.contact_name}
+                                            onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                                            placeholder="Contact person name"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Email
+                                        </label>
+                                        <Input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            placeholder="email@example.com"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Phone
+                                        </label>
+                                        <Input
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            placeholder="Phone number"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Address
+                                        </label>
+                                        <Input
+                                            value={formData.address}
+                                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                            placeholder="Business address"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Website
+                                        </label>
+                                        <Input
+                                            value={formData.website}
+                                            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                                            placeholder="https://example.com"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Status
+                                        </label>
+                                        <select
+                                            value={formData.status}
+                                            onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' | 'pending' })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-[#2A2A2A] dark:border-gray-600 text-[#222222] dark:text-white"
+                                        >
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="pending">Pending</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Rating (1-5)
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            max="5"
+                                            value={formData.rating}
+                                            onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) || 5 })}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#222222] dark:text-white mb-1">
+                                            Notes
+                                        </label>
+                                        <textarea
+                                            value={formData.notes}
+                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                            placeholder="Additional notes..."
+                                            rows={3}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-[#2A2A2A] dark:border-gray-600 text-[#222222] dark:text-white resize-none"
+                                        />
+                                    </div>
+                                    
+                                    <div className="flex gap-3 pt-4">
+                                        <Button type="submit" disabled={isSubmitting || !formData.name.trim()} className="flex-1">
+                                            {isSubmitting ? 'Updating...' : 'Update Supplier'}
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={() => setShowEditModal(false)} className="flex-1">
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
