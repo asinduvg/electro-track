@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {Package, Lock} from 'lucide-react';
+import {Cpu, Zap, Lock} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {useAuth} from '../context/AuthContext';
@@ -11,6 +11,9 @@ const LoginPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const {login, isLoading, currentUser, setCurrentUser} = useAuth();
     const navigate = useNavigate();
+    
+    // Use default company name for login page since it's outside SettingsProvider
+    const companyName = "ElectroStock";
 
     // useEffect(() => {
     //     console.log('this is from pages', currentUser)
@@ -47,27 +50,35 @@ const LoginPage: React.FC = () => {
     }
 
     return (
-        <div
-            className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-800 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
-                    <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center">
-                        <Package className="h-12 w-12 text-blue-800"/>
+                    <div className="flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                        <div className="relative">
+                            <Cpu className="h-12 w-12 text-sky-400" />
+                            <Zap className="h-6 w-6 text-amber-400 absolute -top-1 -right-1" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+                                {companyName}
+                            </h1>
+                            <p className="text-sm text-slate-300 font-medium">Component Management</p>
+                        </div>
                     </div>
                 </div>
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-                    ElectroTrack
+                <h2 className="mt-8 text-center text-3xl font-bold text-white">
+                    Welcome Back
                 </h2>
-                <p className="mt-2 text-center text-sm text-blue-300">
-                    Electronics Inventory Management System
+                <p className="mt-2 text-center text-sm text-slate-300">
+                    Sign in to your inventory management system
                 </p>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <div className="bg-white/95 backdrop-blur-sm py-8 px-6 shadow-2xl rounded-2xl border border-white/20">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                                 <div className="flex">
                                     <div className="flex-shrink-0">
                                         <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
@@ -77,7 +88,7 @@ const LoginPage: React.FC = () => {
                                         </svg>
                                     </div>
                                     <div className="ml-3">
-                                        <p className="text-sm text-red-500">
+                                        <p className="text-sm text-red-600 font-medium">
                                             {error}
                                         </p>
                                     </div>
@@ -113,21 +124,25 @@ const LoginPage: React.FC = () => {
                             />
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             <Button
                                 type="submit"
-                                variant="primary"
-                                fullWidth
-                                isLoading={isLoading}
-                                leftIcon={<Lock size={16}/>}
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
+                                disabled={isLoading}
                             >
-                                Sign in
+                                {isLoading ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                ) : (
+                                    <>
+                                        <Lock size={16}/>
+                                        <span>Sign in</span>
+                                    </>
+                                )}
                             </Button>
                             
                             <Button
                                 type="button"
-                                variant="secondary"
-                                fullWidth
+                                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl font-medium transition-colors"
                                 onClick={async () => {
                                     // Demo login with admin user
                                     const demoUser = {
