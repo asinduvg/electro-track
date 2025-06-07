@@ -13,42 +13,31 @@ import {
     Phone, 
     Mail, 
     Globe,
-    Building2
+    Building2,
+    X
 } from 'lucide-react';
-
-interface Supplier {
-    id: string;
-    name: string;
-    contact_name?: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-    website?: string;
-    status: 'active' | 'inactive' | 'pending';
-    rating?: number;
-    notes?: string;
-    created_at: Date;
-}
+import useSuppliers, { InsertSupplier } from '../hooks/useSuppliers';
+import { useAuth } from '../context/AuthContext';
 
 const SuppliersPage: React.FC = () => {
-    const [suppliers] = useState<Supplier[]>([
-        {
-            id: '1',
-            name: 'TechCorp Components',
-            contact_name: 'John Smith',
-            email: 'john@techcorp.com',
-            phone: '+1-555-0123',
-            address: '123 Tech Street, Silicon Valley, CA',
-            website: 'https://techcorp.com',
-            status: 'active',
-            rating: 5,
-            notes: 'Reliable supplier for electronic components',
-            created_at: new Date()
-        }
-    ]);
-
+    const { currentUser } = useAuth();
+    const { suppliers, loading, createSupplier, updateSupplier, deleteSupplier } = useSuppliers();
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState<InsertSupplier>({
+        name: '',
+        contact_name: '',
+        email: '',
+        phone: '',
+        address: '',
+        website: '',
+        status: 'active',
+        rating: 5,
+        notes: ''
+    });
 
     const getStatusBadge = (status: string) => {
         switch (status) {

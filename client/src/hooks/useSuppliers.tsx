@@ -36,7 +36,7 @@ const useSuppliers = () => {
     const fetchSuppliers = async () => {
         try {
             setLoading(true);
-            const response = await apiClient.getAllSuppliers();
+            const response = await apiClient.getAllSuppliers() as Supplier[];
             setSuppliers(response);
             setError(null);
         } catch (err) {
@@ -49,7 +49,7 @@ const useSuppliers = () => {
 
     const createSupplier = async (supplierData: InsertSupplier): Promise<Supplier> => {
         try {
-            const newSupplier = await apiClient.createSupplier(supplierData);
+            const newSupplier = await apiClient.createSupplier(supplierData) as Supplier;
             setSuppliers(prev => [...prev, newSupplier]);
             return newSupplier;
         } catch (err) {
@@ -60,7 +60,7 @@ const useSuppliers = () => {
 
     const updateSupplier = async (id: string, updates: Partial<InsertSupplier>): Promise<Supplier> => {
         try {
-            const updatedSupplier = await apiClient.updateSupplier(id, updates);
+            const updatedSupplier = await apiClient.updateSupplier(id, updates) as Supplier;
             setSuppliers(prev => prev.map(supplier => 
                 supplier.id === id ? updatedSupplier : supplier
             ));

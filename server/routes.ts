@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertCategorySchema, insertLocationSchema, insertItemSchema, insertItemLocationSchema, insertTransactionSchema } from "@shared/schema";
+import { insertUserSchema, insertCategorySchema, insertLocationSchema, insertItemSchema, insertItemLocationSchema, insertTransactionSchema, insertSupplierSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
@@ -270,6 +270,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create transaction error:", error);
       res.status(400).json({ error: "Invalid transaction data" });
+    }
+  });
+
+  // Supplier routes
+  app.get("/api/suppliers", async (req, res) => {
+    try {
+      const suppliers = await storage.getAllSuppliers();
+      res.json(suppliers);
+    } catch (error) {
+      console.error("Get suppliers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/suppliers/:id", async (req, res) => {
+    try {
+      const supplier = await storage.getSupplier(req.params.id);
+      if (!supplier) {
+        return res.status(404).json({ error: "Supplier not found" });
+      }
+      res.json(supplier);
+    } catch (error) {
+      console.error("Get supplier error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/suppliers", async (req, res) => {
+    try {
+      const supplierData = insertSupplierSchema.parse(req.body);
+      const supplier = await storage.createSupplier(supplierData);
+      res.status(201).json(supplier);
+    } catch (error) {
+      console.error("Create supplier error:", error);
+      res.status(400).json({ error: "Invalid supplier data" });
+    }
+  });
+
+  app.patch("/api/suppliers/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const supplier = await storage.updateSupplier(req.params.id, updates);
+      if (!supplier) {
+        return res.status(404).json({ error: "Supplier not found" });
+      }
+      res.json(supplier);
+    } catch (error) {
+      console.error("Update supplier error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/suppliers/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteSupplier(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Supplier not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete supplier error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
