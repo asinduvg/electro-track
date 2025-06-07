@@ -181,6 +181,57 @@ const BulkOperationsPage: React.FC = () => {
         downloadCSV(csvContent, 'inventory_import_template.csv');
     };
 
+    const handleBulkTransfer = () => {
+        // Generate transfer template with current items and locations
+        const headers = ['Item SKU', 'From Location', 'To Location', 'Quantity', 'Notes'];
+        const sampleRows = [
+            ['SAMPLE-001', 'Warehouse A - Shelf A1', 'Warehouse B - Shelf B1', '10', 'Bulk transfer operation'],
+            ['SAMPLE-002', 'Lab 1 - Cabinet C1', 'Storage Room A - Shelf A2', '5', 'Moving to main storage']
+        ];
+        
+        const csvContent = [headers, ...sampleRows].map(row => row.join(',')).join('\n');
+        downloadCSV(csvContent, 'bulk_transfer_template.csv');
+    };
+
+    const handleStockAdjustment = () => {
+        // Generate stock adjustment template with current items
+        const headers = ['Item SKU', 'Location', 'Current Quantity', 'New Quantity', 'Adjustment Reason'];
+        const itemRows = items.slice(0, 5).map(item => [
+            item.sku,
+            'Warehouse A - Shelf A1',
+            '0', // Current quantity placeholder
+            '', // New quantity to be filled
+            'Inventory count adjustment'
+        ]);
+        
+        const csvContent = [headers, ...itemRows].map(row => row.join(',')).join('\n');
+        downloadCSV(csvContent, 'stock_adjustment_template.csv');
+    };
+
+    const handleGenerateReports = () => {
+        // Generate comprehensive inventory report
+        const headers = [
+            'SKU', 'Name', 'Description', 'Manufacturer', 'Model', 
+            'Unit Cost', 'Status', 'Minimum Stock', 'Category', 'Created Date'
+        ];
+        
+        const reportRows = items.map(item => [
+            item.sku,
+            item.name,
+            item.description || '',
+            item.manufacturer,
+            item.model || '',
+            item.unit_cost,
+            item.status,
+            item.minimum_stock || '',
+            'Electronics', // Default category
+            new Date(item.created_at || Date.now()).toLocaleDateString()
+        ]);
+        
+        const csvContent = [headers, ...reportRows].map(row => row.join(',')).join('\n');
+        downloadCSV(csvContent, 'inventory_full_report.csv');
+    };
+
     const downloadCSV = (content: string, filename: string) => {
         const blob = new Blob([content], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -245,29 +296,35 @@ const BulkOperationsPage: React.FC = () => {
                         </Card>
                     </div>
 
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                        <CardContent className="p-6 text-center">
-                            <ArrowRightLeft className="h-12 w-12 text-[#FF385C] mx-auto mb-4" />
-                            <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Bulk Transfer</h3>
-                            <p className="text-sm text-[#717171]">Transfer items between locations</p>
-                        </CardContent>
-                    </Card>
+                    <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleBulkTransfer}>
+                        <Card>
+                            <CardContent className="p-6 text-center">
+                                <ArrowRightLeft className="h-12 w-12 text-[#FF385C] mx-auto mb-4" />
+                                <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Bulk Transfer</h3>
+                                <p className="text-sm text-[#717171]">Transfer items between locations</p>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                        <CardContent className="p-6 text-center">
-                            <RotateCcw className="h-12 w-12 text-[#FC642D] mx-auto mb-4" />
-                            <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Stock Adjustment</h3>
-                            <p className="text-sm text-[#717171]">Adjust quantities in bulk</p>
-                        </CardContent>
-                    </Card>
+                    <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleStockAdjustment}>
+                        <Card>
+                            <CardContent className="p-6 text-center">
+                                <RotateCcw className="h-12 w-12 text-[#FC642D] mx-auto mb-4" />
+                                <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Stock Adjustment</h3>
+                                <p className="text-sm text-[#717171]">Adjust quantities in bulk</p>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                        <CardContent className="p-6 text-center">
-                            <Package className="h-12 w-12 text-[#FF385C] mx-auto mb-4" />
-                            <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Generate Reports</h3>
-                            <p className="text-sm text-[#717171]">Create custom inventory reports</p>
-                        </CardContent>
-                    </Card>
+                    <div className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGenerateReports}>
+                        <Card>
+                            <CardContent className="p-6 text-center">
+                                <Package className="h-12 w-12 text-[#FF385C] mx-auto mb-4" />
+                                <h3 className="font-semibold text-[#222222] dark:text-white mb-2">Generate Reports</h3>
+                                <p className="text-sm text-[#717171]">Create custom inventory reports</p>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
                 {/* Import Section */}
