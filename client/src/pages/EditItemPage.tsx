@@ -42,7 +42,7 @@ const EditItemPage: React.FC = () => {
                 sku: item.sku || '',
                 name: item.name || '',
                 description: item.description || '',
-                category_id: item.category_id || '',
+                category_id: item.category_id?.toString() || '',
                 unit_cost: item.unit_cost || '0',
                 minimum_stock: item.minimum_stock || 0,
                 status: item.status || 'in_stock'

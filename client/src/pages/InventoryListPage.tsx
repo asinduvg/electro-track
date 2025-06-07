@@ -261,8 +261,7 @@ const InventoryListPage: React.FC = () => {
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                                );
-                            })}
+                            )})}
                         </TableBody>
                     </Table>
                 </CardContent>
