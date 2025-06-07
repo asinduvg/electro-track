@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Package, ArrowLeft } from 'lucide-react';
+import { Package, ArrowLeft, Upload, X } from 'lucide-react';
+import useItems from '../hooks/useItems';
+import useCategories from '../hooks/useCategories';
+import useLocations from '../hooks/useLocations';
 
 const AddItemPage: React.FC = () => {
     const navigate = useNavigate();

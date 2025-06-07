@@ -8,6 +8,7 @@ import { Input } from '../components/ui/Input';
 import { Users, Plus, UserCheck, Edit, Shield, Mail, Phone } from 'lucide-react';
 import useUsers from '../hooks/useUsers';
 import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../lib/api';
 
 const UsersPage: React.FC = () => {
     const { users, updateUser } = useUsers();
@@ -34,10 +35,25 @@ const UsersPage: React.FC = () => {
     );
 
     const handleCreateUser = async () => {
-        // Placeholder for user creation
-        console.log('Creating user:', formData);
-        setIsCreateDialogOpen(false);
-        setFormData({ name: '', email: '', role: 'department_user', department: '', phone: '' });
+        try {
+            const newUser = await apiClient.createUser({
+                name: formData.name,
+                email: formData.email,
+                role: formData.role,
+                department: formData.department,
+                phone: formData.phone,
+                password: 'defaultpassword123' // Default password - user should change on first login
+            });
+            
+            if (newUser) {
+                // Refresh the users list
+                window.location.reload();
+            }
+            setIsCreateDialogOpen(false);
+            setFormData({ name: '', email: '', role: 'department_user', department: '', phone: '' });
+        } catch (error) {
+            console.error('Error creating user:', error);
+        }
     };
 
     const handleEditUser = async () => {

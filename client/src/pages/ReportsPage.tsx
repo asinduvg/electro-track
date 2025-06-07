@@ -37,12 +37,12 @@ const ReportsPage: React.FC = () => {
             totalItems: items.length,
             totalValue: totalValue,
             lowStockItems: lowStockItems,
-            categories: [...new Set(items.map(item => {
-                const category = categories.find(cat => cat.id === item.category_id);
+            categories: Array.from(new Set(items.map(item => {
+                const category = categories.find((cat: any) => cat.id === item.category_id);
                 return category ? `${category.category} - ${category.subcategory}` : 'Uncategorized';
-            }))],
+            }))),
             itemDetails: items.map(item => {
-                const category = categories.find(cat => cat.id === item.category_id);
+                const category = categories.find((cat: any) => cat.id === item.category_id);
                 const totalStock = getTotalQuantity(item.id, stocks);
                 return {
                     sku: item.sku,
@@ -87,7 +87,7 @@ const ReportsPage: React.FC = () => {
     };
 
     const generateFinancialReport = () => {
-        const categoryValues = categories.map(category => {
+        const categoryValues = categories.map((category: any) => {
             const categoryItems = items.filter(item => item.category_id === category.id);
             const categoryValue = categoryItems.reduce((sum, item) => {
                 const totalStock = getTotalQuantity(item.id, stocks);
@@ -250,7 +250,11 @@ const ReportsPage: React.FC = () => {
                         <p className="text-gray-600 mb-4">
                             Track item movements, transactions, and inventory turnover rates.
                         </p>
-                        <Button variant="outline" className="w-full">
+                        <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => generateStockMovementReport()}
+                        >
                             Generate Report
                         </Button>
                     </CardContent>
@@ -267,7 +271,11 @@ const ReportsPage: React.FC = () => {
                         <p className="text-gray-600 mb-4">
                             Financial analysis including total value, costs, and budget tracking.
                         </p>
-                        <Button variant="outline" className="w-full">
+                        <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => generateFinancialReport()}
+                        >
                             Generate Report
                         </Button>
                     </CardContent>
