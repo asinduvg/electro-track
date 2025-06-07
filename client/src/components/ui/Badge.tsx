@@ -1,7 +1,7 @@
 import React from 'react';
 import {cn} from '../../utils/cn';
 
-type BadgeVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
+type BadgeVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'outline';
 
 interface BadgeProps {
     children: React.ReactNode;
@@ -20,7 +20,8 @@ export const Badge: React.FC<BadgeProps> = ({
         success: 'bg-[#E6F7F7] text-[#008489] border border-[#B3E5E6]',
         danger: 'bg-[#FFF2F2] text-[#C4141C] border border-[#F5B5B5]',
         warning: 'bg-[#FFF4E6] text-[#FC642D] border border-[#FFD1A3]',
-        info: 'bg-[#E6F2FF] text-[#1A73E8] border border-[#B3D9FF]'
+        info: 'bg-[#E6F2FF] text-[#1A73E8] border border-[#B3D9FF]',
+        outline: 'bg-transparent text-[#222222] border border-[#DDDDDD]'
     };
 
     return (

@@ -52,6 +52,7 @@ export const items = pgTable("items", {
   model: text("model"),
   serial_number: text("serial_number"),
   minimum_stock: integer("minimum_stock"),
+  maximum_stock: integer("maximum_stock"),
   unit_cost: numeric("unit_cost", { precision: 10, scale: 2 }).notNull(),
   status: itemStatusEnum("status").notNull().default('out_of_stock'),
   created_at: timestamp("created_at").defaultNow(),
