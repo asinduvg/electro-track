@@ -11,7 +11,12 @@ import {
     Cpu,
     Zap,
     Menu,
-    X
+    X,
+    Building2,
+    AlertTriangle,
+    Upload,
+    TrendingUp,
+    FolderTree
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -26,14 +31,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
     const { logout } = useAuth();
     const { companyName } = useSettings();
 
+    const currentUserRole = 'admin'; // This would come from auth context in production
+    
     const navigation = [
-        { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-        { name: 'Components', href: '/inventory/items', icon: Package },
-        { name: 'Storage', href: '/locations', icon: MapPin },
-        { name: 'Team', href: '/users', icon: Users },
-        { name: 'Analytics', href: '/reports', icon: BarChart3 },
-        { name: 'Settings', href: '/settings', icon: Settings },
-    ];
+        { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['admin', 'inventory_manager', 'warehouse_staff', 'department_user'] },
+        { name: 'Components', href: '/inventory/items', icon: Package, roles: ['admin', 'inventory_manager', 'warehouse_staff', 'department_user'] },
+        { name: 'Categories', href: '/categories', icon: FolderTree, roles: ['admin', 'inventory_manager'] },
+        { name: 'Storage', href: '/locations', icon: MapPin, roles: ['admin', 'inventory_manager', 'warehouse_staff'] },
+        { name: 'Suppliers', href: '/suppliers', icon: Building2, roles: ['admin', 'inventory_manager'] },
+        { name: 'Alerts', href: '/alerts', icon: AlertTriangle, roles: ['admin', 'inventory_manager', 'warehouse_staff'] },
+        { name: 'Bulk Ops', href: '/bulk-operations', icon: Upload, roles: ['admin', 'inventory_manager'] },
+        { name: 'Advanced Analytics', href: '/advanced-analytics', icon: TrendingUp, roles: ['admin', 'inventory_manager'] },
+        { name: 'Analytics', href: '/reports', icon: BarChart3, roles: ['admin', 'inventory_manager', 'warehouse_staff'] },
+        { name: 'Team', href: '/users', icon: Users, roles: ['admin'] },
+        { name: 'Settings', href: '/settings', icon: Settings, roles: ['admin', 'inventory_manager'] },
+    ].filter(item => item.roles.includes(currentUserRole));
 
     const isActive = (href: string) => {
         if (href === '/') {

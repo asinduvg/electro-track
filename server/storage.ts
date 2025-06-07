@@ -154,6 +154,36 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updateCategory(id: number, updates: Partial<InsertCategory>): Promise<Category | undefined> {
+    const result = await db.update(categories).set(updates).where(eq(categories.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCategory(id: number): Promise<boolean> {
+    const result = await db.delete(categories).where(eq(categories.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Category Hierarchy
+  async getAllCategoryHierarchy(): Promise<CategoryHierarchy[]> {
+    return await db.select().from(categoryHierarchy);
+  }
+
+  async createCategoryHierarchy(category: InsertCategoryHierarchy): Promise<CategoryHierarchy> {
+    const result = await db.insert(categoryHierarchy).values(category).returning();
+    return result[0];
+  }
+
+  async updateCategoryHierarchy(id: string, updates: Partial<InsertCategoryHierarchy>): Promise<CategoryHierarchy | undefined> {
+    const result = await db.update(categoryHierarchy).set(updates).where(eq(categoryHierarchy.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCategoryHierarchy(id: string): Promise<boolean> {
+    const result = await db.delete(categoryHierarchy).where(eq(categoryHierarchy.id, id)).returning();
+    return result.length > 0;
+  }
+
   // Locations
   async getAllLocations(): Promise<Location[]> {
     return await db.select().from(locations).orderBy(asc(locations.building), asc(locations.room), asc(locations.unit));
@@ -172,6 +202,11 @@ export class DatabaseStorage implements IStorage {
   async updateLocation(id: string, updates: Partial<InsertLocation>): Promise<Location | undefined> {
     const result = await db.update(locations).set(updates).where(eq(locations.id, id)).returning();
     return result[0];
+  }
+
+  async deleteLocation(id: string): Promise<boolean> {
+    const result = await db.delete(locations).where(eq(locations.id, id)).returning();
+    return result.length > 0;
   }
 
   // Items
@@ -197,6 +232,21 @@ export class DatabaseStorage implements IStorage {
   async deleteItem(id: string): Promise<boolean> {
     const result = await db.delete(items).where(eq(items.id, id)).returning();
     return result.length > 0;
+  }
+
+  async bulkCreateItems(items: InsertItem[]): Promise<Item[]> {
+    const result = await db.insert(items).values(items).returning();
+    return result;
+  }
+
+  async searchItems(query: string): Promise<Item[]> {
+    return await db.select().from(items).where(
+      or(
+        ilike(items.name, `%${query}%`),
+        ilike(items.description, `%${query}%`),
+        ilike(items.sku, `%${query}%`)
+      )
+    );
   }
 
   // Item Locations

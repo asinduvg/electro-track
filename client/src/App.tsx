@@ -195,6 +195,56 @@ function App() {
                                     </ProtectedRoute>
                                 } 
                             />
+                            <Route 
+                                path="/suppliers" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <SuppliersPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/alerts" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <AlertsPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/bulk-operations" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <BulkOperationsPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/advanced-analytics" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <AdvancedAnalyticsPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/categories" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <CategoryManagementPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </BrowserRouter>
