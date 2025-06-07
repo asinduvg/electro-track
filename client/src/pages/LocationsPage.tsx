@@ -1,12 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
 import { Button } from '../components/ui/Button';
-import { MapPin, Plus, Building } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { MapPin, Plus, Building, X } from 'lucide-react';
 import useLocations from '../hooks/useLocations';
 
 const LocationsPage: React.FC = () => {
-    const { locations } = useLocations();
+    const { locations, createLocation } = useLocations();
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newLocation, setNewLocation] = useState({
+        building: '',
+        room: '',
+        unit: ''
+    });
+
+    const handleAddLocation = async () => {
+        if (!newLocation.unit.trim()) return;
+        
+        try {
+            await createLocation(newLocation);
+            setNewLocation({ building: '', room: '', unit: '' });
+            setShowAddModal(false);
+        } catch (error) {
+            console.error('Failed to create location:', error);
+        }
+    };
+
+    const resetForm = () => {
+        setNewLocation({ building: '', room: '', unit: '' });
+        setShowAddModal(false);
+    };
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -16,7 +40,10 @@ const LocationsPage: React.FC = () => {
                         <h1 className="text-3xl font-bold text-slate-900">Storage Locations</h1>
                         <p className="mt-2 text-slate-600">Manage warehouse locations and storage units</p>
                     </div>
-                    <Button className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors">
+                    <Button 
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                    >
                         <Plus className="mr-2 h-4 w-4" />
                         Add Location
                     </Button>
@@ -102,6 +129,78 @@ const LocationsPage: React.FC = () => {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Add Location Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-slate-900">Add New Location</h3>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={resetForm}
+                                    className="p-1"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Building
+                                    </label>
+                                    <Input
+                                        placeholder="Enter building name (optional)"
+                                        value={newLocation.building}
+                                        onChange={(e) => setNewLocation({...newLocation, building: e.target.value})}
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Room
+                                    </label>
+                                    <Input
+                                        placeholder="Enter room number (optional)"
+                                        value={newLocation.room}
+                                        onChange={(e) => setNewLocation({...newLocation, room: e.target.value})}
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Unit <span className="text-red-500">*</span>
+                                    </label>
+                                    <Input
+                                        placeholder="Enter unit identifier (required)"
+                                        value={newLocation.unit}
+                                        onChange={(e) => setNewLocation({...newLocation, unit: e.target.value})}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="flex space-x-3 mt-6">
+                                <Button 
+                                    onClick={handleAddLocation}
+                                    disabled={!newLocation.unit.trim()}
+                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                >
+                                    Create Location
+                                </Button>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={resetForm}
+                                    className="flex-1"
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
