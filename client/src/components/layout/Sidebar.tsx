@@ -14,6 +14,7 @@ import {
     X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 interface SidebarProps {
     isCollapsed: boolean;
@@ -23,6 +24,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
     const { logout } = useAuth();
+    const { companyName } = useSettings();
 
     const navigation = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -54,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
                         </div>
                         <div>
                             <h1 className="text-xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
-                                ElectroStock
+                                {companyName}
                             </h1>
                             <p className="text-xs text-slate-400 font-medium">Component Management</p>
                         </div>
