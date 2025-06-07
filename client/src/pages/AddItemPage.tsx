@@ -105,8 +105,12 @@ const AddItemPage: React.FC = () => {
                 <div className="flex items-center space-x-4">
                     <Button 
                         variant="outline" 
-                        onClick={() => navigate('/inventory/items')}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            navigate('/inventory/items');
+                        }}
                         className="flex items-center"
+                        type="button"
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Inventory
@@ -283,7 +287,10 @@ const AddItemPage: React.FC = () => {
                                 <Button 
                                     type="button"
                                     variant="outline" 
-                                    onClick={() => navigate('/inventory/items')}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        navigate('/inventory/items');
+                                    }}
                                 >
                                     Cancel
                                 </Button>
