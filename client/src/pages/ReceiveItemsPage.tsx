@@ -1,127 +1,81 @@
-import React, {useState, useEffect} from 'react';
-import {useNavigate, useSearchParams} from 'react-router-dom';
-import {Package, Search, Save, Truck} from 'lucide-react';
-import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {Input} from '../components/ui/Input';
-import {Button} from '../components/ui/Button';
-import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
-import {Badge} from '../components/ui/Badge';
-import {useAuth} from '../context/AuthContext';
-import {Item} from "../types";
-import useItems from "../hooks/useItems.tsx";
-import useLocations from "../hooks/useLocations.tsx";
-import useTransactions from "../hooks/useTransactions.tsx";
-import useStocks from "../hooks/useStocks.tsx";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Badge } from '../components/ui/Badge';
+import { PackageCheck, Plus, ArrowLeft, Search, Scan } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import useItems from '../hooks/useItems';
+import useLocations from '../hooks/useLocations';
+import useTransactions from '../hooks/useTransactions';
 
 interface ReceiveItem {
-    id: string;
-    quantity: number;
+    itemId: string;
     locationId: string;
-    notes: string;
+    quantity: number;
+    notes?: string;
 }
 
 const ReceiveItemsPage: React.FC = () => {
-    const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const {currentUser} = useAuth();
-
-    const [selectedItems, setSelectedItems] = useState<ReceiveItem[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const { items } = useItems();
+    const { locations } = useLocations();
+    const { createTransaction } = useTransactions();
+    const [receiveItems, setReceiveItems] = useState<ReceiveItem[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const {items, getTotalQuantity} = useItems();
-    const {locations} = useLocations();
-    const {stocks} = useStocks();
-    const {createTransaction} = useTransactions();
-
-    useEffect(() => {
-        // If itemId is provided in URL, pre-select that item
-        const itemId = searchParams.get('itemId');
-        if (itemId) {
-            setSelectedItems([{id: itemId, quantity: 1, locationId: '', notes: ''}]);
-        }
-    }, [searchParams]);
 
     const filteredItems = items.filter(item =>
-        !selectedItems.some(selected => selected.id === item.id) &&
-        (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.sku?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleAddItem = (item: Item) => {
-        setSelectedItems([
-            ...selectedItems,
-            {id: item.id, quantity: 1, locationId: '', notes: ''}
-        ]);
-        setSearchTerm('');
-    };
-
-    const handleRemoveItem = (itemId: string) => {
-        setSelectedItems(selectedItems.filter(item => item.id !== itemId));
-    };
-
-    const handleQuantityChange = (itemId: string, quantity: number) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, quantity} : item
-        ));
-    };
-
-    const handleLocationChange = (itemId: string, locationId: string) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, locationId} : item
-        ));
-    };
-
-    const handleNotesChange = (itemId: string, notes: string) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, notes} : item
-        ));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!currentUser) {
-            setError('You must be logged in to receive items');
-            return;
+    const addItemToReceive = (itemId: string) => {
+        const existingIndex = receiveItems.findIndex(ri => ri.itemId === itemId);
+        if (existingIndex >= 0) {
+            const updated = [...receiveItems];
+            updated[existingIndex].quantity += 1;
+            setReceiveItems(updated);
+        } else {
+            setReceiveItems([...receiveItems, {
+                itemId,
+                locationId: locations[0]?.id || '',
+                quantity: 1,
+                notes: ''
+            }]);
         }
+    };
 
-        if (selectedItems.length === 0) {
-            setError('Please select at least one item to receive');
-            return;
-        }
+    const updateReceiveItem = (index: number, field: keyof ReceiveItem, value: any) => {
+        const updated = [...receiveItems];
+        updated[index] = { ...updated[index], [field]: value };
+        setReceiveItems(updated);
+    };
 
-        const invalidItems = selectedItems.filter(item =>
-            item.quantity <= 0 || !item.locationId
-        );
+    const removeReceiveItem = (index: number) => {
+        setReceiveItems(receiveItems.filter((_, i) => i !== index));
+    };
 
-        if (invalidItems.length > 0) {
-            setError('Please ensure all items have valid quantities and locations');
-            return;
-        }
+    const handleSubmitReceive = async () => {
+        if (receiveItems.length === 0) return;
 
+        setIsSubmitting(true);
         try {
-            setIsSubmitting(true);
-            setError(null);
-
-            // Create receive transactions for each item
-            for (const item of selectedItems) {
+            for (const receiveItem of receiveItems) {
                 await createTransaction({
+                    item_id: receiveItem.itemId,
                     type: 'receive',
-                    item_id: item.id,
-                    quantity: item.quantity,
-                    to_location_id: item.locationId,
-                    performed_by: currentUser.id,
-                    notes: item.notes,
-                    from_location_id: null,
+                    quantity: receiveItem.quantity,
+                    to_location_id: receiveItem.locationId,
+                    notes: receiveItem.notes || `Received ${receiveItem.quantity} units`,
+                    performed_by: 'Current User'
                 });
             }
-
-            navigate('/inventory/items');
-        } catch (err) {
-            console.error('Error receiving items:', err);
-            setError('Failed to process receive transaction');
+            setReceiveItems([]);
+            alert('Items received successfully!');
+        } catch (error) {
+            console.error('Error receiving items:', error);
+            alert('Failed to receive items. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -130,239 +84,163 @@ const ReceiveItemsPage: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Receive Items</h1>
+                <div className="flex items-center space-x-4">
+                    <Link to="/inventory/items">
+                        <Button variant="outline" size="sm">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Inventory
+                        </Button>
+                    </Link>
+                    <h1 className="text-3xl font-bold text-gray-900">Receive Items</h1>
+                </div>
+                
+                {receiveItems.length > 0 && (
+                    <Button 
+                        onClick={handleSubmitReceive}
+                        disabled={isSubmitting}
+                        className="flex items-center"
+                    >
+                        <PackageCheck className="h-4 w-4 mr-2" />
+                        {isSubmitting ? 'Processing...' : `Receive ${receiveItems.length} Items`}
+                    </Button>
+                )}
             </div>
 
-            {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <Package className="h-5 w-5 text-red-400"/>
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-red-700">{error}</p>
-                        </div>
+            {/* Search Items */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <Search className="mr-2 h-5 w-5" />
+                        Select Items to Receive
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="mb-4">
+                        <Input
+                            placeholder="Search items by name or SKU..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="max-w-md"
+                        />
                     </div>
-                </div>
-            )}
+                    
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableHeaderCell>SKU</TableHeaderCell>
+                                <TableHeaderCell>Name</TableHeaderCell>
+                                <TableHeaderCell>Current Stock</TableHeaderCell>
+                                <TableHeaderCell>Actions</TableHeaderCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredItems.slice(0, 10).map((item) => (
+                                <TableRow key={item.id}>
+                                    <TableCell className="font-medium">{item.sku}</TableCell>
+                                    <TableCell>
+                                        <div>
+                                            <div className="font-medium">{item.name}</div>
+                                            <div className="text-sm text-gray-500">{item.description}</div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary">Stock data needed</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => addItemToReceive(item.id)}
+                                        >
+                                            <Plus className="h-4 w-4 mr-1" />
+                                            Add
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
-            <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Selected Items */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center">
-                                    <Package className="mr-2 h-5 w-5 text-blue-600"/>
-                                    Selected Items
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {selectedItems.length === 0 ? (
-                                    <div className="text-center py-12 text-gray-500">
-                                        <Truck className="h-12 w-12 mx-auto mb-4 text-gray-400"/>
-                                        <p className="text-lg">No items selected</p>
-                                        <p className="text-sm">Search and select items to receive below</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {selectedItems.map(selectedItem => {
-                                            const item = items.find(i => i.id === selectedItem.id);
-                                            if (!item) return null;
-
-                                            return (
-                                                <div
-                                                    key={item.id}
-                                                    className="border border-gray-200 rounded-lg p-4"
-                                                >
-                                                    <div className="flex items-start justify-between mb-4">
-                                                        <div>
-                                                            <h3 className="font-medium text-gray-900">
-                                                                {item.name}
-                                                            </h3>
-                                                            <p className="text-sm text-gray-500">
-                                                                SKU: {item.sku}
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleRemoveItem(item.id)}
-                                                        >
-                                                            Remove
-                                                        </Button>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                        <Input
-                                                            label="Quantity"
-                                                            type="number"
-                                                            min="1"
-                                                            value={selectedItem.quantity}
-                                                            onChange={(e) => handleQuantityChange(
-                                                                item.id,
-                                                                parseInt(e.target.value) || 0
-                                                            )}
-                                                            required
-                                                        />
-
-                                                        <div className="col-span-2">
-                                                            <label
-                                                                className="block text-sm font-medium text-gray-700 mb-1"
-                                                            >
-                                                                Storage Location
-                                                            </label>
-                                                            <select
-                                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                                value={selectedItem.locationId}
-                                                                onChange={(e) => handleLocationChange(item.id, e.target.value)}
-                                                                required
-                                                            >
-                                                                <option value="">Select Location</option>
-                                                                {locations.map((location) => (
-                                                                    <option key={location.id} value={location.id}>
-                                                                        {location.building} &gt; {location.room} &gt; {location.unit}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-
-                                                        <div className="col-span-3">
-                                                            <Input
-                                                                label="Notes"
-                                                                value={selectedItem.notes}
-                                                                onChange={(e) => handleNotesChange(item.id, e.target.value)}
-                                                                placeholder="Optional notes about this receipt"
-                                                            />
-                                                        </div>
-                                                    </div>
+            {/* Items to Receive */}
+            {receiveItems.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
+                            <PackageCheck className="mr-2 h-5 w-5" />
+                            Items to Receive ({receiveItems.length})
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableHeaderCell>Item</TableHeaderCell>
+                                    <TableHeaderCell>Quantity</TableHeaderCell>
+                                    <TableHeaderCell>Location</TableHeaderCell>
+                                    <TableHeaderCell>Notes</TableHeaderCell>
+                                    <TableHeaderCell>Actions</TableHeaderCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {receiveItems.map((receiveItem, index) => {
+                                    const item = items.find(i => i.id === receiveItem.itemId);
+                                    return (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{item?.name}</div>
+                                                    <div className="text-sm text-gray-500">{item?.sku}</div>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Item Search */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Select Items</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="mb-4">
-                                    <Input
-                                        placeholder="Search by name or SKU..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        leftAddon={<Search className="h-5 w-5"/>}
-                                    />
-                                </div>
-
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableHeaderCell>SKU</TableHeaderCell>
-                                            <TableHeaderCell>Name</TableHeaderCell>
-                                            <TableHeaderCell>Current Stock</TableHeaderCell>
-                                            <TableHeaderCell>Action</TableHeaderCell>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    type="number"
+                                                    value={receiveItem.quantity}
+                                                    onChange={(e) => updateReceiveItem(index, 'quantity', parseInt(e.target.value) || 0)}
+                                                    className="w-20"
+                                                    min="1"
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <select
+                                                    value={receiveItem.locationId}
+                                                    onChange={(e) => updateReceiveItem(index, 'locationId', e.target.value)}
+                                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                                >
+                                                    {locations.map((location) => (
+                                                        <option key={location.id} value={location.id}>
+                                                            {location.unit}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    placeholder="Optional notes..."
+                                                    value={receiveItem.notes || ''}
+                                                    onChange={(e) => updateReceiveItem(index, 'notes', e.target.value)}
+                                                    className="w-32"
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => removeReceiveItem(index)}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {filteredItems.length > 0 ? (
-                                            filteredItems.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className="font-medium">{item.sku}</TableCell>
-                                                    <TableCell>{item.name}</TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant={getTotalQuantity(item.id, stocks) === 0 ? 'danger' : getTotalQuantity(item.id, stocks) < (item.minimum_stock || 0) ? 'warning' : 'success'}
-                                                        >
-                                                            {getTotalQuantity(item.id, stocks)}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleAddItem(item)}
-                                                        >
-                                                            Select
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={4} className="text-center py-8">
-                                                    <p className="text-gray-500">No matching items found</p>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Summary */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Receipt Summary</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Items</p>
-                                    <p className="text-2xl font-bold">
-                                        {selectedItems.length}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Quantity</p>
-                                    <p className="text-2xl font-bold">
-                                        {selectedItems.reduce((sum, item) => sum + item.quantity, 0)}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Value</p>
-                                    <p className="text-2xl font-bold">
-                                        ${selectedItems.reduce((sum, selected) => {
-                                        const item = items.find(i => i.id === selected.id);
-                                        return sum + (item ? item.unit_cost * selected.quantity : 0);
-                                    }, 0).toFixed(2)}
-                                    </p>
-                                </div>
-
-                                <hr className="my-6"/>
-
-                                <Button
-                                    type="submit"
-                                    variant="primary"
-                                    fullWidth
-                                    size="lg"
-                                    isLoading={isSubmitting}
-                                    leftIcon={<Save className="h-5 w-5"/>}
-                                    disabled={selectedItems.length === 0}
-                                >
-                                    Complete Receipt
-                                </Button>
-
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    fullWidth
-                                    onClick={() => navigate('/inventory/items')}
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </form>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };

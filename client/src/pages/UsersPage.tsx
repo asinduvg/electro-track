@@ -1,13 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { Users, Plus, UserCheck } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+// Dialog component placeholder - will use modal approach
+import { Users, Plus, UserCheck, Edit, Shield, Mail, Phone } from 'lucide-react';
 import useUsers from '../hooks/useUsers';
+import { useAuth } from '../context/AuthContext';
 
 const UsersPage: React.FC = () => {
-    const { users } = useUsers();
+    const { users, updateUser } = useUsers();
+    const { currentUser } = useAuth();
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        role: 'department_user',
+        department: '',
+        phone: ''
+    });
+
+    const isAdmin = currentUser?.role === 'admin';
+    const canEditUsers = isAdmin || currentUser?.role === 'inventory_manager';
+
+    const filteredUsers = users.filter(user =>
+        user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.department?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const handleCreateUser = async () => {
+        // Placeholder for user creation
+        console.log('Creating user:', formData);
+        setIsCreateDialogOpen(false);
+        setFormData({ name: '', email: '', role: 'department_user', department: '', phone: '' });
+    };
+
+    const handleEditUser = async () => {
+        if (selectedUser) {
+            await updateUser(selectedUser.id, {
+                ...formData,
+                role: formData.role as 'admin' | 'inventory_manager' | 'warehouse_staff' | 'department_user'
+            });
+            setIsEditDialogOpen(false);
+            setSelectedUser(null);
+            setFormData({ name: '', email: '', role: 'department_user', department: '', phone: '' });
+        }
+    };
+
+    const openEditDialog = (user: any) => {
+        setSelectedUser(user);
+        setFormData({
+            name: user.name || '',
+            email: user.email || '',
+            role: user.role || 'department_user',
+            department: user.department || '',
+            phone: user.phone || ''
+        });
+        setIsEditDialogOpen(true);
+    };
 
     const getRoleBadge = (role: string) => {
         switch (role) {
@@ -28,10 +83,23 @@ const UsersPage: React.FC = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-                <Button className="flex items-center">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add User
-                </Button>
+                <div className="flex space-x-4">
+                    <Input
+                        placeholder="Search users..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-64"
+                    />
+                    {canEditUsers && (
+                        <Button 
+                            className="flex items-center"
+                            onClick={() => setIsCreateDialogOpen(true)}
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add User
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -68,7 +136,7 @@ const UsersPage: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {users.map((user) => (
+                            {filteredUsers.map((user) => (
                                 <TableRow key={user.id}>
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
@@ -82,8 +150,22 @@ const UsersPage: React.FC = () => {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex space-x-2">
-                                            <Button variant="outline" size="sm">Edit</Button>
-                                            <Button variant="outline" size="sm">Permissions</Button>
+                                            {canEditUsers && (
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => openEditDialog(user)}
+                                                >
+                                                    <Edit className="h-4 w-4 mr-1" />
+                                                    Edit
+                                                </Button>
+                                            )}
+                                            {isAdmin && (
+                                                <Button variant="outline" size="sm">
+                                                    <Shield className="h-4 w-4 mr-1" />
+                                                    Permissions
+                                                </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>
