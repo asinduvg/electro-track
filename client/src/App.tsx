@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DatabaseProvider } from "./context/DatabaseContext.tsx";
+import Layout from './components/layout/Layout';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -10,6 +11,7 @@ import AddItemPage from './pages/AddItemPage';
 import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import ReportsPage from './pages/ReportsPage';
+import SettingsPage from './pages/SettingsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { currentUser, isLoading } = useAuth();
@@ -65,7 +67,9 @@ function App() {
                             path="/" 
                             element={
                                 <ProtectedRoute>
-                                    <DashboardPage />
+                                    <Layout>
+                                        <DashboardPage />
+                                    </Layout>
                                 </ProtectedRoute>
                             } 
                         />
@@ -73,7 +77,9 @@ function App() {
                             path="/inventory/items" 
                             element={
                                 <ProtectedRoute>
-                                    <InventoryListPage />
+                                    <Layout>
+                                        <InventoryListPage />
+                                    </Layout>
                                 </ProtectedRoute>
                             } 
                         />
@@ -81,7 +87,9 @@ function App() {
                             path="/inventory/add" 
                             element={
                                 <ProtectedRoute>
-                                    <AddItemPage />
+                                    <Layout>
+                                        <AddItemPage />
+                                    </Layout>
                                 </ProtectedRoute>
                             } 
                         />
@@ -89,7 +97,9 @@ function App() {
                             path="/locations" 
                             element={
                                 <ProtectedRoute>
-                                    <LocationsPage />
+                                    <Layout>
+                                        <LocationsPage />
+                                    </Layout>
                                 </ProtectedRoute>
                             } 
                         />
@@ -97,7 +107,9 @@ function App() {
                             path="/users" 
                             element={
                                 <ProtectedRoute>
-                                    <UsersPage />
+                                    <Layout>
+                                        <UsersPage />
+                                    </Layout>
                                 </ProtectedRoute>
                             } 
                         />
@@ -105,7 +117,19 @@ function App() {
                             path="/reports" 
                             element={
                                 <ProtectedRoute>
-                                    <ReportsPage />
+                                    <Layout>
+                                        <ReportsPage />
+                                    </Layout>
+                                </ProtectedRoute>
+                            } 
+                        />
+                        <Route 
+                            path="/settings" 
+                            element={
+                                <ProtectedRoute>
+                                    <Layout>
+                                        <SettingsPage />
+                                    </Layout>
                                 </ProtectedRoute>
                             } 
                         />
