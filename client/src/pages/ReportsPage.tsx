@@ -132,24 +132,96 @@ const ReportsPage: React.FC = () => {
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div className="text-center">
-                            <p className="text-3xl font-bold text-blue-600">2,430</p>
+                            <p className="text-3xl font-bold text-blue-600">{totalItems}</p>
                             <p className="text-gray-600">Total Items</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-3xl font-bold text-yellow-600">1</p>
+                            <p className="text-3xl font-bold text-yellow-600">{lowStockItems}</p>
                             <p className="text-gray-600">Low Stock</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-3xl font-bold text-green-600">$18,567</p>
+                            <p className="text-3xl font-bold text-green-600">${totalValue.toFixed(2)}</p>
                             <p className="text-gray-600">Total Value</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-3xl font-bold text-indigo-600">5</p>
-                            <p className="text-gray-600">Recent Transactions</p>
+                            <p className="text-3xl font-bold text-indigo-600">{transactions.length}</p>
+                            <p className="text-gray-600">Total Transactions</p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Recent Transactions for Admin */}
+            {currentUser && (currentUser.role === 'admin' || currentUser.role === 'inventory_manager') && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
+                            <Clock className="mr-2 h-5 w-5" />
+                            Recent Transactions
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableHeaderCell>Type</TableHeaderCell>
+                                    <TableHeaderCell>Item</TableHeaderCell>
+                                    <TableHeaderCell>Quantity</TableHeaderCell>
+                                    <TableHeaderCell>Location</TableHeaderCell>
+                                    <TableHeaderCell>Date</TableHeaderCell>
+                                    <TableHeaderCell>Performed By</TableHeaderCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {recentTransactions.map((transaction) => {
+                                    const item = items.find(i => i.id === transaction.item_id);
+                                    const fromLocation = locations.find(loc => loc.id === transaction.from_location_id);
+                                    const toLocation = locations.find(loc => loc.id === transaction.to_location_id);
+                                    
+                                    return (
+                                        <TableRow key={transaction.id}>
+                                            <TableCell>
+                                                <div className="flex items-center space-x-2">
+                                                    {getTransactionIcon(transaction.type)}
+                                                    {getTransactionBadge(transaction.type)}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{item?.name || 'Unknown Item'}</div>
+                                                    <div className="text-sm text-gray-500">{item?.sku}</div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="font-medium">{transaction.quantity}</TableCell>
+                                            <TableCell>
+                                                <div className="text-sm">
+                                                    {transaction.type === 'transfer' 
+                                                        ? `${fromLocation?.unit || 'Unknown'} → ${toLocation?.unit || 'Unknown'}`
+                                                        : transaction.type === 'receive' 
+                                                        ? toLocation?.unit || 'Unknown'
+                                                        : fromLocation?.unit || 'Unknown'
+                                                    }
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {new Date(transaction.performed_at || '').toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>{transaction.performed_by}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                        
+                        {recentTransactions.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">
+                                <Clock className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                <p>No recent transactions found</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };
