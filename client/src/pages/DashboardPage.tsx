@@ -7,7 +7,7 @@ import {Badge} from '../components/ui/Badge';
 import {
     Package, AlertTriangle, DollarSign, ArrowUpRight,
     Clock, BarChart, TrendingUp, TrendingDown,
-    Truck, BoxesIcon
+    Truck, BoxesIcon, Cpu, Zap, Microchip, Activity
 } from 'lucide-react';
 import {UserRole, ItemStatus} from '../types';
 import useItems from "../hooks/useItems.tsx";
@@ -42,255 +42,295 @@ const DashboardPage: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Component Overview</h1>
+                    <p className="text-slate-600 mt-2">Monitor your electronic inventory at a glance</p>
+                </div>
+                <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
+                    <Activity className="h-4 w-4 text-green-500" />
+                    <span className="text-sm text-slate-600">Live Data</span>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Inventory Overview Card */}
-                <Card className="bg-gradient-to-br from-blue-900 to-blue-800 text-white">
+                {/* Total Components Card */}
+                <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shadow-slate-900/20">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-blue-200 font-medium">Total Inventory</p>
-                                <p className="text-3xl font-bold mt-1">{totalStocks}</p>
+                                <p className="text-slate-300 font-medium text-sm uppercase tracking-wide">Total Components</p>
+                                <p className="text-3xl font-bold mt-2">{totalStocks.toLocaleString()}</p>
                             </div>
-                            <div className="bg-blue-700 p-3 rounded-full">
-                                <Package size={24}/>
+                            <div className="bg-slate-700/50 p-3 rounded-xl backdrop-blur-sm">
+                                <Microchip className="h-6 w-6 text-sky-400"/>
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-sm">
-                            <TrendingUp size={16} className="mr-1"/>
-                            <span>6 categories, {items.length} unique items</span>
+                            <TrendingUp className="h-4 w-4 mr-2 text-green-400"/>
+                            <span className="text-slate-300">{items.length} unique types</span>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Low Stock Alert Card */}
-                <Card className="bg-gradient-to-br from-yellow-600 to-yellow-500 text-white">
+                {/* Critical Stock Alert Card */}
+                <Card className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white border-0 shadow-xl shadow-orange-500/20">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-yellow-100 font-medium">Low Stock Items</p>
-                                <p className="text-3xl font-bold mt-1">{lowStockItems.length}</p>
+                                <p className="text-orange-100 font-medium text-sm uppercase tracking-wide">Critical Stock</p>
+                                <p className="text-3xl font-bold mt-2">{lowStockItems.length}</p>
                             </div>
-                            <div className="bg-yellow-500 p-3 rounded-full">
-                                <AlertTriangle size={24}/>
+                            <div className="bg-orange-400/30 p-3 rounded-xl backdrop-blur-sm">
+                                <AlertTriangle className="h-6 w-6 text-white"/>
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-sm">
                             {lowStockItems.length > 0 ? (
                                 <Link to="/inventory/items?filter=low_stock"
-                                      className="flex items-center hover:underline">
-                                    <ArrowUpRight size={16} className="mr-1"/>
-                                    <span>View all low stock items</span>
+                                      className="flex items-center hover:text-orange-100 transition-colors">
+                                    <ArrowUpRight className="h-4 w-4 mr-2"/>
+                                    <span>Requires attention</span>
                                 </Link>
                             ) : (
                                 <div className="flex items-center">
-                                    <TrendingDown size={16} className="mr-1"/>
-                                    <span>No items below threshold</span>
+                                    <TrendingDown className="h-4 w-4 mr-2 text-green-300"/>
+                                    <span className="text-orange-100">All levels optimal</span>
                                 </div>
                             )}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Total Value Card */}
-                <Card className="bg-gradient-to-br from-green-700 to-green-600 text-white">
+                {/* Portfolio Value Card */}
+                <Card className="bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 text-white border-0 shadow-xl shadow-green-500/20">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-green-100 font-medium">Total Value</p>
-                                <p className="text-3xl font-bold mt-1">{items.reduce((sum, item) => sum + (getTotalQuantity(item.id, stocks) * Number(item.unit_cost)), 0).toLocaleString()}</p>
+                                <p className="text-green-100 font-medium text-sm uppercase tracking-wide">Portfolio Value</p>
+                                <p className="text-3xl font-bold mt-2">${items.reduce((sum, item) => sum + (getTotalQuantity(item.id, stocks) * Number(item.unit_cost)), 0).toLocaleString()}</p>
                             </div>
-                            <div className="bg-green-600 p-3 rounded-full">
-                                <DollarSign size={24}/>
+                            <div className="bg-green-500/30 p-3 rounded-xl backdrop-blur-sm">
+                                <DollarSign className="h-6 w-6 text-white"/>
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-sm">
-                            <Link to="/reports" className="flex items-center hover:underline">
-                                <BarChart size={16} className="mr-1"/>
-                                <span>View financial reports</span>
+                            <Link to="/reports" className="flex items-center hover:text-green-100 transition-colors">
+                                <BarChart className="h-4 w-4 mr-2"/>
+                                <span>View breakdown</span>
                             </Link>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Recent Activity Card */}
-                <Card className="bg-gradient-to-br from-indigo-800 to-indigo-700 text-white">
+                {/* System Activity Card */}
+                <Card className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 text-white border-0 shadow-xl shadow-purple-500/20">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-indigo-200 font-medium">Recent Activity</p>
-                                <p className="text-3xl font-bold mt-1">{recentTransactions.length}</p>
+                                <p className="text-purple-100 font-medium text-sm uppercase tracking-wide">Recent Activity</p>
+                                <p className="text-3xl font-bold mt-2">{recentTransactions.length}</p>
                             </div>
-                            <div className="bg-indigo-700 p-3 rounded-full">
-                                <Clock size={24}/>
+                            <div className="bg-purple-500/30 p-3 rounded-xl backdrop-blur-sm">
+                                <Zap className="h-6 w-6 text-white"/>
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-sm">
-                            <Link to="/reports?type=activity" className="flex items-center hover:underline">
-                                <ArrowUpRight size={16} className="mr-1"/>
-                                <span>View all activity</span>
+                            <Link to="/reports?type=activity" className="flex items-center hover:text-purple-100 transition-colors">
+                                <ArrowUpRight className="h-4 w-4 mr-2"/>
+                                <span>View timeline</span>
                             </Link>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Low Stock Items */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <AlertTriangle size={18} className="mr-2 text-yellow-500"/>
-                            Low Stock Items
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                {/* Critical Stock Alerts */}
+                <Card className="xl:col-span-2 bg-white border-0 shadow-lg">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="flex items-center text-slate-900">
+                            <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-xl mr-3">
+                                <AlertTriangle className="h-5 w-5 text-orange-600"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold">Critical Stock Alerts</h3>
+                                <p className="text-sm text-slate-500 font-normal">Components requiring immediate attention</p>
+                            </div>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         {lowStockItems.length > 0 ? (
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableHeaderCell>SKU</TableHeaderCell>
-                                        <TableHeaderCell>Name</TableHeaderCell>
-                                        <TableHeaderCell>Quantity</TableHeaderCell>
-                                        <TableHeaderCell>Min. Stock</TableHeaderCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {lowStockItems.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell className="font-medium">{item.sku}</TableCell>
-                                            <TableCell>
-                                                <Link
-                                                    to={`/inventory/view/${item.id}`}
-                                                    className="text-blue-600 hover:text-blue-800"
-                                                >
-                                                    {item.name}
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell
-                                                className="text-red-600 font-medium">{getTotalQuantity(item.id, stocks)}</TableCell>
-                                            <TableCell>{item.minimum_stock}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                            <div className="space-y-3">
+                                {lowStockItems.map((item) => (
+                                    <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-orange-200 transition-colors">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                                <Microchip className="h-5 w-5 text-orange-600" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-900">{item.name}</p>
+                                                <p className="text-sm text-slate-500">SKU: {item.sku}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-2xl font-bold text-red-600">{getTotalQuantity(item.id, stocks)}</span>
+                                                <span className="text-sm text-slate-500">/ {item.minimum_stock || 0}</span>
+                                            </div>
+                                            <Link
+                                                to={`/inventory/items`}
+                                                className="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                                            >
+                                                View Details →
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
-                                <BoxesIcon size={48} className="mx-auto mb-4 text-gray-300"/>
-                                <p>No low stock items to display</p>
-                                <p className="text-sm text-gray-400 mt-2">All items are above their minimum stock
-                                    levels</p>
+                            <div className="text-center py-12">
+                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Package className="h-8 w-8 text-green-600"/>
+                                </div>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-2">All Stock Levels Optimal</h3>
+                                <p className="text-slate-500">All components are above their minimum thresholds</p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
-                {/* Recent Transactions */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <Truck size={18} className="mr-2 text-blue-500"/>
-                            Recent Transactions
+                {/* Recent Activity */}
+                <Card className="bg-white border-0 shadow-lg">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="flex items-center text-slate-900">
+                            <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-xl mr-3">
+                                <Activity className="h-5 w-5 text-purple-600"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold">Activity Timeline</h3>
+                                <p className="text-sm text-slate-500 font-normal">Latest component movements</p>
+                            </div>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableHeaderCell>Date</TableHeaderCell>
-                                    <TableHeaderCell>Type</TableHeaderCell>
-                                    <TableHeaderCell>Item</TableHeaderCell>
-                                    <TableHeaderCell>Quantity</TableHeaderCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {getItemDetailsForTransactions(recentTransactions, items).map((txnWithItem) => {
-                                    let badgeVariant: 'primary' | 'success' | 'danger' | 'warning';
-
-                                    switch (txnWithItem.type) {
+                        <div className="space-y-4">
+                            {getItemDetailsForTransactions(recentTransactions, items).map((txnWithItem) => {
+                                const getTypeConfig = (type: string) => {
+                                    switch (type) {
                                         case 'receive':
-                                            badgeVariant = 'success';
-                                            break;
+                                            return { color: 'text-green-700', bg: 'bg-green-100', icon: '↗️', label: 'Received' };
                                         case 'transfer':
-                                            badgeVariant = 'primary';
-                                            break;
-                                        case 'dispose':
-                                            badgeVariant = 'danger';
-                                            break;
+                                            return { color: 'text-blue-700', bg: 'bg-blue-100', icon: '🔄', label: 'Transferred' };
+                                        case 'withdraw':
+                                            return { color: 'text-orange-700', bg: 'bg-orange-100', icon: '↙️', label: 'Withdrawn' };
+                                        case 'adjust':
+                                            return { color: 'text-purple-700', bg: 'bg-purple-100', icon: '⚙️', label: 'Adjusted' };
                                         default:
-                                            badgeVariant = 'warning';
+                                            return { color: 'text-gray-700', bg: 'bg-gray-100', icon: '📦', label: 'Updated' };
                                     }
+                                };
 
-                                    return (
-                                        <TableRow key={txnWithItem.id}>
-                                            <TableCell>
-                                                {txnWithItem.performed_at && typeof txnWithItem.performed_at === 'string' ? new Date(txnWithItem.performed_at).toLocaleDateString() : 'N/A'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={badgeVariant} className="capitalize">
-                                                    {txnWithItem.type}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                {txnWithItem.item ? txnWithItem.item.name : 'Unknown Item'}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {txnWithItem.type === 'receive' ? '+' : ''}
-                                                {txnWithItem.quantity}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
+                                const config = getTypeConfig(txnWithItem.type);
+
+                                return (
+                                    <div key={txnWithItem.id} className="flex items-center space-x-4 p-3 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors">
+                                        <div className={`w-10 h-10 ${config.bg} rounded-lg flex items-center justify-center text-sm`}>
+                                            {config.icon}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-slate-900">
+                                                {txnWithItem.item ? txnWithItem.item.name : 'Unknown Component'}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                {config.label} • {txnWithItem.quantity > 0 ? '+' : ''}{txnWithItem.quantity} units
+                                            </p>
+                                        </div>
+                                        <div className="text-xs text-slate-400">
+                                            {txnWithItem.performed_at && typeof txnWithItem.performed_at === 'string' 
+                                                ? new Date(txnWithItem.performed_at).toLocaleDateString() 
+                                                : 'Today'}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                            <Link 
+                                to="/reports?type=activity" 
+                                className="text-sm text-sky-600 hover:text-sky-700 font-medium flex items-center"
+                            >
+                                View full timeline
+                                <ArrowUpRight className="h-4 w-4 ml-1" />
+                            </Link>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Role-specific content */}
+            {/* Quick Actions */}
             {(currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.INVENTORY_MANAGER) && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Quick Actions</CardTitle>
+                <Card className="bg-white border-0 shadow-lg">
+                    <CardHeader className="pb-6">
+                        <CardTitle className="flex items-center text-slate-900">
+                            <div className="flex items-center justify-center w-10 h-10 bg-sky-100 rounded-xl mr-3">
+                                <Zap className="h-5 w-5 text-sky-600"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold">Quick Actions</h3>
+                                <p className="text-sm text-slate-500 font-normal">Common inventory operations</p>
+                            </div>
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <Link
                                 to="/inventory/add"
-                                className="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-sky-50 hover:from-blue-100 hover:to-sky-100 border border-blue-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-100"
                             >
-                                <div className="p-3 mr-3 bg-blue-800 text-white rounded-full">
-                                    <Package size={20}/>
+                                <div className="flex flex-col items-start">
+                                    <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <Package className="h-6 w-6"/>
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Add Component</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Register new electronic components to inventory</p>
                                 </div>
-                                <div>
-                                    <h3 className="font-medium">Add New Item</h3>
-                                    <p className="text-sm text-gray-500">Create a new inventory item</p>
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowUpRight className="h-5 w-5 text-blue-600" />
                                 </div>
                             </Link>
 
                             <Link
-                                to="/inventory/receive"
-                                className="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                                to="/inventory/items"
+                                className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100 border border-emerald-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-100"
                             >
-                                <div className="p-3 mr-3 bg-green-600 text-white rounded-full">
-                                    <Truck size={20}/>
+                                <div className="flex flex-col items-start">
+                                    <div className="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <Truck className="h-6 w-6"/>
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Stock Movement</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Record shipments and transfers</p>
                                 </div>
-                                <div>
-                                    <h3 className="font-medium">Receive Inventory</h3>
-                                    <p className="text-sm text-gray-500">Record new shipments</p>
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowUpRight className="h-5 w-5 text-emerald-600" />
                                 </div>
                             </Link>
 
                             <Link
                                 to="/reports"
-                                className="flex items-center p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                                className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-violet-50 hover:from-purple-100 hover:to-violet-100 border border-purple-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-purple-100"
                             >
-                                <div className="p-3 mr-3 bg-indigo-700 text-white rounded-full">
-                                    <BarChart size={20}/>
+                                <div className="flex flex-col items-start">
+                                    <div className="w-12 h-12 bg-purple-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <BarChart className="h-6 w-6"/>
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Analytics</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Generate detailed inventory reports</p>
                                 </div>
-                                <div>
-                                    <h3 className="font-medium">Generate Report</h3>
-                                    <p className="text-sm text-gray-500">Analyze inventory data</p>
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowUpRight className="h-5 w-5 text-purple-600" />
                                 </div>
                             </Link>
                         </div>

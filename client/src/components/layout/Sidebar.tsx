@@ -8,7 +8,8 @@ import {
     BarChart3, 
     Settings,
     LogOut,
-    Building2
+    Cpu,
+    Zap
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -18,10 +19,10 @@ const Sidebar: React.FC = () => {
 
     const navigation = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-        { name: 'Inventory', href: '/inventory/items', icon: Package },
-        { name: 'Locations', href: '/locations', icon: MapPin },
-        { name: 'Users', href: '/users', icon: Users },
-        { name: 'Reports', href: '/reports', icon: BarChart3 },
+        { name: 'Components', href: '/inventory/items', icon: Package },
+        { name: 'Storage', href: '/locations', icon: MapPin },
+        { name: 'Team', href: '/users', icon: Users },
+        { name: 'Analytics', href: '/reports', icon: BarChart3 },
         { name: 'Settings', href: '/settings', icon: Settings },
     ];
 
@@ -33,42 +34,69 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-900 text-white w-64">
+        <div className="flex flex-col h-full bg-slate-900 text-white w-72 shadow-2xl border-r border-slate-800">
             {/* Header */}
-            <div className="flex items-center px-6 py-4 border-b border-gray-700">
-                <Building2 className="h-8 w-8 text-blue-400" />
-                <span className="ml-2 text-xl font-semibold">InventoryPro</span>
+            <div className="flex items-center px-6 py-6 border-b border-slate-800/50">
+                <div className="flex items-center space-x-3">
+                    <div className="relative">
+                        <Cpu className="h-8 w-8 text-sky-400" />
+                        <Zap className="h-4 w-4 text-amber-400 absolute -top-1 -right-1" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+                            ElectroStock
+                        </h1>
+                        <p className="text-xs text-slate-400 font-medium">Component Management</p>
+                    </div>
+                </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-2">
+            <nav className="flex-1 px-4 py-6 space-y-1">
                 {navigation.map((item) => {
                     const Icon = item.icon;
+                    const active = isActive(item.href);
                     return (
                         <Link
                             key={item.name}
                             to={item.href}
-                            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                                isActive(item.href)
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                            className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                                active
+                                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20'
+                                    : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
                             }`}
                         >
-                            <Icon className="mr-3 h-5 w-5" />
-                            {item.name}
+                            <Icon className={`mr-3 h-5 w-5 transition-colors ${
+                                active ? 'text-white' : 'text-slate-400 group-hover:text-sky-400'
+                            }`} />
+                            <span className="font-medium">{item.name}</span>
+                            {active && (
+                                <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
+                            )}
                         </Link>
                     );
                 })}
             </nav>
 
+            {/* Status Indicator */}
+            <div className="px-6 py-4 border-t border-slate-800/50">
+                <div className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-slate-300">System Online</span>
+                    </div>
+                    <div className="text-xs text-slate-400">v2.1.0</div>
+                </div>
+            </div>
+
             {/* Footer */}
-            <div className="border-t border-gray-700 p-4">
+            <div className="border-t border-slate-800/50 p-4">
                 <button
                     onClick={logout}
-                    className="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
+                    className="flex items-center w-full px-4 py-3 text-sm font-medium text-slate-300 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 group"
                 >
-                    <LogOut className="mr-3 h-5 w-5" />
-                    Sign out
+                    <LogOut className="mr-3 h-5 w-5 group-hover:text-red-400" />
+                    <span>Sign Out</span>
                 </button>
             </div>
         </div>
