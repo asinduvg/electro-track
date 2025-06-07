@@ -25,9 +25,47 @@ const AddItemPage: React.FC = () => {
         status: 'in_stock'
     });
     
+    const [selectedMainCategory, setSelectedMainCategory] = useState('');
+    const [availableSubcategories, setAvailableSubcategories] = useState<any[]>([]);
+    
     const [images, setImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Get unique main categories
+    const getMainCategories = () => {
+        const uniqueCategories = new Set();
+        return categories.filter((category: any) => {
+            if (!uniqueCategories.has(category.category)) {
+                uniqueCategories.add(category.category);
+                return true;
+            }
+            return false;
+        });
+    };
+
+    // Get subcategories for selected main category
+    const getSubcategoriesForCategory = (mainCategory: string) => {
+        return categories.filter((category: any) => category.category === mainCategory);
+    };
+
+    const handleMainCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedCategory = e.target.value;
+        setSelectedMainCategory(selectedCategory);
+        
+        if (selectedCategory) {
+            const subcategories = getSubcategoriesForCategory(selectedCategory);
+            setAvailableSubcategories(subcategories);
+        } else {
+            setAvailableSubcategories([]);
+        }
+        
+        // Reset category_id when main category changes
+        setFormData(prev => ({
+            ...prev,
+            category_id: ''
+        }));
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -227,10 +265,28 @@ const AddItemPage: React.FC = () => {
                                 />
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Category
+                                        Main Category
+                                    </label>
+                                    <select 
+                                        value={selectedMainCategory}
+                                        onChange={handleMainCategoryChange}
+                                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                        required
+                                    >
+                                        <option value="">Select Main Category</option>
+                                        {getMainCategories().map((category: any) => (
+                                            <option key={`main-${category.category}`} value={category.category}>
+                                                {category.category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Subcategory
                                     </label>
                                     <select 
                                         name="category_id"
@@ -238,11 +294,12 @@ const AddItemPage: React.FC = () => {
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
                                         required
+                                        disabled={!selectedMainCategory}
                                     >
-                                        <option value="">Select Category</option>
-                                        {categories.map((category: any) => (
+                                        <option value="">Select Subcategory</option>
+                                        {availableSubcategories.map((category: any) => (
                                             <option key={category.id} value={category.id}>
-                                                {category.category} - {category.subcategory}
+                                                {category.subcategory}
                                             </option>
                                         ))}
                                     </select>

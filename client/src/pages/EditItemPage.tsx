@@ -33,6 +33,44 @@ const EditItemPage: React.FC = () => {
         image_url: ''
     });
 
+    const [selectedMainCategory, setSelectedMainCategory] = useState('');
+    const [availableSubcategories, setAvailableSubcategories] = useState<any[]>([]);
+
+    // Get unique main categories
+    const getMainCategories = () => {
+        const uniqueCategories = new Set();
+        return categories.filter((category: any) => {
+            if (!uniqueCategories.has(category.category)) {
+                uniqueCategories.add(category.category);
+                return true;
+            }
+            return false;
+        });
+    };
+
+    // Get subcategories for selected main category
+    const getSubcategoriesForCategory = (mainCategory: string) => {
+        return categories.filter((category: any) => category.category === mainCategory);
+    };
+
+    const handleMainCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedCategory = e.target.value;
+        setSelectedMainCategory(selectedCategory);
+        
+        if (selectedCategory) {
+            const subcategories = getSubcategoriesForCategory(selectedCategory);
+            setAvailableSubcategories(subcategories);
+        } else {
+            setAvailableSubcategories([]);
+        }
+        
+        // Reset category_id when main category changes
+        setFormData(prev => ({
+            ...prev,
+            category_id: ''
+        }));
+    };
+
     useEffect(() => {
         if (!id) {
             setError('Item ID is required');
