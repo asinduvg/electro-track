@@ -87,7 +87,10 @@ const EditItemPage: React.FC = () => {
             setIsSubmitting(true);
             setError(null);
 
-            await updateItem(id, formData);
+            await updateItem(id, {
+                ...formData,
+                category_id: parseInt(formData.category_id) || 1
+            });
             navigate('/inventory/items');
         } catch (err) {
             console.error('Error updating item:', err);
