@@ -260,7 +260,7 @@ const InventoryListPage: React.FC = () => {
                                     <Button
                                         variant="outline"
                                         onClick={clearAllFilters}
-                                        className="px-4 py-2 text-sm bg-white border-slate-200 hover:bg-slate-50 rounded-xl"
+                                        className="px-4 py-2 text-sm bg-white border-slate-200 hover:bg-slate-50"
                                     >
                                         Clear All Filters
                                     </Button>
