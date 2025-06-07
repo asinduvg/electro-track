@@ -9,6 +9,7 @@ import useTransactions from '../hooks/useTransactions';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
+import useCategories from '../hooks/useCategories';
 
 const ReportsPage: React.FC = () => {
     const { currentUser } = useAuth();
@@ -16,6 +17,7 @@ const ReportsPage: React.FC = () => {
     const { items, getTotalQuantity } = useItems();
     const { locations } = useLocations();
     const { stocks } = useStocks();
+    const { categories } = useCategories();
 
     // Calculate analytics
     const totalItems = items.length;
@@ -28,6 +30,152 @@ const ReportsPage: React.FC = () => {
         return sum + (totalStock * Number(item.unit_cost || 0));
     }, 0);
     const recentTransactions = transactions.slice(0, 20); // Latest 20 transactions
+
+    const generateInventoryReport = () => {
+        const reportData = {
+            timestamp: new Date().toLocaleString(),
+            totalItems: items.length,
+            totalValue: totalValue,
+            lowStockItems: lowStockItems,
+            categories: [...new Set(items.map(item => {
+                const category = categories.find(cat => cat.id === item.category_id);
+                return category ? `${category.category} - ${category.subcategory}` : 'Uncategorized';
+            }))],
+            itemDetails: items.map(item => {
+                const category = categories.find(cat => cat.id === item.category_id);
+                const totalStock = getTotalQuantity(item.id, stocks);
+                return {
+                    sku: item.sku,
+                    name: item.name,
+                    category: category ? `${category.category} - ${category.subcategory}` : 'Uncategorized',
+                    stock: totalStock,
+                    unitCost: item.unit_cost,
+                    totalValue: totalStock * Number(item.unit_cost || 0),
+                    status: item.status,
+                    minimumStock: item.minimum_stock || 0
+                };
+            })
+        };
+        
+        downloadCSVReport(reportData, 'inventory_report');
+    };
+
+    const generateStockMovementReport = () => {
+        const reportData = {
+            timestamp: new Date().toLocaleString(),
+            totalTransactions: transactions.length,
+            transactionDetails: transactions.map(transaction => {
+                const item = items.find(i => i.id === transaction.item_id);
+                const fromLocation = locations.find(loc => loc.id === transaction.from_location_id);
+                const toLocation = locations.find(loc => loc.id === transaction.to_location_id);
+                
+                return {
+                    date: transaction.performed_at || '',
+                    type: transaction.type,
+                    item: item?.name || 'Unknown',
+                    sku: item?.sku || '',
+                    quantity: transaction.quantity,
+                    fromLocation: fromLocation?.unit || '',
+                    toLocation: toLocation?.unit || '',
+                    performedBy: transaction.performed_by,
+                    notes: transaction.notes || ''
+                };
+            })
+        };
+        
+        downloadCSVReport(reportData, 'stock_movement_report');
+    };
+
+    const generateFinancialReport = () => {
+        const categoryValues = categories.map(category => {
+            const categoryItems = items.filter(item => item.category_id === category.id);
+            const categoryValue = categoryItems.reduce((sum, item) => {
+                const totalStock = getTotalQuantity(item.id, stocks);
+                return sum + (totalStock * Number(item.unit_cost || 0));
+            }, 0);
+            
+            return {
+                category: `${category.category} - ${category.subcategory}`,
+                itemCount: categoryItems.length,
+                totalValue: categoryValue
+            };
+        });
+
+        const reportData = {
+            timestamp: new Date().toLocaleString(),
+            totalInventoryValue: totalValue,
+            totalItems: items.length,
+            averageItemValue: totalValue / items.length || 0,
+            categoryBreakdown: categoryValues,
+            topValueItems: items
+                .map(item => ({
+                    name: item.name,
+                    sku: item.sku,
+                    stock: getTotalQuantity(item.id, stocks),
+                    unitCost: Number(item.unit_cost || 0),
+                    totalValue: getTotalQuantity(item.id, stocks) * Number(item.unit_cost || 0)
+                }))
+                .sort((a, b) => b.totalValue - a.totalValue)
+                .slice(0, 10)
+        };
+        
+        downloadCSVReport(reportData, 'financial_report');
+    };
+
+    const downloadCSVReport = (data: any, filename: string) => {
+        let csvContent = '';
+        
+        if (filename === 'inventory_report') {
+            csvContent = `Inventory Report - Generated: ${data.timestamp}\n\n`;
+            csvContent += `Summary\n`;
+            csvContent += `Total Items,${data.totalItems}\n`;
+            csvContent += `Total Value,$${data.totalValue.toFixed(2)}\n`;
+            csvContent += `Low Stock Items,${data.lowStockItems}\n\n`;
+            
+            csvContent += `Item Details\n`;
+            csvContent += `SKU,Name,Category,Stock,Unit Cost,Total Value,Status,Minimum Stock\n`;
+            data.itemDetails.forEach((item: any) => {
+                csvContent += `${item.sku},"${item.name}","${item.category}",${item.stock},$${item.unitCost},$${item.totalValue.toFixed(2)},${item.status},${item.minimumStock}\n`;
+            });
+        } else if (filename === 'stock_movement_report') {
+            csvContent = `Stock Movement Report - Generated: ${data.timestamp}\n\n`;
+            csvContent += `Total Transactions,${data.totalTransactions}\n\n`;
+            
+            csvContent += `Transaction Details\n`;
+            csvContent += `Date,Type,Item,SKU,Quantity,From Location,To Location,Performed By,Notes\n`;
+            data.transactionDetails.forEach((txn: any) => {
+                csvContent += `${txn.date},${txn.type},"${txn.item}",${txn.sku},${txn.quantity},"${txn.fromLocation}","${txn.toLocation}","${txn.performedBy}","${txn.notes}"\n`;
+            });
+        } else if (filename === 'financial_report') {
+            csvContent = `Financial Report - Generated: ${data.timestamp}\n\n`;
+            csvContent += `Summary\n`;
+            csvContent += `Total Inventory Value,$${data.totalInventoryValue.toFixed(2)}\n`;
+            csvContent += `Total Items,${data.totalItems}\n`;
+            csvContent += `Average Item Value,$${data.averageItemValue.toFixed(2)}\n\n`;
+            
+            csvContent += `Category Breakdown\n`;
+            csvContent += `Category,Item Count,Total Value\n`;
+            data.categoryBreakdown.forEach((cat: any) => {
+                csvContent += `"${cat.category}",${cat.itemCount},$${cat.totalValue.toFixed(2)}\n`;
+            });
+            
+            csvContent += `\nTop Value Items\n`;
+            csvContent += `Name,SKU,Stock,Unit Cost,Total Value\n`;
+            data.topValueItems.forEach((item: any) => {
+                csvContent += `"${item.name}",${item.sku},${item.stock},$${item.unitCost},$${item.totalValue.toFixed(2)}\n`;
+            });
+        }
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const getTransactionIcon = (type: string) => {
         switch (type) {
@@ -81,7 +229,11 @@ const ReportsPage: React.FC = () => {
                         <p className="text-gray-600 mb-4">
                             Comprehensive overview of all inventory items, stock levels, and valuation.
                         </p>
-                        <Button variant="outline" className="w-full">
+                        <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => generateInventoryReport()}
+                        >
                             Generate Report
                         </Button>
                     </CardContent>
