@@ -1,4 +1,4 @@
-# ElectroStock - Enterprise Inventory Management System
+# ElectroTrack - Enterprise Inventory Management System
 
 A comprehensive inventory management system built with React, TypeScript, and PostgreSQL, designed for electronic component tracking and warehouse management.
 

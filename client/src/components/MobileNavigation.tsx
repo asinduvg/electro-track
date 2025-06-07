@@ -65,7 +65,7 @@ const MobileNavigation: React.FC = () => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold text-[#FF385C]">ElectroStock</h1>
+                <h1 className="text-xl font-bold text-[#FF385C]">ElectroTrack</h1>
                 <p className="text-sm text-gray-600">Inventory Management</p>
               </div>
               <Button

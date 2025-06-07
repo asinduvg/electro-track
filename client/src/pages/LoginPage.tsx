@@ -13,7 +13,7 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     
     // Use default company name for login page since it's outside SettingsProvider
-    const companyName = "ElectroStock";
+    const companyName = "ElectroTrack";
 
     // useEffect(() => {
     //     console.log('this is from pages', currentUser)

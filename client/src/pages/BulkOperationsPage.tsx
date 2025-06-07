@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
+import useItems from '../hooks/useItems';
+import useLocations from '../hooks/useLocations';
+import useCategories from '../hooks/useCategories';
 import { 
     Upload, 
     Download, 
@@ -29,6 +32,9 @@ interface BulkOperation {
 }
 
 const BulkOperationsPage: React.FC = () => {
+    const { items } = useItems();
+    const { locations } = useLocations();
+    const { categories } = useCategories();
     const [operations] = useState<BulkOperation[]>([
         {
             id: '1',
@@ -82,13 +88,34 @@ const BulkOperationsPage: React.FC = () => {
     };
 
     const generateInventoryCSV = () => {
-        const headers = ['SKU', 'Name', 'Description', 'Manufacturer', 'Model', 'Category', 'Unit Cost', 'Quantity', 'Location', 'Status'];
-        const rows = [
-            ['ARD-UNO-R3', 'Arduino Uno R3', 'Microcontroller board', 'Arduino', 'UNO R3', 'Microcontrollers', '25.00', '15', 'Warehouse A - Shelf B2', 'in_stock'],
-            ['RPI-4-4GB', 'Raspberry Pi 4 Model B', '4GB RAM single board computer', 'Raspberry Pi Foundation', 'Pi 4B', 'Single Board Computers', '75.00', '8', 'Warehouse A - Shelf A1', 'in_stock']
-        ];
+        const headers = ['SKU', 'Name', 'Description', 'Manufacturer', 'Model', 'Unit Cost', 'Minimum Stock', 'Status'];
+        const rows = items.map(item => [
+            item.sku,
+            item.name,
+            item.description || '',
+            item.manufacturer,
+            item.model || '',
+            item.unit_cost,
+            item.minimum_stock || '',
+            item.status
+        ]);
         
         return [headers, ...rows].map(row => row.join(',')).join('\n');
+    };
+
+    const generateImportTemplate = () => {
+        const headers = ['SKU', 'Name', 'Description', 'Manufacturer', 'Model', 'Unit Cost', 'Minimum Stock', 'Status'];
+        const sampleRows = [
+            ['SAMPLE-001', 'Sample Item Name', 'Sample description', 'Sample Manufacturer', 'Model123', '25.00', '10', 'in_stock'],
+            ['SAMPLE-002', 'Another Sample Item', 'Another description', 'Another Manufacturer', 'ModelXYZ', '15.50', '5', 'low_stock']
+        ];
+        
+        return [headers, ...sampleRows].map(row => row.join(',')).join('\n');
+    };
+
+    const handleDownloadTemplate = () => {
+        const csvContent = generateImportTemplate();
+        downloadCSV(csvContent, 'inventory_import_template.csv');
     };
 
     const downloadCSV = (content: string, filename: string) => {

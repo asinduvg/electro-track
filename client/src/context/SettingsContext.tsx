@@ -54,7 +54,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   const [companyName, setCompanyName] = useState(() => {
-    return localStorage.getItem('companyName') || 'ElectroStock Solutions';
+    return localStorage.getItem('companyName') || 'ElectroTrack Solutions';
   });
 
   const [timezone, setTimezone] = useState(() => {
