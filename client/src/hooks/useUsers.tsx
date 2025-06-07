@@ -1,10 +1,9 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
 import {useEffect, useState} from "react";
-import {Database} from "../lib/database.types.ts";
+import type {User} from "@shared/schema";
+import {apiClient} from "../lib/api";
 
-
-type User = Database['public']['Tables']['users']['Row'];
-type UserUpdate = Database['public']['Tables']['users']['Update'];
+type UserUpdate = Partial<User>;
 
 const ERR_USERS_LOAD = 'Failed to load users';
 const ERR_USER_LOAD = 'Failed to load user';
@@ -12,12 +11,7 @@ const ERR_USER_UPDATE = 'Failed to update user';
 const ERR_USER_DELETE = 'Failed to delete user';
 
 const db_getUsers = async () => {
-    const {data: users, error: usersError} = await supabase
-        .from('users')
-        .select('*');
-
-    if (usersError) throw usersError;
-    return users as User[];
+    return await apiClient.getUsers() as User[];
 }
 
 const db_getUserById = async (id: string) => {

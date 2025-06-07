@@ -1,41 +1,23 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
-
-import type {Database} from "../lib/database.types.ts";
 import {useEffect, useState} from "react";
-
-type Transaction = Database['public']['Tables']['transactions']['Row'];
-type TransactionInsert = Database['public']['Tables']['transactions']['Insert'];
-
-type Item = Database['public']['Tables']['items']['Row'];
+import type {Transaction, InsertTransaction, Item} from "@shared/schema";
+import {apiClient} from "../lib/api";
 
 const ERR_TXN_INSERT = 'Failed to add transaction';
 const ERR_TXN_LOAD = 'Failed to load transactions';
 
 const db_getTransactions = async () => {
-    const {data, error: transactionsError} = await supabase
-        .from('transactions')
-        .select('*');
-
-    if (transactionsError) throw transactionsError;
-    return data as Transaction[];
+    return await apiClient.getTransactions() as Transaction[];
 }
 
-const db_createTransaction = async (transaction: TransactionInsert) => {
-    // First create the transaction record with metadata
-    const {data: transactionData, error: transactionError} = await supabase
-        .from('transactions')
-        .insert({
-            ...transaction,
-            metadata: {
-                browser: navigator.userAgent,
-                timestamp: new Date().toISOString()
-            }
-        })
-        .select()
-        .single();
-
-    if (transactionError) throw transactionError;
-    return transactionData;
+const db_createTransaction = async (transaction: InsertTransaction) => {
+    return await apiClient.createTransaction({
+        ...transaction,
+        metadata: {
+            browser: navigator.userAgent,
+            timestamp: new Date().toISOString()
+        }
+    }) as Transaction;
 }
 
 function useTransactions() {
