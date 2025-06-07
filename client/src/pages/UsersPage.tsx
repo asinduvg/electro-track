@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } fro
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-// Dialog component placeholder - will use modal approach
 import { Users, Plus, UserCheck, Edit, Shield, Mail, Phone } from 'lucide-react';
 import useUsers from '../hooks/useUsers';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +16,7 @@ const UsersPage: React.FC = () => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -35,29 +35,43 @@ const UsersPage: React.FC = () => {
     );
 
     const handleCreateUser = async () => {
+        if (!formData.name || !formData.email) {
+            alert('Please fill in required fields');
+            return;
+        }
+
         try {
+            setIsLoading(true);
             const newUser = await apiClient.createUser({
                 name: formData.name,
                 email: formData.email,
                 role: formData.role,
                 department: formData.department,
                 phone: formData.phone,
-                password: 'defaultpassword123' // Default password - user should change on first login
+                password: 'defaultpassword123'
             });
             
             if (newUser) {
-                // Refresh the users list
                 window.location.reload();
             }
             setIsCreateDialogOpen(false);
             setFormData({ name: '', email: '', role: 'department_user', department: '', phone: '' });
         } catch (error) {
             console.error('Error creating user:', error);
+            alert('Failed to create user. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleEditUser = async () => {
-        if (selectedUser) {
+        if (!selectedUser || !formData.name || !formData.email) {
+            alert('Please fill in required fields');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
             await updateUser(selectedUser.id, {
                 ...formData,
                 role: formData.role as 'admin' | 'inventory_manager' | 'warehouse_staff' | 'department_user'
@@ -65,6 +79,11 @@ const UsersPage: React.FC = () => {
             setIsEditDialogOpen(false);
             setSelectedUser(null);
             setFormData({ name: '', email: '', role: 'department_user', department: '', phone: '' });
+        } catch (error) {
+            console.error('Error updating user:', error);
+            alert('Failed to update user. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -122,77 +141,104 @@ const UsersPage: React.FC = () => {
                     </div>
                 </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card>
-                    <CardContent className="p-6">
-                        <div className="flex items-center">
-                            <UserCheck className="h-8 w-8 text-green-500 mr-3" />
-                            <div>
-                                <p className="text-2xl font-bold">{users.length}</p>
-                                <p className="text-gray-600">Active Users</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card className="bg-white border-0 shadow-lg">
+                        <CardContent className="p-6">
+                            <div className="flex items-center">
+                                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
+                                    <UserCheck className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <p className="text-3xl font-bold text-slate-900">{users.length}</p>
+                                    <p className="text-slate-600">Active Users</p>
+                                </div>
                             </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <Card className="bg-white border-0 shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="flex items-center text-slate-900">
+                            <Users className="mr-2 h-5 w-5 text-emerald-600" />
+                            All Users
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHead>
+                                    <TableRow className="border-slate-200">
+                                        <TableHeaderCell className="text-slate-700">Name</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 hidden sm:table-cell">Email</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700">Role</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 hidden md:table-cell">Department</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 hidden lg:table-cell">Last Login</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700">Actions</TableHeaderCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredUsers.length > 0 ? (
+                                        filteredUsers.map((user) => (
+                                            <TableRow key={user.id} className="border-slate-200 hover:bg-slate-50 transition-colors">
+                                                <TableCell className="text-slate-900">
+                                                    <div>
+                                                        <div className="font-medium">{user.name}</div>
+                                                        <div className="text-sm text-slate-500 sm:hidden">{user.email}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-slate-700 hidden sm:table-cell">{user.email}</TableCell>
+                                                <TableCell>{getRoleBadge(user.role)}</TableCell>
+                                                <TableCell className="text-slate-700 hidden md:table-cell">{user.department || 'N/A'}</TableCell>
+                                                <TableCell className="text-slate-600 hidden lg:table-cell">
+                                                    {user.last_login 
+                                                        ? new Date(user.last_login).toLocaleDateString()
+                                                        : 'Never'
+                                                    }
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        {canEditUsers && (
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="sm"
+                                                                onClick={() => openEditDialog(user)}
+                                                                className="bg-white border-slate-200 hover:bg-slate-50 text-xs"
+                                                            >
+                                                                <Edit className="h-3 w-3 mr-1" />
+                                                                <span className="hidden sm:inline">Edit</span>
+                                                            </Button>
+                                                        )}
+                                                        {isAdmin && (
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="sm"
+                                                                className="bg-white border-slate-200 hover:bg-slate-50 text-xs"
+                                                                onClick={() => alert('Permissions functionality - coming soon')}
+                                                            >
+                                                                <Shield className="h-3 w-3 mr-1" />
+                                                                <span className="hidden sm:inline">Perms</span>
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-12">
+                                                <div className="flex flex-col items-center">
+                                                    <Users className="h-12 w-12 text-slate-400 mb-4" />
+                                                    <p className="text-slate-500">No users found</p>
+                                                    <p className="text-sm text-slate-400 mt-1">Try adjusting your search criteria</p>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
                         </div>
                     </CardContent>
-                </Card>
-            </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <Users className="mr-2 h-5 w-5" />
-                        All Users
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableHeaderCell>Name</TableHeaderCell>
-                                <TableHeaderCell>Email</TableHeaderCell>
-                                <TableHeaderCell>Role</TableHeaderCell>
-                                <TableHeaderCell>Department</TableHeaderCell>
-                                <TableHeaderCell>Last Login</TableHeaderCell>
-                                <TableHeaderCell>Actions</TableHeaderCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredUsers.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell className="font-medium">{user.name}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>{getRoleBadge(user.role)}</TableCell>
-                                    <TableCell>{user.department || 'N/A'}</TableCell>
-                                    <TableCell>
-                                        {user.last_login 
-                                            ? new Date(user.last_login).toLocaleDateString()
-                                            : 'Never'
-                                        }
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            {canEditUsers && (
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    onClick={() => openEditDialog(user)}
-                                                >
-                                                    <Edit className="h-4 w-4 mr-1" />
-                                                    Edit
-                                                </Button>
-                                            )}
-                                            {isAdmin && (
-                                                <Button variant="outline" size="sm">
-                                                    <Shield className="h-4 w-4 mr-1" />
-                                                    Permissions
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
                 </Card>
 
                 {/* Add User Modal */}
@@ -202,22 +248,24 @@ const UsersPage: React.FC = () => {
                             <h2 className="text-2xl font-bold text-slate-900 mb-6">Add New User</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Name *</label>
                                     <Input
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         placeholder="Enter full name"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
                                     <Input
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         placeholder="Enter email address"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        required
                                     />
                                 </div>
                                 <div>
@@ -239,7 +287,7 @@ const UsersPage: React.FC = () => {
                                         value={formData.department}
                                         onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                         placeholder="Enter department"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
                                     />
                                 </div>
                                 <div>
@@ -248,16 +296,17 @@ const UsersPage: React.FC = () => {
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                         placeholder="Enter phone number"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
                                     />
                                 </div>
                             </div>
                             <div className="flex gap-4 mt-8">
                                 <Button
                                     onClick={handleCreateUser}
+                                    disabled={isLoading}
                                     className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                                 >
-                                    Create User
+                                    {isLoading ? 'Creating...' : 'Create User'}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -275,28 +324,30 @@ const UsersPage: React.FC = () => {
                 )}
 
                 {/* Edit User Modal */}
-                {isEditDialogOpen && (
+                {isEditDialogOpen && selectedUser && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white rounded-2xl p-8 w-full max-w-md mx-4">
                             <h2 className="text-2xl font-bold text-slate-900 mb-6">Edit User</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Name *</label>
                                     <Input
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         placeholder="Enter full name"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
                                     <Input
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         placeholder="Enter email address"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                        required
                                     />
                                 </div>
                                 <div>
@@ -318,7 +369,7 @@ const UsersPage: React.FC = () => {
                                         value={formData.department}
                                         onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                         placeholder="Enter department"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
                                     />
                                 </div>
                                 <div>
@@ -327,16 +378,17 @@ const UsersPage: React.FC = () => {
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                         placeholder="Enter phone number"
-                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
                                     />
                                 </div>
                             </div>
                             <div className="flex gap-4 mt-8">
                                 <Button
                                     onClick={handleEditUser}
+                                    disabled={isLoading}
                                     className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                                 >
-                                    Update User
+                                    {isLoading ? 'Updating...' : 'Update User'}
                                 </Button>
                                 <Button
                                     variant="outline"
