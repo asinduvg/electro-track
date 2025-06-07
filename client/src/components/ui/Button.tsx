@@ -28,13 +28,13 @@ export const Button: React.FC<ButtonProps> = ({
     const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
 
     const variantStyles: Record<ButtonVariant, string> = {
-        primary: 'bg-blue-800 text-white hover:bg-blue-700 focus:ring-blue-500',
-        secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
-        success: 'bg-green-600 text-white hover:bg-green-500 focus:ring-green-400',
-        danger: 'bg-red-600 text-white hover:bg-red-500 focus:ring-red-400',
-        warning: 'bg-yellow-500 text-white hover:bg-yellow-400 focus:ring-yellow-300',
-        outline: 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-400',
-        ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-400'
+        primary: 'bg-blue-800 text-white hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700',
+        secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600',
+        success: 'bg-green-600 text-white hover:bg-green-500 focus:ring-green-400 dark:bg-green-600 dark:hover:bg-green-700',
+        danger: 'bg-red-600 text-white hover:bg-red-500 focus:ring-red-400 dark:bg-red-600 dark:hover:bg-red-700',
+        warning: 'bg-yellow-500 text-white hover:bg-yellow-400 focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700',
+        outline: 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-400 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700',
+        ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-400 dark:text-slate-300 dark:hover:bg-slate-700'
     };
 
     const sizeStyles: Record<ButtonSize, string> = {

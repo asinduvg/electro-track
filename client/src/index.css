@@ -97,7 +97,15 @@
 
     /* Dark mode component styles */
     .dark .bg-white {
-        @apply bg-gray-800;
+        @apply bg-slate-800;
+    }
+
+    .dark .bg-slate-50 {
+        @apply bg-slate-900;
+    }
+
+    .dark .bg-slate-100 {
+        @apply bg-slate-800;
     }
 
     .dark .bg-gray-50 {
@@ -110,6 +118,10 @@
 
     .dark .border-gray-200 {
         @apply border-gray-700;
+    }
+
+    .dark .border-slate-200 {
+        @apply border-slate-700;
     }
 
     .dark .text-gray-500 {
@@ -128,12 +140,32 @@
         @apply text-white;
     }
 
+    .dark .text-slate-600 {
+        @apply text-slate-300;
+    }
+
+    .dark .text-slate-700 {
+        @apply text-slate-200;
+    }
+
+    .dark .text-slate-900 {
+        @apply text-white;
+    }
+
     .dark .hover\:bg-gray-50:hover {
         @apply hover:bg-gray-800;
     }
 
     .dark .hover\:bg-gray-100:hover {
         @apply hover:bg-gray-700;
+    }
+
+    .dark .hover\:bg-slate-50:hover {
+        @apply hover:bg-slate-800;
+    }
+
+    .dark .hover\:bg-slate-100:hover {
+        @apply hover:bg-slate-700;
     }
 
     /* Input styles */
