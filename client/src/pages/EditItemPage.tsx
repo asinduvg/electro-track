@@ -92,6 +92,16 @@ const EditItemPage: React.FC = () => {
                 image_url: item.image_url || ''
             });
             
+            // Initialize category dropdowns with existing item's category
+            if (item.category_id && categories.length > 0) {
+                const selectedCategory = categories.find((cat: any) => cat.id === item.category_id);
+                if (selectedCategory) {
+                    setSelectedMainCategory(selectedCategory.category);
+                    const subcategories = getSubcategoriesForCategory(selectedCategory.category);
+                    setAvailableSubcategories(subcategories);
+                }
+            }
+            
             // Set existing image preview if available
             if (item.image_url) {
                 setImagePreviews([item.image_url]);
@@ -362,10 +372,28 @@ const EditItemPage: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Category
+                                        Main Category
+                                    </label>
+                                    <select 
+                                        value={selectedMainCategory}
+                                        onChange={handleMainCategoryChange}
+                                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                        required
+                                    >
+                                        <option value="">Select Main Category</option>
+                                        {getMainCategories().map((category: any) => (
+                                            <option key={`main-${category.category}`} value={category.category}>
+                                                {category.category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Subcategory
                                     </label>
                                     <select 
                                         name="category_id"
@@ -373,11 +401,12 @@ const EditItemPage: React.FC = () => {
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
                                         required
+                                        disabled={!selectedMainCategory}
                                     >
-                                        <option value="">Select Category</option>
-                                        {categories.map((category: any) => (
+                                        <option value="">Select Subcategory</option>
+                                        {availableSubcategories.map((category: any) => (
                                             <option key={category.id} value={category.id}>
-                                                {category.category} - {category.subcategory}
+                                                {category.subcategory}
                                             </option>
                                         ))}
                                     </select>
