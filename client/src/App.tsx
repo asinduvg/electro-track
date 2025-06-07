@@ -5,6 +5,11 @@ import { DatabaseProvider } from "./context/DatabaseContext.tsx";
 // Pages
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import InventoryListPage from './pages/InventoryListPage';
+import AddItemPage from './pages/AddItemPage';
+import LocationsPage from './pages/LocationsPage';
+import UsersPage from './pages/UsersPage';
+import ReportsPage from './pages/ReportsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { currentUser, isLoading } = useAuth();
@@ -61,6 +66,46 @@ function App() {
                             element={
                                 <ProtectedRoute>
                                     <DashboardPage />
+                                </ProtectedRoute>
+                            } 
+                        />
+                        <Route 
+                            path="/inventory/items" 
+                            element={
+                                <ProtectedRoute>
+                                    <InventoryListPage />
+                                </ProtectedRoute>
+                            } 
+                        />
+                        <Route 
+                            path="/inventory/add" 
+                            element={
+                                <ProtectedRoute>
+                                    <AddItemPage />
+                                </ProtectedRoute>
+                            } 
+                        />
+                        <Route 
+                            path="/locations" 
+                            element={
+                                <ProtectedRoute>
+                                    <LocationsPage />
+                                </ProtectedRoute>
+                            } 
+                        />
+                        <Route 
+                            path="/users" 
+                            element={
+                                <ProtectedRoute>
+                                    <UsersPage />
+                                </ProtectedRoute>
+                            } 
+                        />
+                        <Route 
+                            path="/reports" 
+                            element={
+                                <ProtectedRoute>
+                                    <ReportsPage />
                                 </ProtectedRoute>
                             } 
                         />
