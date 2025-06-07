@@ -155,6 +155,35 @@ class ApiClient {
       body: JSON.stringify(transactionData),
     });
   }
+
+  // Suppliers
+  async getAllSuppliers() {
+    return this.request('/suppliers');
+  }
+
+  async getSupplier(id: string) {
+    return this.request(`/suppliers/${id}`);
+  }
+
+  async createSupplier(supplierData: any) {
+    return this.request('/suppliers', {
+      method: 'POST',
+      body: JSON.stringify(supplierData),
+    });
+  }
+
+  async updateSupplier(id: string, updates: any) {
+    return this.request(`/suppliers/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteSupplier(id: string) {
+    return this.request(`/suppliers/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
