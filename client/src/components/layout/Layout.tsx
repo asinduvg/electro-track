@@ -12,18 +12,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const { companyName } = useSettings();
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
+        <div className="flex h-screen bg-[#F7F7F7] dark:bg-[#222222]">
             <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             <main className="flex-1 overflow-auto">
-                <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex items-center">
+                <div className="bg-white dark:bg-[#222222] border-b border-[#EBEBEB] dark:border-[#484848] p-4 flex items-center">
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-2 rounded-lg hover:bg-[#F7F7F7] dark:hover:bg-[#484848] transition-colors"
                     >
-                        <Menu className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+                        <Menu className="h-5 w-5 text-[#717171] dark:text-[#B0B0B0]" />
                     </button>
                 </div>
-                <div className="p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 min-h-full">
+                <div className="p-8 bg-[#F7F7F7] dark:bg-[#222222] min-h-full">
                     {children}
                 </div>
             </main>

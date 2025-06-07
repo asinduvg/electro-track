@@ -15,18 +15,18 @@ export const Badge: React.FC<BadgeProps> = ({
                                                 className
                                             }) => {
     const variantStyles: Record<BadgeVariant, string> = {
-        primary: 'bg-blue-100 text-blue-800',
-        secondary: 'bg-gray-100 text-gray-800',
-        success: 'bg-green-100 text-green-800',
-        danger: 'bg-red-100 text-red-800',
-        warning: 'bg-yellow-100 text-yellow-800',
-        info: 'bg-cyan-100 text-cyan-800'
+        primary: 'bg-[#FFF3F4] text-[#FF385C] border border-[#FFD4DD]',
+        secondary: 'bg-[#F7F7F7] text-[#717171] border border-[#DDDDDD]',
+        success: 'bg-[#E6F7F7] text-[#008489] border border-[#B3E5E6]',
+        danger: 'bg-[#FFF2F2] text-[#C4141C] border border-[#F5B5B5]',
+        warning: 'bg-[#FFF4E6] text-[#FC642D] border border-[#FFD1A3]',
+        info: 'bg-[#E6F2FF] text-[#1A73E8] border border-[#B3D9FF]'
     };
 
     return (
         <span
             className={cn(
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                'inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium',
                 variantStyles[variant],
                 className
             )}

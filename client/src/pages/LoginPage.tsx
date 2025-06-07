@@ -50,45 +50,45 @@ const LoginPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
-                    <div className="flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                    <div className="flex items-center space-x-3">
                         <div className="relative">
-                            <Cpu className="h-12 w-12 text-sky-400" />
-                            <Zap className="h-6 w-6 text-amber-400 absolute -top-1 -right-1" />
+                            <Cpu className="h-12 w-12 text-[#FF385C]" />
+                            <Zap className="h-6 w-6 text-[#FC642D] absolute -top-1 -right-1" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+                            <h1 className="text-3xl font-bold text-[#FF385C]">
                                 {companyName}
                             </h1>
-                            <p className="text-sm text-slate-300 font-medium">Component Management</p>
+                            <p className="text-sm text-[#717171] font-medium">Component Management</p>
                         </div>
                     </div>
                 </div>
-                <h2 className="mt-8 text-center text-3xl font-bold text-white">
-                    Welcome Back
+                <h2 className="mt-8 text-center text-3xl font-semibold text-[#222222]">
+                    Welcome back
                 </h2>
-                <p className="mt-2 text-center text-sm text-slate-300">
-                    Sign in to your inventory management system
+                <p className="mt-2 text-center text-base text-[#717171]">
+                    Sign in to continue to your account
                 </p>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white/95 backdrop-blur-sm py-8 px-6 shadow-2xl rounded-2xl border border-white/20">
+                <div className="bg-white py-8 px-6 shadow-lg rounded-xl border border-[#DDDDDD]">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                            <div className="bg-[#FFF5F5] border border-[#FED7D7] rounded-lg p-4">
                                 <div className="flex">
                                     <div className="flex-shrink-0">
-                                        <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <svg className="h-5 w-5 text-[#C4141C]" viewBox="0 0 20 20" fill="currentColor">
                                             <path fillRule="evenodd"
                                                   d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12zm-1-5a1 1 0 112 0v2a1 1 0 11-2 0v-2zm0-6a1 1 0 112 0v2a1 1 0 11-2 0V5z"
                                                   clipRule="evenodd"/>
                                         </svg>
                                     </div>
                                     <div className="ml-3">
-                                        <p className="text-sm text-red-600 font-medium">
+                                        <p className="text-sm text-[#C4141C] font-medium">
                                             {error}
                                         </p>
                                     </div>
@@ -127,7 +127,8 @@ const LoginPage: React.FC = () => {
                         <div className="space-y-4">
                             <Button
                                 type="submit"
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
+                                size="lg"
+                                className="w-full"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
@@ -135,14 +136,16 @@ const LoginPage: React.FC = () => {
                                 ) : (
                                     <>
                                         <Lock size={16}/>
-                                        <span>Sign in</span>
+                                        <span>Continue</span>
                                     </>
                                 )}
                             </Button>
                             
                             <Button
                                 type="button"
-                                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl font-medium transition-colors"
+                                variant="secondary"
+                                size="lg"
+                                className="w-full"
                                 onClick={async () => {
                                     // Demo login with admin user
                                     const demoUser = {
