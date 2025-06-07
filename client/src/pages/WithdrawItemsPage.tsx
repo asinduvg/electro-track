@@ -1,162 +1,104 @@
-import React, {useState, useEffect} from 'react';
-import {useNavigate, useSearchParams} from 'react-router-dom';
-import {Package, Search, Save, PackageMinus} from 'lucide-react';
-import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {Input} from '../components/ui/Input';
-import {Button} from '../components/ui/Button';
-import {Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../components/ui/Table';
-import {Badge} from '../components/ui/Badge';
-import {useAuth} from '../context/AuthContext';
-import type {Database} from '../lib/database.types';
-import useItems from "../hooks/useItems.tsx";
-import useTransactions from "../hooks/useTransactions.tsx";
-import useStocks from "../hooks/useStocks.tsx";
-import useLocations from "../hooks/useLocations.tsx";
-
-type Item = Database['public']['Tables']['items']['Row'];
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Badge } from '../components/ui/Badge';
+import { PackageMinus, Plus, ArrowLeft, Search, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import useItems from '../hooks/useItems';
+import useLocations from '../hooks/useLocations';
+import useStocks from '../hooks/useStocks';
+import useTransactions from '../hooks/useTransactions';
 
 interface WithdrawItem {
-    id: string;
-    quantity: number;
-    projectId: string;
-    purpose: string;
-    notes: string;
+    itemId: string;
     locationId: string;
+    quantity: number;
+    notes?: string;
 }
 
 const WithdrawItemsPage: React.FC = () => {
-    const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const {currentUser} = useAuth();
-    const [selectedItems, setSelectedItems] = useState<WithdrawItem[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const { items, getTotalQuantity } = useItems();
+    const { locations } = useLocations();
+    const { stocks } = useStocks();
+    const { createTransaction } = useTransactions();
+    const [withdrawItems, setWithdrawItems] = useState<WithdrawItem[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const {items, getTotalQuantity, getQtyInLocation, availableLocations} = useItems();
-    const {createTransaction} = useTransactions();
-    const {stocks} = useStocks();
-    const {locations} = useLocations();
-
-    useEffect(() => {
-        // If itemId is provided in URL, pre-select that item
-        const itemId = searchParams.get('itemId');
-        if (itemId) {
-            setSelectedItems([{
-                id: itemId,
-                quantity: 1,
-                projectId: '',
-                purpose: '',
-                notes: '',
-                locationId: ''
-            }]);
-        }
-    }, [searchParams]);
 
     const filteredItems = items.filter(item =>
-        !selectedItems.some(selected => selected.id === item.id) &&
-        (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.sku?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleAddItem = (item: Item) => {
-        setSelectedItems([
-            ...selectedItems,
-            {
-                id: item.id,
+    const addItemToWithdraw = (itemId: string) => {
+        const existingIndex = withdrawItems.findIndex(wi => wi.itemId === itemId);
+        if (existingIndex >= 0) {
+            const updated = [...withdrawItems];
+            updated[existingIndex].quantity += 1;
+            setWithdrawItems(updated);
+        } else {
+            setWithdrawItems([...withdrawItems, {
+                itemId,
+                locationId: locations[0]?.id || '',
                 quantity: 1,
-                projectId: '',
-                purpose: '',
-                notes: '',
-                locationId: ''
+                notes: ''
+            }]);
+        }
+    };
+
+    const updateWithdrawItem = (index: number, field: keyof WithdrawItem, value: any) => {
+        const updated = [...withdrawItems];
+        updated[index] = { ...updated[index], [field]: value };
+        setWithdrawItems(updated);
+    };
+
+    const removeWithdrawItem = (index: number) => {
+        setWithdrawItems(withdrawItems.filter((_, i) => i !== index));
+    };
+
+    const getItemStock = (itemId: string, locationId?: string) => {
+        if (locationId) {
+            const stock = stocks.find(s => s.item_id === itemId && s.location_id === locationId);
+            return stock?.quantity || 0;
+        }
+        return getTotalQuantity(itemId, stocks);
+    };
+
+    const canWithdraw = (itemId: string, locationId: string, quantity: number) => {
+        const availableStock = getItemStock(itemId, locationId);
+        return availableStock >= quantity;
+    };
+
+    const handleSubmitWithdraw = async () => {
+        if (withdrawItems.length === 0) return;
+
+        // Validate all items can be withdrawn
+        for (const withdrawItem of withdrawItems) {
+            if (!canWithdraw(withdrawItem.itemId, withdrawItem.locationId, withdrawItem.quantity)) {
+                alert('Insufficient stock for one or more items. Please check quantities.');
+                return;
             }
-        ]);
-        setSearchTerm('');
-    };
-
-    const handleRemoveItem = (itemId: string) => {
-        setSelectedItems(selectedItems.filter(item => item.id !== itemId));
-    };
-
-    const handleQuantityChange = (itemId: string, quantity: number) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, quantity} : item
-        ));
-    };
-
-    const handleProjectIdChange = (itemId: string, projectId: string) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, projectId} : item
-        ));
-    };
-
-    const handlePurposeChange = (itemId: string, purpose: string) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, purpose} : item
-        ));
-    };
-
-    const handleNotesChange = (itemId: string, notes: string) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, notes} : item
-        ));
-    };
-
-    const handleLocationChange = (itemId: string, locationId: string) => {
-        setSelectedItems(selectedItems.map(item =>
-            item.id === itemId ? {...item, locationId} : item
-        ));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!currentUser) {
-            setError('You must be logged in to withdraw items');
-            return;
         }
 
-        if (selectedItems.length === 0) {
-            setError('Please select at least one item to withdraw');
-            return;
-        }
-
-        const invalidItems = selectedItems.filter(selectedItem => {
-            const item = items.find(i => i.id === selectedItem.id);
-            return !item ||
-                selectedItem.quantity <= 0 ||
-                selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) ||
-                !selectedItem.projectId ||
-                !selectedItem.purpose;
-        });
-
-        if (invalidItems.length > 0) {
-            setError('Please ensure all items have valid quantities, project IDs, and purposes');
-            return;
-        }
-
+        setIsSubmitting(true);
         try {
-            setIsSubmitting(true);
-            setError(null);
-
-            // Create withdraw transactions for each item
-            for (const item of selectedItems) {
+            for (const withdrawItem of withdrawItems) {
                 await createTransaction({
+                    item_id: withdrawItem.itemId,
                     type: 'withdraw',
-                    item_id: item.id,
-                    quantity: item.quantity,
-                    from_location_id: item.locationId,
-                    performed_by: currentUser.id,
-                    project_id: item.projectId,
-                    purpose: item.purpose,
-                    notes: item.notes
+                    quantity: withdrawItem.quantity,
+                    from_location_id: withdrawItem.locationId,
+                    notes: withdrawItem.notes || `Withdrew ${withdrawItem.quantity} units`,
+                    performed_by: 'Current User'
                 });
             }
-
-            navigate('/inventory/items');
-        } catch (err) {
-            console.error('Error withdrawing items:', err);
-            setError('Failed to process withdrawal');
+            setWithdrawItems([]);
+            alert('Items withdrawn successfully!');
+        } catch (error) {
+            console.error('Error withdrawing items:', error);
+            alert('Failed to withdraw items. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -165,257 +107,200 @@ const WithdrawItemsPage: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Withdraw Items</h1>
+                <div className="flex items-center space-x-4">
+                    <Link to="/inventory/items">
+                        <Button variant="outline" size="sm">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Inventory
+                        </Button>
+                    </Link>
+                    <h1 className="text-3xl font-bold text-gray-900">Withdraw Items</h1>
+                </div>
+                
+                {withdrawItems.length > 0 && (
+                    <Button 
+                        onClick={handleSubmitWithdraw}
+                        disabled={isSubmitting}
+                        className="flex items-center"
+                    >
+                        <PackageMinus className="h-4 w-4 mr-2" />
+                        {isSubmitting ? 'Processing...' : `Withdraw ${withdrawItems.length} Items`}
+                    </Button>
+                )}
             </div>
 
-            {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <Package className="h-5 w-5 text-red-400"/>
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-red-700">{error}</p>
-                        </div>
+            {/* Search Items */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <Search className="mr-2 h-5 w-5" />
+                        Select Items to Withdraw
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="mb-4">
+                        <Input
+                            placeholder="Search items by name or SKU..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="max-w-md"
+                        />
                     </div>
-                </div>
-            )}
+                    
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableHeaderCell>SKU</TableHeaderCell>
+                                <TableHeaderCell>Name</TableHeaderCell>
+                                <TableHeaderCell>Total Stock</TableHeaderCell>
+                                <TableHeaderCell>Status</TableHeaderCell>
+                                <TableHeaderCell>Actions</TableHeaderCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredItems.slice(0, 10).map((item) => {
+                                const totalStock = getTotalQuantity(item.id, stocks);
+                                const isLowStock = totalStock <= (item.minimum_stock || 0);
+                                return (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="font-medium">{item.sku}</TableCell>
+                                        <TableCell>
+                                            <div>
+                                                <div className="font-medium">{item.name}</div>
+                                                <div className="text-sm text-gray-500">{item.description}</div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={`font-medium ${
+                                                isLowStock ? 'text-red-600' : 'text-green-600'
+                                            }`}>
+                                                {totalStock}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            {isLowStock ? (
+                                                <Badge variant="danger">Low Stock</Badge>
+                                            ) : totalStock === 0 ? (
+                                                <Badge variant="secondary">Out of Stock</Badge>
+                                            ) : (
+                                                <Badge variant="success">Available</Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => addItemToWithdraw(item.id)}
+                                                disabled={totalStock === 0}
+                                            >
+                                                <Plus className="h-4 w-4 mr-1" />
+                                                Add
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
-            <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Selected Items */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center">
-                                    <Package className="mr-2 h-5 w-5 text-blue-600"/>
-                                    Selected Items
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {selectedItems.length === 0 ? (
-                                    <div className="text-center py-12 text-gray-500">
-                                        <PackageMinus className="h-12 w-12 mx-auto mb-4 text-gray-400"/>
-                                        <p className="text-lg">No items selected</p>
-                                        <p className="text-sm">Search and select items to withdraw below</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {selectedItems.map(selectedItem => {
-                                            const item = items.find(i => i.id === selectedItem.id);
-                                            if (!item) return null;
-
-                                            return (
-                                                <div
-                                                    key={item.id}
-                                                    className="border border-gray-200 rounded-lg p-4"
-                                                >
-                                                    <div className="flex items-start justify-between mb-4">
-                                                        <div>
-                                                            <h3 className="font-medium text-gray-900">
-                                                                {item.name}
-                                                            </h3>
-                                                            <p className="text-sm text-gray-500">
-                                                                SKU: {item.sku}
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleRemoveItem(item.id)}
-                                                        >
-                                                            Remove
-                                                        </Button>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <Input
-                                                            label="Quantity"
-                                                            type="number"
-                                                            min="1"
-                                                            max={getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks)}
-                                                            value={selectedItem.quantity > getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) ? getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) : selectedItem.quantity}
-                                                            onChange={(e) => handleQuantityChange(
-                                                                item.id,
-                                                                (parseInt(e.target.value) || 0) > getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) ? getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks) : (parseInt(e.target.value) || 0)
-                                                            )}
-                                                            required
-                                                            helperText={`Available: ${getQtyInLocation(selectedItem.id, selectedItem.locationId, stocks)}`}
-                                                        />
-
-                                                        <Input
-                                                            label="Project ID"
-                                                            value={selectedItem.projectId}
-                                                            onChange={(e) => handleProjectIdChange(item.id, e.target.value)}
-                                                            placeholder="Enter project identifier"
-                                                            required
-                                                        />
-
-                                                        <div className="col-span-2">
-                                                            <label
-                                                                className="block text-sm font-medium text-gray-700 mb-1"
-                                                            >
-                                                                Storage Location
-                                                            </label>
-                                                            <select
-                                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                                value={selectedItem.locationId}
-                                                                onChange={(e) => handleLocationChange(item.id, e.target.value)}
-                                                                required
-                                                            >
-                                                                <option value="">Select Location</option>
-                                                                {availableLocations(selectedItem.id, locations, stocks).map((location) => (
-                                                                    <option key={location.id} value={location.id}>
-                                                                        {location.building} &gt; {location.room} &gt; {location.unit}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-
-                                                        <Input
-                                                            label="Purpose"
-                                                            value={selectedItem.purpose}
-                                                            onChange={(e) => handlePurposeChange(item.id, e.target.value)}
-                                                            placeholder="Why are these items needed?"
-                                                            required
-                                                        />
-
-                                                        <Input
-                                                            label="Additional Notes"
-                                                            value={selectedItem.notes}
-                                                            onChange={(e) => handleNotesChange(item.id, e.target.value)}
-                                                            placeholder="Optional notes about this withdrawal"
-                                                        />
-                                                    </div>
+            {/* Items to Withdraw */}
+            {withdrawItems.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
+                            <PackageMinus className="mr-2 h-5 w-5" />
+                            Items to Withdraw ({withdrawItems.length})
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableHeaderCell>Item</TableHeaderCell>
+                                    <TableHeaderCell>Quantity</TableHeaderCell>
+                                    <TableHeaderCell>From Location</TableHeaderCell>
+                                    <TableHeaderCell>Available</TableHeaderCell>
+                                    <TableHeaderCell>Notes</TableHeaderCell>
+                                    <TableHeaderCell>Actions</TableHeaderCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {withdrawItems.map((withdrawItem, index) => {
+                                    const item = items.find(i => i.id === withdrawItem.itemId);
+                                    const availableStock = getItemStock(withdrawItem.itemId, withdrawItem.locationId);
+                                    const isValidQuantity = canWithdraw(withdrawItem.itemId, withdrawItem.locationId, withdrawItem.quantity);
+                                    
+                                    return (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{item?.name}</div>
+                                                    <div className="text-sm text-gray-500">{item?.sku}</div>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Item Search */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Add Items</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="mb-4">
-                                    <Input
-                                        placeholder="Search by name or SKU..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        leftAddon={<Search className="h-5 w-5"/>}
-                                    />
-                                </div>
-
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableHeaderCell>SKU</TableHeaderCell>
-                                            <TableHeaderCell>Name</TableHeaderCell>
-                                            {/*<TableHeaderCell>Location</TableHeaderCell>*/}
-                                            <TableHeaderCell>Stock</TableHeaderCell>
-                                            <TableHeaderCell>Action</TableHeaderCell>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    type="number"
+                                                    value={withdrawItem.quantity}
+                                                    onChange={(e) => updateWithdrawItem(index, 'quantity', parseInt(e.target.value) || 0)}
+                                                    className={`w-20 ${!isValidQuantity ? 'border-red-500' : ''}`}
+                                                    min="1"
+                                                    max={availableStock}
+                                                />
+                                                {!isValidQuantity && (
+                                                    <div className="flex items-center text-red-500 text-xs mt-1">
+                                                        <AlertTriangle className="h-3 w-3 mr-1" />
+                                                        Exceeds stock
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <select
+                                                    value={withdrawItem.locationId}
+                                                    onChange={(e) => updateWithdrawItem(index, 'locationId', e.target.value)}
+                                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                                >
+                                                    {locations.map((location) => (
+                                                        <option key={location.id} value={location.id}>
+                                                            {location.unit}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className={`font-medium ${
+                                                    availableStock === 0 ? 'text-red-600' : 'text-green-600'
+                                                }`}>
+                                                    {availableStock}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    placeholder="Optional notes..."
+                                                    value={withdrawItem.notes || ''}
+                                                    onChange={(e) => updateWithdrawItem(index, 'notes', e.target.value)}
+                                                    className="w-32"
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => removeWithdrawItem(index)}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {filteredItems.length > 0 ? (
-                                            filteredItems.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className="font-medium">{item.sku}</TableCell>
-                                                    <TableCell>{item.name}</TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant={getTotalQuantity(item.id, stocks) === 0 ? 'danger' : getTotalQuantity(item.id, stocks) < (item.minimum_stock || 0) ? 'warning' : 'success'}
-                                                        >
-                                                            {getTotalQuantity(item.id, stocks)}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleAddItem(item)}
-                                                            disabled={getTotalQuantity(item.id, stocks) <= 0}
-                                                        >
-                                                            Select
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={5} className="text-center py-8">
-                                                    <p className="text-gray-500">No matching items found</p>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Summary */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Withdrawal Summary</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Items</p>
-                                    <p className="text-2xl font-bold">
-                                        {selectedItems.length}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Quantity</p>
-                                    <p className="text-2xl font-bold">
-                                        {selectedItems.reduce((sum, item) => sum + item.quantity, 0)}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Value</p>
-                                    <p className="text-2xl font-bold text-red-600">
-                                        -${selectedItems.reduce((sum, selected) => {
-                                        const item = items.find(i => i.id === selected.id);
-                                        return sum + (item ? item.unit_cost * selected.quantity : 0);
-                                    }, 0).toFixed(2)}
-                                    </p>
-                                </div>
-
-                                <hr className="my-6"/>
-
-                                <Button
-                                    type="submit"
-                                    variant="primary"
-                                    fullWidth
-                                    size="lg"
-                                    isLoading={isSubmitting}
-                                    leftIcon={<Save className="h-5 w-5"/>}
-                                    disabled={selectedItems.length === 0}
-                                >
-                                    Complete Withdrawal
-                                </Button>
-
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    fullWidth
-                                    onClick={() => navigate('/inventory/items')}
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </form>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };

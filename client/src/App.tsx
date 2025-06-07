@@ -15,6 +15,9 @@ import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
+import ReceiveItemsPage from './pages/ReceiveItemsPage';
+import WithdrawItemsPage from './pages/WithdrawItemsPage';
+import TransferItemsPage from './pages/TransferItemsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { currentUser, isLoading } = useAuth();
@@ -153,6 +156,36 @@ function App() {
                                     <ProtectedRoute>
                                         <Layout>
                                             <SettingsPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/inventory/receive" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <ReceiveItemsPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/inventory/withdraw" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <WithdrawItemsPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/inventory/transfer" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <TransferItemsPage />
                                         </Layout>
                                     </ProtectedRoute>
                                 } 

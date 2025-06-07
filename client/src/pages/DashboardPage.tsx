@@ -7,7 +7,8 @@ import {Badge} from '../components/ui/Badge';
 import {
     Package, AlertTriangle, DollarSign, ArrowUpRight,
     Clock, BarChart, TrendingUp, TrendingDown,
-    Truck, BoxesIcon, Cpu, Zap, Microchip, Activity
+    Truck, BoxesIcon, Cpu, Zap, Microchip, Activity,
+    Plus, PackageCheck, PackageMinus, ArrowRightLeft
 } from 'lucide-react';
 import {UserRole, ItemStatus} from '../types';
 import useItems from "../hooks/useItems.tsx";
@@ -285,17 +286,33 @@ const DashboardPage: React.FC = () => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <Link
                                 to="/inventory/add"
+                                className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100 border border-emerald-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-100"
+                            >
+                                <div className="flex flex-col items-start">
+                                    <div className="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <Plus className="h-6 w-6"/>
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Add Component</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Register new electronic components</p>
+                                </div>
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowUpRight className="h-5 w-5 text-emerald-600" />
+                                </div>
+                            </Link>
+
+                            <Link
+                                to="/inventory/receive"
                                 className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-sky-50 hover:from-blue-100 hover:to-sky-100 border border-blue-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-100"
                             >
                                 <div className="flex flex-col items-start">
                                     <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <Package className="h-6 w-6"/>
+                                        <PackageCheck className="h-6 w-6"/>
                                     </div>
-                                    <h3 className="font-semibold text-slate-900 mb-2">Add Component</h3>
-                                    <p className="text-sm text-slate-600 leading-relaxed">Register new electronic components to inventory</p>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Receive Items</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Process incoming shipments</p>
                                 </div>
                                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <ArrowUpRight className="h-5 w-5 text-blue-600" />
@@ -303,18 +320,34 @@ const DashboardPage: React.FC = () => {
                             </Link>
 
                             <Link
-                                to="/inventory/items"
-                                className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100 border border-emerald-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-100"
+                                to="/inventory/withdraw"
+                                className="group relative overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 border border-orange-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-orange-100"
                             >
                                 <div className="flex flex-col items-start">
-                                    <div className="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <Truck className="h-6 w-6"/>
+                                    <div className="w-12 h-12 bg-orange-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <PackageMinus className="h-6 w-6"/>
                                     </div>
-                                    <h3 className="font-semibold text-slate-900 mb-2">Stock Movement</h3>
-                                    <p className="text-sm text-slate-600 leading-relaxed">Record shipments and transfers</p>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Withdraw Items</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Remove items from inventory</p>
                                 </div>
                                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ArrowUpRight className="h-5 w-5 text-emerald-600" />
+                                    <ArrowUpRight className="h-5 w-5 text-orange-600" />
+                                </div>
+                            </Link>
+
+                            <Link
+                                to="/inventory/transfer"
+                                className="group relative overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 hover:from-violet-100 hover:to-purple-100 border border-violet-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100"
+                            >
+                                <div className="flex flex-col items-start">
+                                    <div className="w-12 h-12 bg-violet-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <ArrowRightLeft className="h-6 w-6"/>
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900 mb-2">Transfer Items</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">Move items between locations</p>
+                                </div>
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowUpRight className="h-5 w-5 text-violet-600" />
                                 </div>
                             </Link>
 
