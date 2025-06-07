@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import {useLocation} from 'wouter';
 import {Package, Lock} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
@@ -9,7 +8,6 @@ const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [, setLocation] = useLocation();
     const {login, isLoading, currentUser} = useAuth();
 
     // useEffect(() => {
@@ -33,7 +31,7 @@ const LoginPage: React.FC = () => {
             console.log('Login Page')
             console.log('current user is ', user)
             if (user) {
-                setLocation('/');
+                // User will be redirected by App component
             } else {
                 setError('Invalid email or password');
             }
@@ -43,8 +41,7 @@ const LoginPage: React.FC = () => {
     };
 
     if (currentUser) {
-        setLocation('/');
-        return null;
+        return null; // Will be handled by App component
     }
 
     return (
@@ -144,7 +141,7 @@ const LoginPage: React.FC = () => {
                                         last_login: null
                                     };
                                     localStorage.setItem('currentUser', JSON.stringify(demoUser));
-                                    setLocation('/');
+                                    window.location.reload(); // Trigger auth context refresh
                                 }}
                             >
                                 Demo Login (Admin)

@@ -1,25 +1,13 @@
-import { Route, Switch, useLocation } from 'wouter';
+import { Route } from 'wouter';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DatabaseProvider } from "./context/DatabaseContext.tsx";
-import { useEffect } from 'react';
 
 // Pages
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 
-function AppRoutes() {
+function AppContent() {
     const { currentUser, isLoading } = useAuth();
-    const [location, setLocation] = useLocation();
-    
-    useEffect(() => {
-        if (!isLoading) {
-            if (!currentUser && location !== '/login') {
-                setLocation('/login');
-            } else if (currentUser && location === '/login') {
-                setLocation('/');
-            }
-        }
-    }, [currentUser, isLoading, location, setLocation]);
     
     if (isLoading) {
         return (
@@ -29,19 +17,18 @@ function AppRoutes() {
         );
     }
     
-    return (
-        <Switch>
-            <Route path="/login" component={LoginPage} />
-            <Route path="/" component={DashboardPage} />
-        </Switch>
-    );
+    if (!currentUser) {
+        return <LoginPage />;
+    }
+    
+    return <DashboardPage />;
 }
 
 function App() {
     return (
         <DatabaseProvider>
             <AuthProvider>
-                <AppRoutes />
+                <AppContent />
             </AuthProvider>
         </DatabaseProvider>
     );

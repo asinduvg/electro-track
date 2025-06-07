@@ -9,6 +9,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
+    setCurrentUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,6 +47,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         };
 
         checkStoredUser();
+
+        // Listen for storage changes to handle demo login
+        const handleStorageChange = () => {
+            checkStoredUser();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     const login = async (email: string, password: string): Promise<User | null> => {
@@ -77,6 +86,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         }
     };
 
+    const setCurrentUserDirect = (user: User | null) => {
+        setCurrentUser(user);
+        if (user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        } else {
+            localStorage.removeItem('currentUser');
+        }
+    };
+
     const value: AuthContextType = {
         currentUser,
         login,
@@ -84,6 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         isAuthenticated: !!currentUser,
         isLoading,
         error,
+        setCurrentUser: setCurrentUserDirect,
     };
 
     return (
