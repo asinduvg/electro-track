@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation} from 'wouter';
 import {Package, Lock} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
@@ -9,7 +9,7 @@ const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
+    const [, setLocation] = useLocation();
     const {login, isLoading, currentUser} = useAuth();
 
     // useEffect(() => {
@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
             console.log('Login Page')
             console.log('current user is ', user)
             if (user) {
-                navigate('/dashboard');
+                setLocation('/');
             } else {
                 setError('Invalid email or password');
             }
@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
     };
 
     if (currentUser) {
-        navigate('/dashboard');
+        setLocation('/');
         return null;
     }
 

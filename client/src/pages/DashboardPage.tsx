@@ -27,12 +27,19 @@ const DashboardPage: React.FC = () => {
 
     // Get recent transactions (last 5)
     const recentTransactions = [...transactions]
-        .sort((a, b) => new Date(b.performed_at).getTime() - new Date(a.performed_at).getTime())
+        .sort((a, b) => {
+            const dateA = a.performed_at ? new Date(a.performed_at).getTime() : 0;
+            const dateB = b.performed_at ? new Date(b.performed_at).getTime() : 0;
+            return dateB - dateA;
+        })
         .slice(0, 5);
 
     const totalStocks = stocks.reduce((acc, stock) => acc + stock.quantity, 0);
 
-    if (!currentUser) return null;
+    // Authentication is now handled by routing
+    if (!currentUser) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="space-y-6">
