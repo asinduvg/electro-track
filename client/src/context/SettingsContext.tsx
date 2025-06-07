@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 type FontSize = 'small' | 'medium' | 'large';
 type Theme = 'light' | 'dark' | 'system';
 type DateFormat = 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
-type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY';
+type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD';
 
 interface SettingsContextType {
   fontSize: FontSize;
@@ -18,6 +18,15 @@ interface SettingsContextType {
   setDateFormat: (format: DateFormat) => void;
   currency: Currency;
   setCurrency: (currency: Currency) => void;
+  emailNotifications: boolean;
+  setEmailNotifications: (enabled: boolean) => void;
+  lowStockThreshold: number;
+  setLowStockThreshold: (threshold: number) => void;
+  autoBackup: boolean;
+  setAutoBackup: (enabled: boolean) => void;
+  dataRetention: number;
+  setDataRetention: (days: number) => void;
+  saveSettings: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -39,17 +48,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme') as Theme) || 'system';
+      return (localStorage.getItem('theme') as Theme) || 'light';
     }
-    return 'system';
+    return 'light';
   });
 
   const [companyName, setCompanyName] = useState(() => {
-    return localStorage.getItem('companyName') || 'ElectroTrack';
+    return localStorage.getItem('companyName') || 'ElectroStock Solutions';
   });
 
   const [timezone, setTimezone] = useState(() => {
-    return localStorage.getItem('timezone') || 'UTC';
+    return localStorage.getItem('timezone') || 'America/New_York';
   });
 
   const [dateFormat, setDateFormat] = useState<DateFormat>(() => {
@@ -58,6 +67,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [currency, setCurrency] = useState<Currency>(() => {
     return (localStorage.getItem('currency') as Currency) || 'USD';
+  });
+
+  const [emailNotifications, setEmailNotifications] = useState(() => {
+    return localStorage.getItem('emailNotifications') === 'true';
+  });
+
+  const [lowStockThreshold, setLowStockThreshold] = useState(() => {
+    return parseInt(localStorage.getItem('lowStockThreshold') || '10');
+  });
+
+  const [autoBackup, setAutoBackup] = useState(() => {
+    return localStorage.getItem('autoBackup') !== 'false';
+  });
+
+  const [dataRetention, setDataRetention] = useState(() => {
+    return parseInt(localStorage.getItem('dataRetention') || '365');
   });
 
   // Apply theme on mount and when theme changes
@@ -117,6 +142,44 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('currency', currency);
   }, [currency]);
 
+  useEffect(() => {
+    localStorage.setItem('emailNotifications', emailNotifications.toString());
+  }, [emailNotifications]);
+
+  useEffect(() => {
+    localStorage.setItem('lowStockThreshold', lowStockThreshold.toString());
+  }, [lowStockThreshold]);
+
+  useEffect(() => {
+    localStorage.setItem('autoBackup', autoBackup.toString());
+  }, [autoBackup]);
+
+  useEffect(() => {
+    localStorage.setItem('dataRetention', dataRetention.toString());
+  }, [dataRetention]);
+
+  const saveSettings = () => {
+    // Force save all settings - useful for manual save operations
+    const settingsToSave = {
+      fontSize,
+      theme,
+      companyName,
+      timezone,
+      dateFormat,
+      currency,
+      emailNotifications: emailNotifications.toString(),
+      lowStockThreshold: lowStockThreshold.toString(),
+      autoBackup: autoBackup.toString(),
+      dataRetention: dataRetention.toString()
+    };
+
+    Object.entries(settingsToSave).forEach(([key, value]) => {
+      localStorage.setItem(key, value);
+    });
+
+    console.log('Settings saved successfully');
+  };
+
   return (
     <SettingsContext.Provider 
       value={{ 
@@ -131,7 +194,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         dateFormat,
         setDateFormat,
         currency,
-        setCurrency
+        setCurrency,
+        emailNotifications,
+        setEmailNotifications,
+        lowStockThreshold,
+        setLowStockThreshold,
+        autoBackup,
+        setAutoBackup,
+        dataRetention,
+        setDataRetention,
+        saveSettings
       }}
     >
       {children}
