@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {Package, Lock} from 'lucide-react';
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
@@ -9,6 +10,7 @@ const LoginPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const {login, isLoading, currentUser, setCurrentUser} = useAuth();
+    const navigate = useNavigate();
 
     // useEffect(() => {
     //     console.log('this is from pages', currentUser)
@@ -31,7 +33,7 @@ const LoginPage: React.FC = () => {
             console.log('Login Page')
             console.log('current user is ', user)
             if (user) {
-                // User will be redirected by App component
+                navigate('/');
             } else {
                 setError('Invalid email or password');
             }
@@ -134,13 +136,14 @@ const LoginPage: React.FC = () => {
                                         role: "admin" as const,
                                         name: "Admin User",
                                         department: null,
-                                        created_at: new Date().toISOString(),
-                                        updated_at: new Date().toISOString(),
+                                        created_at: new Date(),
+                                        updated_at: new Date(),
                                         created_by: null,
                                         updated_by: null,
                                         last_login: null
                                     };
                                     setCurrentUser(demoUser);
+                                    navigate('/');
                                 }}
                             >
                                 Demo Login (Admin)
