@@ -329,14 +329,14 @@ const DashboardPage: React.FC = () => {
                                 className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100 border border-emerald-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-100"
                             >
                                 <div className="flex flex-col items-start">
-                                    <div className="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <div className="w-12 h-12 bg-[#FF385C] text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                         <Plus className="h-6 w-6"/>
                                     </div>
                                     <h3 className="font-semibold text-slate-900 mb-2">Add Component</h3>
                                     <p className="text-sm text-slate-600 leading-relaxed">Register new electronic components</p>
                                 </div>
                                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ArrowUpRight className="h-5 w-5 text-emerald-600" />
+                                    <ArrowUpRight className="h-5 w-5 text-[#FF385C]" />
                                 </div>
                             </Link>
 

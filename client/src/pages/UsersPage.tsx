@@ -131,7 +131,7 @@ const UsersPage: React.FC = () => {
                         />
                         {canEditUsers && (
                             <Button 
-                                className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                                className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl"
                                 onClick={() => setIsCreateDialogOpen(true)}
                             >
                                 <Plus className="mr-2 h-4 w-4" />
@@ -145,8 +145,8 @@ const UsersPage: React.FC = () => {
                     <Card className="bg-white border-0 shadow-lg">
                         <CardContent className="p-6">
                             <div className="flex items-center">
-                                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
-                                    <UserCheck className="h-6 w-6 text-emerald-600" />
+                                <div className="w-12 h-12 bg-[#FFE5E9] rounded-xl flex items-center justify-center mr-4">
+                                    <UserCheck className="h-6 w-6 text-[#FF385C]" />
                                 </div>
                                 <div>
                                     <p className="text-3xl font-bold text-slate-900">{users.length}</p>
@@ -160,7 +160,7 @@ const UsersPage: React.FC = () => {
                 <Card className="bg-white border-0 shadow-lg">
                     <CardHeader>
                         <CardTitle className="flex items-center text-slate-900">
-                            <Users className="mr-2 h-5 w-5 text-emerald-600" />
+                            <Users className="mr-2 h-5 w-5 text-[#FF385C]" />
                             All Users
                         </CardTitle>
                     </CardHeader>

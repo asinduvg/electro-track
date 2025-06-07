@@ -499,7 +499,7 @@ const EditItemPage: React.FC = () => {
                                     <div className="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center relative bg-slate-50 hover:bg-slate-100 transition-colors">
                                         <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
                                         <div className="text-sm text-slate-600 mb-4">
-                                            <label className="font-medium text-emerald-600 hover:text-emerald-700 cursor-pointer transition-colors">
+                                            <label className="font-medium text-[#FF385C] hover:text-[#E31C5F] cursor-pointer transition-colors">
                                                 Click to upload
                                                 <input
                                                     type="file"
@@ -518,7 +518,7 @@ const EditItemPage: React.FC = () => {
                                 <Button 
                                     type="submit" 
                                     disabled={isSubmitting}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-medium transition-colors"
+                                    className="bg-[#FF385C] hover:bg-[#E31C5F] text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl disabled:bg-[#DDDDDD] disabled:text-[#717171]"
                                 >
                                     <Save className="mr-2 h-4 w-4" />
                                     {isSubmitting ? 'Updating...' : 'Update Item'}
