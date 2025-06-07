@@ -25,9 +25,9 @@ const ItemDetailPage: React.FC = () => {
     const { transactions } = useTransactions();
 
     const item = items.find(item => item.id === id);
-    const category = categories.find(cat => cat.id === item?.category_id);
+    const category = categories.find((cat: any) => cat.id === item?.category_id);
     const itemStocks = stocks.filter(stock => stock.item_id === id);
-    const itemTransactions = transactions.filter(txn => txn.item_id === id).slice(0, 10); // Latest 10 transactions
+    const itemTransactions = transactions.filter(txn => txn.item_id === id).slice(0, 10);
 
     useEffect(() => {
         if (!id) {
@@ -55,8 +55,9 @@ const ItemDetailPage: React.FC = () => {
     if (error || !item) {
         return (
             <div className="text-center py-12">
-                <h2 className="text-2xl font-semibold text-red-700">Item Not Found</h2>
-                <p className="mt-2 text-gray-500">The item you are looking for does not exist or has been removed.</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    {error || 'Item not found'}
+                </h2>
                 <Link to="/inventory/items">
                     <Button variant="outline" className="mt-4">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -85,239 +86,173 @@ const ItemDetailPage: React.FC = () => {
     const totalQuantity = getTotalQuantity(item.id, stocks);
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Link to="/inventory/items">
-                        <Button variant="outline" className="flex items-center">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Inventory
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{item.name}</h1>
-                        <p className="text-gray-500">SKU: {item.sku}</p>
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div className="flex items-center space-x-4">
+                        <Link to="/inventory/items">
+                            <Button 
+                                variant="outline" 
+                                className="flex items-center bg-white border-slate-200 hover:bg-slate-50"
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back to Inventory
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-900">{item.name}</h1>
+                            <p className="text-slate-500 font-medium">SKU: {item.sku}</p>
+                        </div>
                     </div>
-                </div>
-                {currentUser && (currentUser.role === 'admin' || currentUser.role === 'inventory_manager') && (
-                    <Link to={`/inventory/edit/${item.id}`}>
-                        <Button className="flex items-center">
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Item
-                        </Button>
-                    </Link>
-                )}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Item Details */}
-                <div className="lg:col-span-2 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center">
-                                <Package className="mr-2 h-5 w-5" />
-                                Item Details
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Name</TableCell>
-                                        <TableCell>{item.name}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">SKU</TableCell>
-                                        <TableCell>{item.sku}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Description</TableCell>
-                                        <TableCell>{item.description || 'No description available'}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Category</TableCell>
-                                        <TableCell>
-                                            {category ? `${category.category} - ${category.subcategory}` : 'No category assigned'}
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Unit Cost</TableCell>
-                                        <TableCell>${Number(item.unit_cost).toFixed(2)}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Minimum Stock</TableCell>
-                                        <TableCell>{item.minimum_stock}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Status</TableCell>
-                                        <TableCell>{getStatusBadge(item.status)}</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-
-                    {/* Stock Locations */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center">
-                                <MapPin className="mr-2 h-5 w-5" />
-                                Stock Locations
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {itemStocks.length > 0 ? (
-                                <div className="space-y-4">
-                                    {itemStocks.map((stock) => {
-                                        const location = locations.find(loc => loc.id === stock.location_id);
-                                        return (
-                                            <div key={stock.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                                <div className="flex items-center space-x-3">
-                                                    <Warehouse className="h-5 w-5 text-gray-400" />
-                                                    <div>
-                                                        <div className="font-medium">{location?.unit || 'Unknown Location'}</div>
-                                                        <div className="text-sm text-gray-500">{location?.building} {location?.room}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="font-medium text-lg">{stock.quantity}</div>
-                                                    <div className="text-sm text-gray-500">units</div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    <Warehouse className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                    <p>No stock locations found for this item</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Recent Transactions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center">
-                                <Clock className="mr-2 h-5 w-5" />
-                                Recent Transactions
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {itemTransactions.length > 0 ? (
-                                <div className="space-y-3">
-                                    {itemTransactions.map((transaction) => {
-                                        const fromLocation = locations.find(loc => loc.id === transaction.from_location_id);
-                                        const toLocation = locations.find(loc => loc.id === transaction.to_location_id);
-                                        
-                                        const getTransactionIcon = (type: string) => {
-                                            switch (type) {
-                                                case 'receive':
-                                                    return <TrendingUp className="h-4 w-4 text-green-600" />;
-                                                case 'withdraw':
-                                                    return <TrendingDown className="h-4 w-4 text-red-600" />;
-                                                case 'transfer':
-                                                    return <RefreshCw className="h-4 w-4 text-blue-600" />;
-                                                case 'adjust':
-                                                    return <Package className="h-4 w-4 text-purple-600" />;
-                                                default:
-                                                    return <Clock className="h-4 w-4 text-gray-400" />;
-                                            }
-                                        };
-
-                                        const getTransactionColor = (type: string) => {
-                                            switch (type) {
-                                                case 'receive':
-                                                    return 'text-green-600 bg-green-50';
-                                                case 'withdraw':
-                                                    return 'text-red-600 bg-red-50';
-                                                case 'transfer':
-                                                    return 'text-blue-600 bg-blue-50';
-                                                case 'adjust':
-                                                    return 'text-purple-600 bg-purple-50';
-                                                default:
-                                                    return 'text-gray-600 bg-gray-50';
-                                            }
-                                        };
-
-                                        return (
-                                            <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className={`p-2 rounded-full ${getTransactionColor(transaction.type)}`}>
-                                                        {getTransactionIcon(transaction.type)}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-medium capitalize">{transaction.type}</div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {transaction.type === 'transfer' 
-                                                                ? `${fromLocation?.unit || 'Unknown'} → ${toLocation?.unit || 'Unknown'}`
-                                                                : transaction.type === 'receive' 
-                                                                ? `To: ${toLocation?.unit || 'Unknown'}`
-                                                                : `From: ${fromLocation?.unit || 'Unknown'}`
-                                                            }
-                                                        </div>
-                                                        <div className="text-xs text-gray-400">
-                                                            {new Date(transaction.performed_at || '').toLocaleDateString()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="font-medium">{transaction.quantity}</div>
-                                                    <div className="text-sm text-gray-500">units</div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    <Clock className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                    <p>No recent transactions for this item</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    {currentUser && (currentUser.role === 'admin' || currentUser.role === 'inventory_manager') && (
+                        <Link to={`/inventory/edit/${item.id}`}>
+                            <Button className="flex items-center bg-slate-900 hover:bg-slate-800 text-white">
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Item
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
-                {/* Summary Sidebar */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center">
-                                <DollarSign className="mr-2 h-5 w-5" />
-                                Quick Summary
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="text-center">
-                                <div className="text-3xl font-bold text-blue-600">{totalQuantity}</div>
-                                <div className="text-sm text-gray-500">Total Stock</div>
-                            </div>
-                            
-                            <div className="pt-4 border-t">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-500">Unit Cost</span>
-                                    <span className="font-medium">${Number(item.unit_cost).toFixed(2)}</span>
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Main Content */}
+                    <div className="xl:col-span-2 space-y-6">
+                        {/* Item Image and Basic Info */}
+                        <Card className="bg-white border-0 shadow-lg">
+                            <CardContent className="p-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Item Image */}
+                                    <div className="space-y-4">
+                                        {item.image_url ? (
+                                            <div className="aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                                                <img
+                                                    src={item.image_url}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="aspect-square rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center">
+                                                <div className="text-center">
+                                                    <Package className="mx-auto h-16 w-16 text-slate-400 mb-4" />
+                                                    <p className="text-slate-500 font-medium">No image available</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Basic Info */}
+                                    <div className="space-y-6">
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-slate-900 mb-4">Item Information</h3>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Status</label>
+                                                    <div>{getStatusBadge(item.status)}</div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Category</label>
+                                                    <p className="text-slate-900 font-medium">
+                                                        {category ? `${category.category} - ${category.subcategory}` : 'Uncategorized'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Manufacturer</label>
+                                                    <p className="text-slate-900 font-medium">{item.manufacturer}</p>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Description</label>
+                                                    <p className="text-slate-700">{item.description || 'No description available'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between items-center mt-2">
-                                    <span className="text-sm text-gray-500">Total Value</span>
-                                    <span className="font-medium">${(totalQuantity * Number(item.unit_cost)).toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                    <span className="text-sm text-gray-500">Minimum Stock</span>
-                                    <span className="font-medium">{item.minimum_stock}</span>
-                                </div>
-                            </div>
+                            </CardContent>
+                        </Card>
 
-                            <div className="pt-4 border-t">
+                        {/* Stock Locations */}
+                        <Card className="bg-white border-0 shadow-lg">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="flex items-center text-slate-900">
+                                    <MapPin className="mr-3 h-5 w-5 text-blue-600" />
+                                    Stock Locations
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {itemStocks.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {itemStocks.map((stock) => {
+                                            const location = locations.find(loc => loc.id === stock.location_id);
+                                            return (
+                                                <div key={stock.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                            <Warehouse className="h-5 w-5 text-blue-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-slate-900">{location?.unit || 'Unknown Location'}</p>
+                                                            <p className="text-sm text-slate-500">{location?.description || ''}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-2xl font-bold text-slate-900">{stock.quantity}</span>
+                                                        <p className="text-xs text-slate-500">units</p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <Warehouse className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+                                        <p className="text-slate-500">No stock locations found</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="space-y-6">
+                        {/* Stock Summary */}
+                        <Card className="bg-white border-0 shadow-lg">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="flex items-center text-slate-900">
+                                    <Package className="mr-3 h-5 w-5 text-emerald-600" />
+                                    Stock Summary
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
                                 <div className="text-center">
-                                    {getStatusBadge(item.status)}
+                                    <div className="text-3xl font-bold text-emerald-600">{totalQuantity}</div>
+                                    <div className="text-sm text-slate-500">Total Stock</div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                
+                                <div className="pt-4 border-t border-slate-200">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-slate-500">Unit Cost</span>
+                                        <span className="font-medium">${Number(item.unit_cost).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-2">
+                                        <span className="text-sm text-slate-500">Total Value</span>
+                                        <span className="font-medium">${(totalQuantity * Number(item.unit_cost)).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-2">
+                                        <span className="text-sm text-slate-500">Minimum Stock</span>
+                                        <span className="font-medium">{item.minimum_stock}</span>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t border-slate-200">
+                                    <div className="text-center">
+                                        {getStatusBadge(item.status)}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>

@@ -134,38 +134,46 @@ const AddItemPage: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Button 
-                        variant="outline" 
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate('/inventory/items');
-                        }}
-                        className="flex items-center"
-                        type="button"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Inventory
-                    </Button>
-                    <h1 className="text-3xl font-bold text-gray-900">Add New Item</h1>
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div className="flex items-center space-x-4">
+                        <Button 
+                            variant="outline" 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate('/inventory/items');
+                            }}
+                            className="flex items-center bg-white border-slate-200 hover:bg-slate-50"
+                            type="button"
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Inventory
+                        </Button>
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-900">Add New Item</h1>
+                            <p className="text-slate-500 font-medium">Create a new inventory component</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div className="max-w-2xl">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <Package className="mr-2 h-5 w-5" />
-                            Item Details
+                <Card className="bg-white border-0 shadow-lg">
+                    <CardHeader className="pb-6">
+                        <CardTitle className="flex items-center text-slate-900">
+                            <div className="flex items-center justify-center w-10 h-10 bg-emerald-100 rounded-xl mr-3">
+                                <Package className="h-5 w-5 text-emerald-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold">Item Details</h3>
+                                <p className="text-sm text-slate-500 font-normal">Enter the component information below</p>
+                            </div>
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="p-8">
                         <form onSubmit={handleSubmit}>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
                                         SKU
                                     </label>
                                     <Input 
@@ -174,10 +182,11 @@ const AddItemPage: React.FC = () => {
                                         onChange={handleInputChange}
                                         placeholder="Enter SKU" 
                                         required
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Name
                                     </label>
                                     <Input 
@@ -186,10 +195,11 @@ const AddItemPage: React.FC = () => {
                                         onChange={handleInputChange}
                                         placeholder="Enter item name" 
                                         required
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Manufacturer
                                     </label>
                                     <Input 
@@ -198,34 +208,35 @@ const AddItemPage: React.FC = () => {
                                         onChange={handleInputChange}
                                         placeholder="Enter manufacturer" 
                                         required
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                     />
                                 </div>
                             </div>
                             
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <div className="mb-8">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
                                     Description
                                 </label>
                                 <textarea 
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors"
                                     rows={3}
                                     placeholder="Enter item description"
                                 />
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Category
                                     </label>
                                     <select 
                                         name="category_id"
                                         value={formData.category_id}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
                                         required
                                     >
                                         <option value="">Select Category</option>
@@ -237,7 +248,7 @@ const AddItemPage: React.FC = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Unit Cost ($)
                                     </label>
                                     <Input 
@@ -248,10 +259,11 @@ const AddItemPage: React.FC = () => {
                                         step="0.01"
                                         placeholder="0.00" 
                                         required
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Minimum Stock
                                     </label>
                                     <Input 
@@ -261,19 +273,20 @@ const AddItemPage: React.FC = () => {
                                         type="number"
                                         placeholder="0" 
                                         required
+                                        className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                     />
                                 </div>
                             </div>
                             
                             {/* Image Upload Section */}
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <div className="mb-8">
+                                <label className="block text-sm font-medium text-slate-700 mb-3">
                                     Item Images
                                 </label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center relative">
-                                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                    <div className="text-sm text-gray-600 mb-4">
-                                        <label className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
+                                <div className="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center relative bg-slate-50 hover:bg-slate-100 transition-colors">
+                                    <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+                                    <div className="text-sm text-slate-600 mb-4">
+                                        <label className="font-medium text-emerald-600 hover:text-emerald-700 cursor-pointer transition-colors">
                                             Click to upload
                                             <input
                                                 type="file"
@@ -284,7 +297,7 @@ const AddItemPage: React.FC = () => {
                                             />
                                         </label> or drag and drop
                                     </div>
-                                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB each</p>
+                                    <p className="text-xs text-slate-500">PNG, JPG, GIF up to 10MB each</p>
                                 </div>
                                 
                                 {/* Image Previews */}
