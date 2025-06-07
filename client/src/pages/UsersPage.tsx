@@ -127,7 +127,7 @@ const UsersPage: React.FC = () => {
                             placeholder="Search users..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-64 border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                            className="w-64 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                         />
                         {canEditUsers && (
                             <Button 

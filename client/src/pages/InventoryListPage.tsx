@@ -154,7 +154,7 @@ const InventoryListPage: React.FC = () => {
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <Input
                                     placeholder="Search items by name, SKU, or description..."
-                                    className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                    className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
@@ -164,7 +164,7 @@ const InventoryListPage: React.FC = () => {
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
-                                    className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                    className="px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
                                 >
                                     <option value="all">All Status</option>
                                     <option value="in_stock">In Stock</option>
@@ -176,7 +176,7 @@ const InventoryListPage: React.FC = () => {
                                 <select
                                     value={categoryFilter}
                                     onChange={(e) => setCategoryFilter(e.target.value)}
-                                    className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                    className="px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
                                 >
                                     <option value="all">All Categories</option>
                                     {categories.map((category) => (
@@ -216,7 +216,7 @@ const InventoryListPage: React.FC = () => {
                                             placeholder="0.00"
                                             value={priceRangeMin}
                                             onChange={(e) => setPriceRangeMin(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                         />
                                     </div>
                                     <div>
@@ -228,7 +228,7 @@ const InventoryListPage: React.FC = () => {
                                             placeholder="999.99"
                                             value={priceRangeMax}
                                             onChange={(e) => setPriceRangeMax(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                         />
                                     </div>
                                     <div>
@@ -240,7 +240,7 @@ const InventoryListPage: React.FC = () => {
                                             placeholder="0"
                                             value={stockRangeMin}
                                             onChange={(e) => setStockRangeMin(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                         />
                                     </div>
                                     <div>
@@ -252,7 +252,7 @@ const InventoryListPage: React.FC = () => {
                                             placeholder="9999"
                                             value={stockRangeMax}
                                             onChange={(e) => setStockRangeMax(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                                         />
                                     </div>
                                 </div>
