@@ -1,5 +1,5 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
-import {supabase} from "../lib/supabase.ts";
+
 import type {Database} from "../lib/database.types.ts";
 import {useEffect, useState} from "react";
 

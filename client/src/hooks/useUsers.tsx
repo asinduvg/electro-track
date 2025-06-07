@@ -1,7 +1,7 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
 import {useEffect, useState} from "react";
 import {Database} from "../lib/database.types.ts";
-import {supabase} from "../lib/supabase.ts";
+
 
 type User = Database['public']['Tables']['users']['Row'];
 type UserUpdate = Database['public']['Tables']['users']['Update'];

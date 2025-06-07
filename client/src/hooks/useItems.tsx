@@ -1,13 +1,10 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
-import type {Database} from "../lib/database.types.ts";
+import {apiClient} from "../lib/api";
+import type {Item, Location, ItemLocation, InsertItem} from "@shared/schema";
 import {useEffect, useState} from "react";
-import {supabase} from "../lib/supabase.ts";
 
-type Item = Database['public']['Tables']['items']['Row'];
-type Location = Database['public']['Tables']['locations']['Row'];
-type Stock = Database['public']['Tables']['item_locations']['Row'];
-
-type ItemInsert = Database['public']['Tables']['items']['Insert'];
+type Stock = ItemLocation;
+type ItemInsert = InsertItem;
 
 const ERR_ITEM_INSERT = 'Failed to add item';
 const ERR_ITEMS_LOAD = 'Failed to load items';
@@ -16,56 +13,23 @@ const ERR_ITEM_UPDATE = 'Failed to update item';
 const ERR_ITEM_DELETE = 'Failed to delete item';
 
 const db_getItems = async () => {
-    const {data: items, error: itemsError} = await supabase
-        .from('items')
-        .select('*');
-
-    if (itemsError) throw itemsError;
-    return items as Item[];
+    return await apiClient.getItems() as Item[];
 }
 
 const db_getItemById = async (id: string) => {
-    const {data: item, error: itemError} = await supabase
-        .from('items')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-    if (itemError) throw itemError;
-
-    return item as Item;
+    return await apiClient.getItem(id) as Item;
 }
 
 const db_createItem = async (item: ItemInsert) => {
-    const {data, error} = await supabase
-        .from('items')
-        .insert(item)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data as Item;
+    return await apiClient.createItem(item) as Item;
 }
 
-const db_updateItem = async (id: string, updates: Partial<Database['public']['Tables']['items']['Update']>) => {
-    const {data, error} = await supabase
-        .from('items')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
+const db_updateItem = async (id: string, updates: Partial<Item>) => {
+    return await apiClient.updateItem(id, updates) as Item;
 }
 
 const db_deleteItem = async (id: string) => {
-    const {error} = await supabase
-        .from('items')
-        .delete()
-        .eq('id', id);
-
-    if (error) throw error;
+    await apiClient.deleteItem(id);
     return true;
 }
 

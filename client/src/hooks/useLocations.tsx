@@ -1,14 +1,11 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
-import {supabase} from "../lib/supabase.ts";
 import {useCallback, useEffect, useState} from "react";
-import type {Database} from "../lib/database.types.ts";
+import type {Location, InsertLocation, ItemLocation, Item} from "@shared/schema";
+import {apiClient} from "../lib/api";
 
-type Location = Database['public']['Tables']['locations']['Row'];
-type Stock = Database['public']['Tables']['item_locations']['Row'];
-type Item = Database['public']['Tables']['items']['Row'];
-
-type LocationInsert = Database['public']['Tables']['locations']['Insert'];
-type LocationUpdate = Database['public']['Tables']['locations']['Update'];
+type Stock = ItemLocation;
+type LocationInsert = InsertLocation;
+type LocationUpdate = Partial<Location>;
 
 const ERR_LOCATION_INSERT = 'Failed to add location';
 const ERR_LOCATIONS_LOAD = 'Failed to load locations';

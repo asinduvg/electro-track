@@ -1,32 +1,19 @@
 import {useDatabase} from "../context/DatabaseContext.tsx";
-import {Database} from "../lib/database.types.ts";
-import {supabase} from "../lib/supabase.ts";
+import {apiClient} from "../lib/api";
+import type {Category, InsertCategory} from "@shared/schema";
 import {useCallback, useEffect, useState} from "react";
 
-type Category = Database['public']['Tables']['categories']['Row'];
-type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
+type CategoryInsert = InsertCategory;
 
 const ERR_CATEGORIES_LOAD = 'Failed to load categories';
 const ERR_CATEGORY_INSERT = 'Failed to add category';
 
 const db_getCategories = async () => {
-    const {data: categories, error: categoriesError} = await supabase
-        .from('categories')
-        .select('*');
-
-    if (categoriesError) throw categoriesError;
-    return categories as Category[];
+    return await apiClient.getCategories() as Category[];
 }
 
 const db_createCategory = async (category: CategoryInsert) => {
-    const {data, error: categoriesError} = await supabase
-        .from('categories')
-        .insert(category)
-        .select()
-        .single()
-
-    if (categoriesError) throw categoriesError;
-    return data as Category;
+    return await apiClient.createCategory(category) as Category;
 }
 
 function useCategories() {

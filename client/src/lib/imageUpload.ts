@@ -1,5 +1,5 @@
 // src/lib/imageUpload.ts - Deferred upload version
-import { supabase } from './supabase';
+
 
 export class ImageUploadError extends Error {
     constructor(message: string, public code?: string) {
