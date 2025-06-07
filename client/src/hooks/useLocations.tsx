@@ -13,47 +13,19 @@ const ERR_LOCATION_LOAD = 'Failed to load location';
 const ERR_LOCATION_UPDATE = 'Failed to update location';
 
 const db_getLocations = async () => {
-    const {data, error} = await supabase
-        .from('locations')
-        .select('*');
-
-    if (error) throw error;
-    return data as Location[];
+    return await apiClient.getLocations() as Location[];
 }
 
 const db_getLocationById = async (id: string) => {
-    const {data: location, error: locationError} = await supabase
-        .from('locations')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-    if (locationError) throw locationError;
-
-    return location as Location;
+    return await apiClient.getLocation(id) as Location;
 }
 
 const db_createLocation = async (location: LocationInsert) => {
-    const {data, error} = await supabase
-        .from('locations')
-        .insert(location)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data as Location;
+    return await apiClient.createLocation(location) as Location;
 }
 
 const db_updateLocation = async (id: string, updates: LocationUpdate) => {
-    const {data, error} = await supabase
-        .from('locations')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data as Location;
+    return await apiClient.updateLocation(id, updates) as Location;
 }
 
 function useLocations() {
