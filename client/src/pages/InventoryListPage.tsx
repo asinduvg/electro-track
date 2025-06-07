@@ -104,169 +104,185 @@ const InventoryListPage: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-900">Inventory Items</h1>
-                <Link to="/inventory/add">
-                    <Button className="flex items-center">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add New Item
-                    </Button>
-                </Link>
-            </div>
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">Inventory Items</h1>
+                        <p className="mt-2 text-slate-600">Manage your electronic components and equipment</p>
+                    </div>
+                    <Link to="/inventory/add">
+                        <Button className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add New Item
+                        </Button>
+                    </Link>
+                </div>
 
-            {/* Search and Filters */}
-            <Card>
-                <CardContent className="p-6">
-                    <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <Input
-                                placeholder="Search items by name, SKU, or description..."
-                                className="pl-10"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                {/* Search and Filters */}
+                <Card className="bg-white border-0 shadow-lg mb-6">
+                    <CardContent className="p-6">
+                        <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Input
+                                    placeholder="Search items by name, SKU, or description..."
+                                    className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400 rounded-xl"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="in_stock">In Stock</option>
+                                    <option value="low_stock">Low Stock</option>
+                                    <option value="out_of_stock">Out of Stock</option>
+                                    <option value="discontinued">Discontinued</option>
+                                </select>
+                                
+                                <select
+                                    value={categoryFilter}
+                                    onChange={(e) => setCategoryFilter(e.target.value)}
+                                    className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                >
+                                    <option value="all">All Categories</option>
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.category} - {category.subcategory}
+                                        </option>
+                                    ))}
+                                </select>
+                                
+                                <Button variant="outline" className="flex items-center bg-white border-slate-200 hover:bg-slate-50 px-4 py-3 rounded-xl">
+                                    <Filter className="mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">Filters</span>
+                                </Button>
+                            </div>
                         </div>
                         
-                        <div className="flex space-x-4">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="in_stock">In Stock</option>
-                                <option value="low_stock">Low Stock</option>
-                                <option value="out_of_stock">Out of Stock</option>
-                                <option value="discontinued">Discontinued</option>
-                            </select>
-                            
-                            <select
-                                value={categoryFilter}
-                                onChange={(e) => setCategoryFilter(e.target.value)}
-                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option value="all">All Categories</option>
-                                {categories.map((category) => (
-                                    <option key={category.id} value={category.id}>
-                                        {category.category} - {category.subcategory}
-                                    </option>
-                                ))}
-                            </select>
-                            
-                            <Button variant="outline" className="flex items-center">
-                                <Filter className="mr-2 h-4 w-4" />
-                                Filters
-                            </Button>
+                        <div className="mt-4 text-sm text-slate-600">
+                            Showing {filteredAndSortedItems.length} of {items.length} items
                         </div>
-                    </div>
-                    
-                    <div className="mt-4 text-sm text-gray-600">
-                        Showing {filteredAndSortedItems.length} of {items.length} items
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
 
-            {/* Items Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <Package className="mr-2 h-5 w-5" />
-                        All Items ({items.length})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableHeaderCell>
-                                    <button 
-                                        onClick={() => handleSort('sku')}
-                                        className="flex items-center space-x-1 hover:text-blue-600"
-                                    >
-                                        <span>SKU</span>
-                                        {getSortIcon('sku')}
-                                    </button>
-                                </TableHeaderCell>
-                                <TableHeaderCell>
-                                    <button 
-                                        onClick={() => handleSort('name')}
-                                        className="flex items-center space-x-1 hover:text-blue-600"
-                                    >
-                                        <span>Name</span>
-                                        {getSortIcon('name')}
-                                    </button>
-                                </TableHeaderCell>
-                                <TableHeaderCell>Category</TableHeaderCell>
-                                <TableHeaderCell>
-                                    <button 
-                                        onClick={() => handleSort('stock')}
-                                        className="flex items-center space-x-1 hover:text-blue-600"
-                                    >
-                                        <span>Stock</span>
-                                        {getSortIcon('stock')}
-                                    </button>
-                                </TableHeaderCell>
-                                <TableHeaderCell>
-                                    <button 
-                                        onClick={() => handleSort('cost')}
-                                        className="flex items-center space-x-1 hover:text-blue-600"
-                                    >
-                                        <span>Unit Cost</span>
-                                        {getSortIcon('cost')}
-                                    </button>
-                                </TableHeaderCell>
-                                <TableHeaderCell>Status</TableHeaderCell>
-                                <TableHeaderCell>Actions</TableHeaderCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredAndSortedItems.map((item) => {
-                                const category = categories.find(cat => cat.id === item.category_id);
-                                return (
-                                <TableRow key={item.id}>
-                                    <TableCell className="font-medium">{item.sku}</TableCell>
-                                    <TableCell>
-                                        <div>
-                                            <div className="font-medium">{item.name}</div>
-                                            <div className="text-sm text-gray-500">{item.description}</div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        {category ? `${category.category} - ${category.subcategory}` : 'Uncategorized'}
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`font-medium ${
-                                            getTotalQuantity(item.id, stocks) <= (item.minimum_stock || 0)
-                                                ? 'text-red-600' 
-                                                : 'text-green-600'
-                                        }`}>
-                                            {getTotalQuantity(item.id, stocks)}
-                                        </span>
-                                        <span className="text-gray-500 text-sm">
-                                            {' '}/ {item.minimum_stock || 0} min
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>${Number(item.unit_cost).toFixed(2)}</TableCell>
-                                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Link to={`/inventory/edit/${item.id}`}>
-                                                <Button variant="outline" size="sm">Edit</Button>
-                                            </Link>
-                                            <Link to={`/inventory/view/${item.id}`}>
-                                                <Button variant="outline" size="sm">View</Button>
-                                            </Link>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                {/* Items Table */}
+                <Card className="bg-white border-0 shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="flex items-center text-slate-900">
+                            <Package className="mr-2 h-5 w-5 text-emerald-600" />
+                            All Items ({items.length})
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHead>
+                                    <TableRow className="border-slate-200">
+                                        <TableHeaderCell className="text-slate-700">
+                                            <button 
+                                                onClick={() => handleSort('sku')}
+                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
+                                            >
+                                                <span>SKU</span>
+                                                {getSortIcon('sku')}
+                                            </button>
+                                        </TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700">
+                                            <button 
+                                                onClick={() => handleSort('name')}
+                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
+                                            >
+                                                <span>Name</span>
+                                                {getSortIcon('name')}
+                                            </button>
+                                        </TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 hidden md:table-cell">Category</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700">
+                                            <button 
+                                                onClick={() => handleSort('stock')}
+                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
+                                            >
+                                                <span>Stock</span>
+                                                {getSortIcon('stock')}
+                                            </button>
+                                        </TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 hidden lg:table-cell">
+                                            <button 
+                                                onClick={() => handleSort('cost')}
+                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
+                                            >
+                                                <span>Unit Cost</span>
+                                                {getSortIcon('cost')}
+                                            </button>
+                                        </TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700">Status</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700">Actions</TableHeaderCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredAndSortedItems.length > 0 ? (
+                                        filteredAndSortedItems.map((item) => {
+                                            const category = categories.find(cat => cat.id === item.category_id);
+                                            const totalStock = getTotalQuantity(item.id, stocks);
+                                            
+                                            return (
+                                                <TableRow key={item.id} className="border-slate-200 hover:bg-slate-50 transition-colors">
+                                                    <TableCell className="font-medium text-slate-900">{item.sku}</TableCell>
+                                                    <TableCell className="text-slate-900">
+                                                        <div>
+                                                            <div className="font-medium">{item.name}</div>
+                                                            <div className="text-sm text-slate-500 md:hidden">
+                                                                {category ? `${category.category} - ${category.subcategory}` : 'Uncategorized'}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-slate-600 hidden md:table-cell">
+                                                        {category ? `${category.category} - ${category.subcategory}` : 'Uncategorized'}
+                                                    </TableCell>
+                                                    <TableCell className="text-slate-900 font-semibold">{totalStock}</TableCell>
+                                                    <TableCell className="text-slate-900 hidden lg:table-cell">${Number(item.unit_cost).toFixed(2)}</TableCell>
+                                                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-2">
+                                                            <Link to={`/inventory/items/${item.id}`}>
+                                                                <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-xs">
+                                                                    View
+                                                                </Button>
+                                                            </Link>
+                                                            <Link to={`/inventory/edit/${item.id}`}>
+                                                                <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-xs">
+                                                                    Edit
+                                                                </Button>
+                                                            </Link>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="text-center py-12">
+                                                <div className="flex flex-col items-center">
+                                                    <Package className="h-12 w-12 text-slate-400 mb-4" />
+                                                    <p className="text-slate-500">No items found</p>
+                                                    <p className="text-sm text-slate-400 mt-1">Try adjusting your search or filters</p>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 };
