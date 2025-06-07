@@ -190,7 +190,7 @@ const SuppliersPage: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-[#717171]">Total Suppliers</p>
-                                    <p className="text-2xl font-bold text-[#222222] dark:text-white">12</p>
+                                    <p className="text-2xl font-bold text-[#222222] dark:text-white">{suppliers.length}</p>
                                 </div>
                                 <Building2 className="h-8 w-8 text-[#FF385C]" />
                             </div>
@@ -202,7 +202,7 @@ const SuppliersPage: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-[#717171]">Active Suppliers</p>
-                                    <p className="text-2xl font-bold text-[#008489]">9</p>
+                                    <p className="text-2xl font-bold text-[#008489]">{suppliers.filter(s => s.status === 'active').length}</p>
                                 </div>
                                 <div className="h-3 w-3 bg-[#008489] rounded-full"></div>
                             </div>
