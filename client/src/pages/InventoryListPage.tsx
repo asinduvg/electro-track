@@ -139,7 +139,7 @@ const InventoryListPage: React.FC = () => {
                         <p className="mt-2 text-slate-600">Manage your electronic components and equipment</p>
                     </div>
                     <Link to="/inventory/add">
-                        <Button className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors">
+                        <Button className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl">
                             <Plus className="mr-2 h-4 w-4" />
                             Add New Item
                         </Button>

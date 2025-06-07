@@ -42,7 +42,7 @@ const LocationsPage: React.FC = () => {
                     </div>
                     <Button 
                         onClick={() => setShowAddModal(true)}
-                        className="flex items-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Add Location
@@ -186,7 +186,7 @@ const LocationsPage: React.FC = () => {
                                 <Button 
                                     onClick={handleAddLocation}
                                     disabled={!newLocation.unit.trim()}
-                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                    className="flex-1 bg-[#FF385C] hover:bg-[#E31C5F] text-white disabled:bg-[#DDDDDD] disabled:text-[#717171]"
                                 >
                                     Create Location
                                 </Button>
