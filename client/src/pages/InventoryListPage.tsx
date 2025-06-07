@@ -1,383 +1,117 @@
-import React, {useState, useEffect} from 'react';
-import {Link, useSearchParams} from 'react-router-dom';
-import {
-    Search, Filter, Plus, Download, Eye, Edit, Trash, ArrowUpDown
-} from 'lucide-react';
-import {
-    Table, TableHead, TableBody, TableRow,
-    TableHeaderCell, TableCell
-} from '../components/ui/Table';
-import {Card, CardHeader, CardTitle, CardContent} from '../components/ui/Card';
-import {Input} from '../components/ui/Input';
-import {Button} from '../components/ui/Button';
-import {Badge} from '../components/ui/Badge';
-import {useAuth} from '../context/AuthContext';
-import {UserRole} from '../types';
-import type {Database} from "../lib/database.types.ts";
-import useItems from "../hooks/useItems.tsx";
-import useLocations from "../hooks/useLocations.tsx";
-import useStocks from "../hooks/useStocks.tsx";
-import useCategories from "../hooks/useCategories.tsx";
-
-type Item = Database['public']['Tables']['items']['Row'];
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import { Package, Plus, Search } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import useItems from '../hooks/useItems';
+import useStocks from '../hooks/useStocks';
 
 const InventoryListPage: React.FC = () => {
-    const {currentUser} = useAuth();
-    const [searchParams] = useSearchParams();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filteredItems, setFilteredItems] = useState<Item[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>('');
-    const [statusFilter, setStatusFilter] = useState<string>('');
-    const [sortField, setSortField] = useState<keyof Item>('name');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const {locations} = useLocations();
-    const {stocks} = useStocks();
-    const {items, getTotalQuantity, stocksWithLocation, removeItem, hasStock, error: itemsError} = useItems();
-    const {categories} = useCategories();
-
-    useEffect(() => {
-        if (itemsError) {
-            setError(itemsError);
-            setIsLoading(false);
-            return;
-        }
-        if (items.length > 0) {
-            setIsLoading(false);
-        }
-    }, [items, itemsError]);
-
-    useEffect(() => {
-        // If itemId is provided in URL, pre-select that item
-        const filter = searchParams.get('filter');
-        if (filter) {
-            setStatusFilter(filter)
-        }
-    }, [searchParams]);
-
-    const handleDelete = async (id: string) => {
-        if (hasStock(id, stocks)) {
-            alert('Item has stock. Please remove stock before deleting.');
-            return;
-        }
-
-        if (!window.confirm('Are you sure you want to delete this item?')) {
-            return;
-        }
-
-        try {
-            await removeItem(id);
-            setFilteredItems(filteredItems.filter(item => item.id !== id));
-        } catch (err) {
-            console.error('Error deleting item:', err);
-            alert('Failed to delete item');
-        }
-    };
-
-    useEffect(() => {
-        let result = [...items];
-
-        // Apply search filter
-        if (searchTerm) {
-            const search = searchTerm.toLowerCase();
-            result = result.filter(
-                item =>
-                    item.name.toLowerCase().includes(search) ||
-                    item.sku.toLowerCase().includes(search) ||
-                    item.description?.toLowerCase().includes(search) ||
-                    item.manufacturer.toLowerCase().includes(search)
-            );
-        }
-
-        // Apply category filter
-        if (selectedCategory) {
-            result = result.filter(item => item.category === selectedCategory);
-        }
-
-        // Apply status filter
-        if (statusFilter) {
-            result = result.filter(item => item.status === statusFilter);
-        }
-
-        // Apply sorting
-        result.sort((a, b) => {
-            const aValue = a[sortField];
-            const bValue = b[sortField];
-
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                return sortDirection === 'asc'
-                    ? aValue.localeCompare(bValue)
-                    : bValue.localeCompare(aValue);
-            }
-
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
-            }
-
-            return 0;
-        });
-
-        setFilteredItems(result);
-    }, [searchTerm, selectedCategory, statusFilter, sortField, sortDirection, items]);
-
-    const handleSort = (field: keyof Item) => {
-        if (sortField === field) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortField(field);
-            setSortDirection('asc');
-        }
-    };
-
-    const getSortIcon = (field: keyof Item) => {
-        if (sortField !== field) {
-            return <ArrowUpDown size={14} className="ml-1 opacity-50"/>;
-        }
-        return sortDirection === 'asc' ?
-            <ArrowUpDown size={14} className="ml-1 text-blue-600"/> :
-            <ArrowUpDown size={14} className="ml-1 text-blue-600 transform rotate-180"/>;
-    };
+    const { items, getTotalQuantity } = useItems();
+    const { stocks } = useStocks();
 
     const getStatusBadge = (status: string) => {
-        let variant: 'success' | 'danger' | 'warning' | 'info' | 'primary';
-
         switch (status) {
             case 'in_stock':
-                variant = 'success';
-                break;
+                return <Badge variant="success">In Stock</Badge>;
             case 'low_stock':
-                variant = 'warning';
-                break;
+                return <Badge variant="warning">Low Stock</Badge>;
             case 'out_of_stock':
-                variant = 'danger';
-                break;
+                return <Badge variant="danger">Out of Stock</Badge>;
             case 'discontinued':
-                variant = 'info';
-                break;
+                return <Badge variant="secondary">Discontinued</Badge>;
             default:
-                variant = 'primary';
+                return <Badge variant="secondary">{status}</Badge>;
         }
-
-        return (
-            <Badge variant={variant} className="capitalize">
-                {status.replace('_', ' ')}
-            </Badge>
-        );
     };
-
-    const renderTableHead = () => {
-        return (
-            <TableHead>
-                <TableRow>
-                    <TableHeaderCell
-                        className="cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('sku')}
-                    >
-                        <div className="flex items-center">
-                            SKU {getSortIcon('sku')}
-                        </div>
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                        className="cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('name')}
-                    >
-                        <div className="flex items-center">
-                            Name {getSortIcon('name')}
-                        </div>
-                    </TableHeaderCell>
-                    <TableHeaderCell>Category</TableHeaderCell>
-                    <TableHeaderCell>Location</TableHeaderCell>
-                    <TableHeaderCell>Quantity</TableHeaderCell>
-                    <TableHeaderCell>Status</TableHeaderCell>
-                    <TableHeaderCell>Actions</TableHeaderCell>
-                </TableRow>
-            </TableHead>
-        )
-    }
-
-    const renderDetailedTable = () => {
-        const fullItemsDetail = filteredItems.map(item => {
-            return {
-                item, stocks: stocksWithLocation(item.id, locations, stocks)
-            }
-        });
-
-        return (
-            <Table>
-                {renderTableHead()}
-                <TableBody>
-                    {filteredItems.length > 0 ? (
-                        fullItemsDetail.map(({item, stocks}, idx) => (
-                                <TableRow key={`${item.id}-${idx}`}>
-                                    <TableCell className="font-medium">{item.sku}</TableCell>
-                                    <TableCell>
-                                        <Link
-                                            to={`/inventory/view/${item.id}`}
-                                            className="text-blue-600 hover:text-blue-800 hover:underline"
-                                        >
-                                            {item.name}
-                                        </Link>
-                                        <p className="text-xs text-gray-500 truncate max-w-xs">
-                                            {item.description}
-                                        </p>
-                                    </TableCell>
-                                    <TableCell>{item.category}</TableCell>
-                                    <TableCell>
-                                        {stocks.map(stockNLocation => (
-                                            <div key={`${stockNLocation.location.id}-${stockNLocation.quantity}`}>
-                                                {stockNLocation.location.building} &gt; {stockNLocation.location.room} &gt; {stockNLocation.location.unit} ({stockNLocation.quantity})
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell>
-                                        {getTotalQuantity(item.id, stocks)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {getStatusBadge(item.status)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Link to={`/inventory/view/${item.id}`}>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    leftIcon={<Eye size={16}/>}
-                                                />
-                                            </Link>
-
-                                            {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                                                <>
-                                                    <Link to={`/inventory/edit/${item.id}`}>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            leftIcon={<Edit size={16}/>}
-                                                        />
-                                                    </Link>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        leftIcon={<Trash size={16}/>}
-                                                        disabled={hasStock(item.id, stocks)}
-                                                        onClick={() => handleDelete(item.id)}
-                                                    />
-                                                </>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        )
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8">
-                                <div className="flex flex-col items-center justify-center text-gray-500">
-                                    <Search size={48} className="mb-2 text-gray-300"/>
-                                    <p className="text-lg">No items found</p>
-                                    <p className="text-sm">Try adjusting your search or filter criteria</p>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        );
-    }
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-800"></div>
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-gray-900">Inventory Items</h1>
+                <Link to="/inventory/add">
+                    <Button className="flex items-center">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add New Item
+                    </Button>
+                </Link>
+            </div>
+
+            {/* Search and Filters */}
             <Card>
-                <CardHeader
-                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-                    <CardTitle>Inventory Items</CardTitle>
-                    <div className="flex space-x-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            leftIcon={<Download size={16}/>}
-                        >
-                            Export
-                        </Button>
-                        {(currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.INVENTORY_MANAGER) && (
-                            <Link to="/inventory/add">
-                                <Button
-                                    variant="primary"
-                                    size="sm"
-                                    leftIcon={<Plus size={16}/>}
-                                >
-                                    Add Item
-                                </Button>
-                            </Link>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
-                        <div className="flex-1">
+                <CardContent className="p-6">
+                    <div className="flex items-center space-x-4">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input
-                                placeholder="Search by name, SKU, description..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                leftAddon={<Search size={16}/>}
-                                fullWidth
+                                placeholder="Search items by name, SKU, or manufacturer..."
+                                className="pl-10"
                             />
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <div>
-                                <select
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                    value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                >
-                                    <option value="">All Categories</option>
-                                    {categories.map((category) => (
-                                        <option key={category.category} value={category.category}>
-                                            {category.category}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <select
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                    value={statusFilter}
-                                    onChange={(e) => setStatusFilter(e.target.value)}
-                                >
-                                    <option value="">All Statuses</option>
-                                    <option value="in_stock">In Stock</option>
-                                    <option value="low_stock">Low Stock</option>
-                                    <option value="out_of_stock">Out of Stock</option>
-                                    <option value="discontinued">Discontinued</option>
-                                </select>
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                leftIcon={<Filter size={16}/>}
-                                onClick={() => {
-                                    setSelectedCategory('');
-                                    setStatusFilter('');
-                                    setSearchTerm('');
-                                }}
-                            >
-                                Reset
-                            </Button>
-                        </div>
+                        <Button variant="outline">Filter</Button>
                     </div>
+                </CardContent>
+            </Card>
 
-                    <div className="overflow-x-auto">
-                        {renderDetailedTable()}
-                    </div>
+            {/* Items Table */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <Package className="mr-2 h-5 w-5" />
+                        All Items ({items.length})
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableHeaderCell>SKU</TableHeaderCell>
+                                <TableHeaderCell>Name</TableHeaderCell>
+                                <TableHeaderCell>Category</TableHeaderCell>
+                                <TableHeaderCell>Stock</TableHeaderCell>
+                                <TableHeaderCell>Unit Cost</TableHeaderCell>
+                                <TableHeaderCell>Status</TableHeaderCell>
+                                <TableHeaderCell>Actions</TableHeaderCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {items.map((item) => (
+                                <TableRow key={item.id}>
+                                    <TableCell className="font-medium">{item.sku}</TableCell>
+                                    <TableCell>
+                                        <div>
+                                            <div className="font-medium">{item.name}</div>
+                                            <div className="text-sm text-gray-500">{item.description}</div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>Electronic Components</TableCell>
+                                    <TableCell>
+                                        <span className={`font-medium ${
+                                            getTotalQuantity(item.id, stocks) <= (item.minimum_stock || 0)
+                                                ? 'text-red-600' 
+                                                : 'text-green-600'
+                                        }`}>
+                                            {getTotalQuantity(item.id, stocks)}
+                                        </span>
+                                        <span className="text-gray-500 text-sm">
+                                            {' '}/ {item.minimum_stock || 0} min
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>${Number(item.unit_cost).toFixed(2)}</TableCell>
+                                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                                    <TableCell>
+                                        <div className="flex space-x-2">
+                                            <Button variant="outline" size="sm">Edit</Button>
+                                            <Button variant="outline" size="sm">View</Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 </CardContent>
             </Card>
         </div>
