@@ -25,22 +25,22 @@ export const Button: React.FC<ButtonProps> = ({
                                                   disabled,
                                                   ...props
                                               }) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 border';
 
     const variantStyles: Record<ButtonVariant, string> = {
-        primary: 'bg-blue-800 text-white hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700',
-        secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600',
-        success: 'bg-green-600 text-white hover:bg-green-500 focus:ring-green-400 dark:bg-green-600 dark:hover:bg-green-700',
-        danger: 'bg-red-600 text-white hover:bg-red-500 focus:ring-red-400 dark:bg-red-600 dark:hover:bg-red-700',
-        warning: 'bg-yellow-500 text-white hover:bg-yellow-400 focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700',
-        outline: 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-400 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700',
-        ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-400 dark:text-slate-300 dark:hover:bg-slate-700'
+        primary: 'bg-[#FF385C] text-white hover:bg-[#E00B41] border-[#FF385C] hover:border-[#E00B41] focus:ring-[#FF385C] shadow-md hover:shadow-lg',
+        secondary: 'bg-white text-[#222222] hover:bg-[#F7F7F7] border-[#DDDDDD] hover:border-[#B0B0B0] focus:ring-[#DDDDDD] shadow-sm hover:shadow-md',
+        success: 'bg-[#008489] text-white hover:bg-[#00656A] border-[#008489] hover:border-[#00656A] focus:ring-[#008489] shadow-md hover:shadow-lg',
+        danger: 'bg-[#C4141C] text-white hover:bg-[#A00F16] border-[#C4141C] hover:border-[#A00F16] focus:ring-[#C4141C] shadow-md hover:shadow-lg',
+        warning: 'bg-[#FC642D] text-white hover:bg-[#E0562A] border-[#FC642D] hover:border-[#E0562A] focus:ring-[#FC642D] shadow-md hover:shadow-lg',
+        outline: 'bg-transparent text-[#222222] hover:bg-[#F7F7F7] border-[#222222] hover:border-[#000000] focus:ring-[#222222] hover:shadow-sm',
+        ghost: 'bg-transparent text-[#717171] hover:bg-[#F7F7F7] border-transparent hover:border-[#DDDDDD] focus:ring-[#717171] hover:shadow-sm'
     };
 
     const sizeStyles: Record<ButtonSize, string> = {
-        sm: 'text-xs px-2.5 py-1.5',
-        md: 'text-sm px-4 py-2',
-        lg: 'text-base px-6 py-3'
+        sm: 'text-sm px-3 py-1.5 h-8',
+        md: 'text-sm px-6 py-2.5 h-10',
+        lg: 'text-base px-8 py-3 h-12'
     };
 
     const disabledStyles = 'opacity-50 cursor-not-allowed';

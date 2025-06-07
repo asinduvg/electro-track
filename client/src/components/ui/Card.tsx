@@ -8,7 +8,7 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({children, className}) => {
     return (
-        <div className={cn('bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden', className)}>
+        <div className={cn('bg-white dark:bg-[#484848] rounded-xl shadow-sm border border-[#DDDDDD] dark:border-[#767676] hover:shadow-md transition-shadow duration-200 overflow-hidden', className)}>
             {children}
         </div>
     );
@@ -21,7 +21,7 @@ interface CardHeaderProps {
 
 export const CardHeader: React.FC<CardHeaderProps> = ({children, className}) => {
     return (
-        <div className={cn('px-6 py-4 border-b border-gray-200 dark:border-slate-700', className)}>
+        <div className={cn('px-6 py-5 border-b border-[#EBEBEB] dark:border-[#767676]', className)}>
             {children}
         </div>
     );
@@ -34,7 +34,7 @@ interface CardTitleProps {
 
 export const CardTitle: React.FC<CardTitleProps> = ({children, className}) => {
     return (
-        <h3 className={cn('text-lg font-semibold text-gray-900 dark:text-white', className)}>
+        <h3 className={cn('text-xl font-semibold text-[#222222] dark:text-white leading-tight', className)}>
             {children}
         </h3>
     );
@@ -47,7 +47,7 @@ interface CardContentProps {
 
 export const CardContent: React.FC<CardContentProps> = ({children, className}) => {
     return (
-        <div className={cn('px-6 py-4', className)}>
+        <div className={cn('px-6 py-5', className)}>
             {children}
         </div>
     );
