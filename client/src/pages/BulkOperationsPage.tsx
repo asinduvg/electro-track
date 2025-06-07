@@ -62,6 +62,8 @@ const BulkOperationsPage: React.FC = () => {
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [operationType, setOperationType] = useState<'stock_adjustment' | 'transfer' | 'import'>('import');
+    const [isDragOver, setIsDragOver] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,12 +75,73 @@ const BulkOperationsPage: React.FC = () => {
         }
     };
 
-    const handleBulkImport = () => {
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                setSelectedFile(file);
+            } else {
+                alert('Please select a valid CSV file');
+            }
+        }
+    };
+
+    const handleBulkImport = async () => {
         if (!selectedFile) return;
         
-        // Implementation would parse CSV and create items
-        console.log('Processing bulk import:', selectedFile.name);
-        alert('Bulk import started. You will be notified when complete.');
+        setIsProcessing(true);
+        try {
+            const csvText = await selectedFile.text();
+            const lines = csvText.split('\n').filter(line => line.trim());
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            // Validate headers
+            const requiredHeaders = ['SKU', 'Name', 'Manufacturer', 'Unit Cost'];
+            const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+            
+            if (missingHeaders.length > 0) {
+                alert(`Missing required columns: ${missingHeaders.join(', ')}`);
+                setIsProcessing(false);
+                return;
+            }
+            
+            // Parse CSV data
+            const items = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length === headers.length) {
+                    const item: any = {};
+                    headers.forEach((header, index) => {
+                        item[header.toLowerCase().replace(' ', '_')] = values[index];
+                    });
+                    items.push(item);
+                }
+            }
+            
+            console.log('Parsed items:', items);
+            alert(`Successfully parsed ${items.length} items from CSV. Import functionality would process these items.`);
+            setSelectedFile(null);
+            
+        } catch (error) {
+            console.error('Error processing CSV:', error);
+            alert('Error processing CSV file. Please check the format and try again.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const handleBulkExport = () => {
@@ -219,7 +282,16 @@ const BulkOperationsPage: React.FC = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div>
                                 <h4 className="font-medium text-[#222222] dark:text-white mb-4">Upload CSV File</h4>
-                                <div className="border-2 border-dashed border-[#DDDDDD] rounded-lg p-6 text-center">
+                                <div 
+                                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                                        isDragOver 
+                                            ? 'border-[#FF385C] bg-[#FFF3F4]' 
+                                            : 'border-[#DDDDDD] hover:border-[#FF385C]'
+                                    }`}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                >
                                     <input
                                         type="file"
                                         accept=".csv"
@@ -233,10 +305,10 @@ const BulkOperationsPage: React.FC = () => {
                                             <p className="text-sm font-medium text-[#222222] dark:text-white">{selectedFile.name}</p>
                                             <p className="text-xs text-[#717171]">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                                             <div className="flex space-x-2 justify-center">
-                                                <Button size="sm" onClick={handleBulkImport}>
-                                                    Process Import
+                                                <Button size="sm" onClick={handleBulkImport} disabled={isProcessing}>
+                                                    {isProcessing ? 'Processing...' : 'Process Import'}
                                                 </Button>
-                                                <Button variant="outline" size="sm" onClick={() => setSelectedFile(null)}>
+                                                <Button variant="outline" size="sm" onClick={() => setSelectedFile(null)} disabled={isProcessing}>
                                                     Remove
                                                 </Button>
                                             </div>
@@ -266,7 +338,7 @@ const BulkOperationsPage: React.FC = () => {
                                         <li>• Quantity</li>
                                         <li>• Location ID</li>
                                     </ul>
-                                    <Button variant="outline" size="sm" className="mt-3">
+                                    <Button variant="outline" size="sm" className="mt-3" onClick={handleDownloadTemplate}>
                                         <Download className="h-4 w-4 mr-2" />
                                         Download Template
                                     </Button>
