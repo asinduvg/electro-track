@@ -65,7 +65,7 @@ const InventoryAnalytics: React.FC = () => {
       .slice(0, 5);
 
     const categoryDistribution = items.reduce((acc, item) => {
-      const category = item.category || 'Uncategorized';
+      const category = item.manufacturer || 'Unknown Manufacturer';
       acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -223,7 +223,7 @@ const InventoryAnalytics: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            Inventory by Category
+            Inventory by Manufacturer
           </CardTitle>
         </CardHeader>
         <CardContent>

@@ -14,6 +14,8 @@ import {UserRole, ItemStatus} from '../types';
 import useItems from "../hooks/useItems.tsx";
 import useTransactions from "../hooks/useTransactions.tsx";
 import useStocks from "../hooks/useStocks.tsx";
+import StockAlerts from "../components/StockAlerts";
+import InventoryAnalytics from "../components/InventoryAnalytics";
 
 const DashboardPage: React.FC = () => {
     const {currentUser} = useAuth();
@@ -407,6 +409,16 @@ const DashboardPage: React.FC = () => {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Advanced Enterprise Features */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-2">
+                    <InventoryAnalytics />
+                </div>
+                <div>
+                    <StockAlerts />
+                </div>
+            </div>
         </div>
     );
 };
