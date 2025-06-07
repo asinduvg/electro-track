@@ -114,7 +114,7 @@ const LoginPage: React.FC = () => {
                             />
                         </div>
 
-                        <div>
+                        <div className="space-y-3">
                             <Button
                                 type="submit"
                                 variant="primary"
@@ -123,6 +123,31 @@ const LoginPage: React.FC = () => {
                                 leftIcon={<Lock size={16}/>}
                             >
                                 Sign in
+                            </Button>
+                            
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                fullWidth
+                                onClick={async () => {
+                                    // Demo login with admin user
+                                    const demoUser = {
+                                        id: "550e8400-e29b-41d4-a716-446655440000",
+                                        email: "admin@et.com",
+                                        role: "admin" as const,
+                                        name: "Admin User",
+                                        department: null,
+                                        created_at: new Date().toISOString(),
+                                        updated_at: new Date().toISOString(),
+                                        created_by: null,
+                                        updated_by: null,
+                                        last_login: null
+                                    };
+                                    localStorage.setItem('currentUser', JSON.stringify(demoUser));
+                                    setLocation('/');
+                                }}
+                            >
+                                Demo Login (Admin)
                             </Button>
                         </div>
                     </form>

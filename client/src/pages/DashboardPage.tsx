@@ -98,7 +98,7 @@ const DashboardPage: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-green-100 font-medium">Total Value</p>
-                                <p className="text-3xl font-bold mt-1">{items.reduce((sum, item) => sum + (getTotalQuantity(item.id, stocks) * item.unit_cost), 0).toLocaleString()}</p>
+                                <p className="text-3xl font-bold mt-1">{items.reduce((sum, item) => sum + (getTotalQuantity(item.id, stocks) * Number(item.unit_cost)), 0).toLocaleString()}</p>
                             </div>
                             <div className="bg-green-600 p-3 rounded-full">
                                 <DollarSign size={24}/>
@@ -224,7 +224,7 @@ const DashboardPage: React.FC = () => {
                                     return (
                                         <TableRow key={txnWithItem.id}>
                                             <TableCell>
-                                                {new Date(txnWithItem.performed_at).toLocaleDateString()}
+                                                {txnWithItem.performed_at && typeof txnWithItem.performed_at === 'string' ? new Date(txnWithItem.performed_at).toLocaleDateString() : 'N/A'}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={badgeVariant} className="capitalize">
