@@ -13,9 +13,12 @@ import {
     Tag
 } from 'lucide-react';
 import useCategories from '../hooks/useCategories';
+import useItems from '../hooks/useItems';
+import { DashboardStatsSkeleton } from '../components/ui/InventorySkeletons';
 
 const CategoryManagementPage: React.FC = () => {
-    const { categories, createCategory } = useCategories();
+    const { categories, createCategory, updateCategory, deleteCategory, isLoading } = useCategories();
+    const { items } = useItems();
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -24,6 +27,7 @@ const CategoryManagementPage: React.FC = () => {
         category: '',
         subcategory: ''
     });
+    const [error, setError] = useState<string | null>(null);
 
     const filteredCategories = categories.filter(category =>
         category.category.toLowerCase().includes(searchQuery.toLowerCase()) ||

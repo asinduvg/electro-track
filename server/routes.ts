@@ -181,6 +181,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/items/:id", async (req, res) => {
     try {
       const updates = req.body;
+      console.log("Updating item with data:", updates);
+      
+      // Validate numeric fields
+      if (updates.unit_cost !== undefined) {
+        updates.unit_cost = parseFloat(updates.unit_cost) || 0;
+      }
+      if (updates.minimum_stock !== undefined) {
+        updates.minimum_stock = parseInt(updates.minimum_stock) || 0;
+      }
+      if (updates.category_id !== undefined) {
+        updates.category_id = parseInt(updates.category_id) || null;
+      }
+      
       const item = await storage.updateItem(req.params.id, updates);
       if (!item) {
         return res.status(404).json({ error: "Item not found" });
