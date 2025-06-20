@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
@@ -11,6 +11,7 @@ import useStocks from '../hooks/useStocks';
 import useCategories from '../hooks/useCategories';
 
 const InventoryListPage: React.FC = () => {
+    const [searchParams] = useSearchParams();
     const { items, getTotalQuantity } = useItems();
     const { stocks } = useStocks();
     const { categories } = useCategories();
@@ -26,6 +27,13 @@ const InventoryListPage: React.FC = () => {
     const [priceRangeMax, setPriceRangeMax] = useState('');
     const [stockRangeMin, setStockRangeMin] = useState('');
     const [stockRangeMax, setStockRangeMax] = useState('');
+
+    useEffect(() => {
+        const statusFilter = searchParams.get('status');
+        if (statusFilter) {
+            setStatusFilter(statusFilter);
+        }
+      }, [searchParams]);
     
     // Filtered and sorted items
     const filteredAndSortedItems = useMemo(() => {
