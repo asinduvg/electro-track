@@ -392,11 +392,6 @@ const InventoryListPage: React.FC = () => {
                                                                     View
                                                                 </Button>
                                                             </Link>
-                                                            <Link to={`/inventory/edit/${item.id}`}>
-                                                                <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-xs">
-                                                                    Edit
-                                                                </Button>
-                                                            </Link>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>

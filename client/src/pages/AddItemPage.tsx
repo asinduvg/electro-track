@@ -6,13 +6,14 @@ import { Input } from '../components/ui/Input';
 import { Package, ArrowLeft, Upload, X } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useCategories from '../hooks/useCategories';
+import { FormSkeleton } from '../components/ui/InventorySkeletons';
 import useLocations from '../hooks/useLocations';
 
 const AddItemPage: React.FC = () => {
     const navigate = useNavigate();
     const { addItem } = useItems();
-    const { categories } = useCategories();
-    const { locations } = useLocations();
+    const { categories, isLoading: categoriesLoading } = useCategories();
+    const { locations, isLoading: locationsLoading } = useLocations();
     
     const [formData, setFormData] = useState({
         sku: '',

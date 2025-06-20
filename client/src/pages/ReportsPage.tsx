@@ -10,14 +10,17 @@ import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
 import useCategories from '../hooks/useCategories';
+import { AnalyticsChartSkeleton, DashboardStatsSkeleton } from '../components/ui/InventorySkeletons';
 
 const ReportsPage: React.FC = () => {
     const { currentUser } = useAuth();
-    const { transactions } = useTransactions();
-    const { items, getTotalQuantity } = useItems();
-    const { locations } = useLocations();
-    const { stocks } = useStocks();
-    const { categories } = useCategories();
+    const { transactions, isLoading: transactionsLoading } = useTransactions();
+    const { items, getTotalQuantity, isLoading: itemsLoading } = useItems();
+    const { locations, isLoading: locationsLoading } = useLocations();
+    const { stocks, isLoading: stocksLoading } = useStocks();
+    const { categories, isLoading: categoriesLoading } = useCategories();
+
+    const isLoading = transactionsLoading || itemsLoading || locationsLoading || stocksLoading || categoriesLoading;
 
     // Calculate analytics
     const totalItems = items.length;
