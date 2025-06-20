@@ -29,6 +29,16 @@ const CategoryManagementPage: React.FC = () => {
     });
     const [error, setError] = useState<string | null>(null);
 
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-slate-50">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <DashboardStatsSkeleton />
+                </div>
+            </div>
+        );
+    }
+
     const filteredCategories = categories.filter(category =>
         category.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         category.subcategory.toLowerCase().includes(searchQuery.toLowerCase())
@@ -53,6 +63,40 @@ const CategoryManagementPage: React.FC = () => {
             subcategory: category.subcategory
         });
         setShowEditModal(true);
+        setError(null);
+    };
+
+    const handleUpdateCategory = async () => {
+        if (!newCategory.category.trim() || !newCategory.subcategory.trim() || !selectedCategory) return;
+        
+        try {
+            await updateCategory(selectedCategory.id, newCategory);
+            setNewCategory({ category: '', subcategory: '' });
+            setSelectedCategory(null);
+            setShowEditModal(false);
+            setError(null);
+        } catch (error) {
+            console.error('Failed to update category:', error);
+            setError('Failed to update category');
+        }
+    };
+
+    const handleDeleteCategory = async (category: any) => {
+        // Check if any items are using this category
+        const itemsUsingCategory = items.filter(item => item.category_id === category.id);
+        
+        if (itemsUsingCategory.length > 0) {
+            setError(`Cannot delete category "${category.category} - ${category.subcategory}" because ${itemsUsingCategory.length} item(s) are using it.`);
+            return;
+        }
+
+        try {
+            await deleteCategory(category.id);
+            setError(null);
+        } catch (error) {
+            console.error('Failed to delete category:', error);
+            setError('Failed to delete category');
+        }
     };
 
     const groupedCategories = filteredCategories.reduce((acc, cat) => {

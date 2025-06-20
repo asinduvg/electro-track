@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Edit, ArrowLeft, Package, MapPin, DollarSign, Warehouse, Clock, TrendingUp, TrendingDown, RefreshCw, Save, X } from 'lucide-react';
+import { Edit, ArrowLeft, Package, MapPin, DollarSign, Warehouse, Clock, TrendingUp, TrendingDown, RefreshCw, Save, X, Camera } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -23,6 +23,7 @@ const ItemDetailPage: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [editedItem, setEditedItem] = useState<any>({});
     const [hasChanges, setHasChanges] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
     const { items, getTotalQuantity, updateItem, isLoading: itemsLoading } = useItems();
     const { locations, isLoading: locationsLoading } = useLocations();
@@ -55,6 +56,25 @@ const ItemDetailPage: React.FC = () => {
     const handleInputChange = (field: string, value: any) => {
         setEditedItem(prev => ({ ...prev, [field]: value }));
         setHasChanges(true);
+    };
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            
+            // Convert to base64 for preview and storage
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imageUrl = event.target?.result as string;
+                setEditedItem(prev => ({
+                    ...prev,
+                    image_url: imageUrl
+                }));
+                setHasChanges(true);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleSave = async () => {
