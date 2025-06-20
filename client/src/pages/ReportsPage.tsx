@@ -210,6 +210,25 @@ const ReportsPage: React.FC = () => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
+                    <Button className="flex items-center">
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Data
+                    </Button>
+                </div>
+                <DashboardStatsSkeleton />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <AnalyticsChartSkeleton />
+                    <AnalyticsChartSkeleton />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
