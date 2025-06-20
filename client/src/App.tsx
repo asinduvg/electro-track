@@ -9,7 +9,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import InventoryListPage from './pages/InventoryListPage';
 import AddItemPage from './pages/AddItemPage';
-import EditItemPage from './pages/EditItemPage';
+
 import ItemDetailPage from './pages/ItemDetailPage';
 import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
@@ -96,6 +96,16 @@ function App() {
                                 } 
                             />
                             <Route 
+                                path="/inventory/items/:id" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Layout>
+                                            <ItemDetailPage />
+                                        </Layout>
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
                                 path="/inventory/add" 
                                 element={
                                     <ProtectedRoute>
@@ -105,26 +115,7 @@ function App() {
                                     </ProtectedRoute>
                                 } 
                             />
-                            <Route 
-                                path="/inventory/edit/:id" 
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout>
-                                            <EditItemPage />
-                                        </Layout>
-                                    </ProtectedRoute>
-                                } 
-                            />
-                            <Route 
-                                path="/inventory/view/:id" 
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout>
-                                            <ItemDetailPage />
-                                        </Layout>
-                                    </ProtectedRoute>
-                                } 
-                            />
+
                             <Route 
                                 path="/locations" 
                                 element={

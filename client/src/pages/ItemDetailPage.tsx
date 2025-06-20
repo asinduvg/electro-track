@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Edit, ArrowLeft, Package, MapPin, DollarSign, Warehouse, Clock, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
+import { Edit, ArrowLeft, Package, MapPin, DollarSign, Warehouse, Clock, TrendingUp, TrendingDown, RefreshCw, Save, X } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { Table, TableBody, TableCell, TableRow } from '../components/ui/Table';
 import { useAuth } from '../context/AuthContext';
 import useItems from "../hooks/useItems";
@@ -11,18 +12,23 @@ import useLocations from "../hooks/useLocations";
 import useStocks from "../hooks/useStocks";
 import useCategories from "../hooks/useCategories";
 import useTransactions from "../hooks/useTransactions";
+import { FormSkeleton } from "../components/ui/InventorySkeletons";
 
 const ItemDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { currentUser } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [editedItem, setEditedItem] = useState<any>({});
+    const [hasChanges, setHasChanges] = useState(false);
 
-    const { items, getTotalQuantity } = useItems();
-    const { locations } = useLocations();
-    const { stocks } = useStocks();
-    const { categories } = useCategories();
-    const { transactions } = useTransactions();
+    const { items, getTotalQuantity, updateItem, isLoading: itemsLoading } = useItems();
+    const { locations, isLoading: locationsLoading } = useLocations();
+    const { stocks, isLoading: stocksLoading } = useStocks();
+    const { categories, isLoading: categoriesLoading } = useCategories();
+    const { transactions, isLoading: transactionsLoading } = useTransactions();
 
     const item = items.find(item => item.id === id);
     const category = categories.find((cat: any) => cat.id === item?.category_id);
@@ -39,15 +45,47 @@ const ItemDetailPage: React.FC = () => {
         if (items.length > 0) {
             if (!item) {
                 setError('Item not found');
+            } else {
+                setEditedItem({ ...item });
             }
             setIsLoading(false);
         }
     }, [id, items, item]);
 
-    if (isLoading) {
+    const handleInputChange = (field: string, value: any) => {
+        setEditedItem(prev => ({ ...prev, [field]: value }));
+        setHasChanges(true);
+    };
+
+    const handleSave = async () => {
+        if (!item || !hasChanges) return;
+        
+        setIsSaving(true);
+        try {
+            await updateItem(item.id, editedItem);
+            setIsEditing(false);
+            setHasChanges(false);
+        } catch (error) {
+            console.error('Error updating item:', error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleCancel = () => {
+        setEditedItem({ ...item });
+        setIsEditing(false);
+        setHasChanges(false);
+    };
+
+    const dataLoading = itemsLoading || locationsLoading || stocksLoading || categoriesLoading || transactionsLoading || isLoading;
+
+    if (dataLoading) {
         return (
-            <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="min-h-screen bg-slate-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <FormSkeleton />
+                </div>
             </div>
         );
     }
@@ -106,12 +144,36 @@ const ItemDetailPage: React.FC = () => {
                         </div>
                     </div>
                     {currentUser && (currentUser.role === 'admin' || currentUser.role === 'inventory_manager') && (
-                        <Link to={`/inventory/edit/${item.id}`}>
-                            <Button className="flex items-center bg-slate-900 hover:bg-slate-800 text-white">
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Item
-                            </Button>
-                        </Link>
+                        <div className="flex items-center space-x-3">
+                            {isEditing ? (
+                                <>
+                                    <Button 
+                                        variant="outline"
+                                        onClick={handleCancel}
+                                        className="flex items-center bg-white border-slate-200 hover:bg-slate-50"
+                                    >
+                                        <X className="mr-2 h-4 w-4" />
+                                        Cancel
+                                    </Button>
+                                    <Button 
+                                        onClick={handleSave}
+                                        disabled={!hasChanges || isSaving}
+                                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <Save className="mr-2 h-4 w-4" />
+                                        {isSaving ? 'Saving...' : 'Save Item'}
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button 
+                                    onClick={() => setIsEditing(true)}
+                                    className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl"
+                                >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Item
+                                </Button>
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -147,23 +209,160 @@ const ItemDetailPage: React.FC = () => {
                                         <div>
                                             <h3 className="text-lg font-semibold text-slate-900 mb-4">Item Information</h3>
                                             <div className="space-y-4">
+                                                {/* Name Field */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Status</label>
-                                                    <div>{getStatusBadge(item.status)}</div>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        Name
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <Input
+                                                            value={editedItem.name || ''}
+                                                            onChange={(e) => handleInputChange('name', e.target.value)}
+                                                            className="w-full"
+                                                        />
+                                                    ) : (
+                                                        <p className="text-slate-900 font-medium">{item.name}</p>
+                                                    )}
                                                 </div>
+
+                                                {/* SKU Field */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Category</label>
-                                                    <p className="text-slate-900 font-medium">
-                                                        {category ? `${category.category} - ${category.subcategory}` : 'Uncategorized'}
-                                                    </p>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        SKU
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <Input
+                                                            value={editedItem.sku || ''}
+                                                            onChange={(e) => handleInputChange('sku', e.target.value)}
+                                                            className="w-full"
+                                                        />
+                                                    ) : (
+                                                        <p className="text-slate-900 font-medium">{item.sku}</p>
+                                                    )}
                                                 </div>
+
+                                                {/* Status Field */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Manufacturer</label>
-                                                    <p className="text-slate-900 font-medium">{item.manufacturer}</p>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        Status
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <select
+                                                            value={editedItem.status || ''}
+                                                            onChange={(e) => handleInputChange('status', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-[#FF385C] focus:border-[#FF385C]"
+                                                        >
+                                                            <option value="in_stock">In Stock</option>
+                                                            <option value="low_stock">Low Stock</option>
+                                                            <option value="out_of_stock">Out of Stock</option>
+                                                            <option value="discontinued">Discontinued</option>
+                                                        </select>
+                                                    ) : (
+                                                        <div>{getStatusBadge(item.status)}</div>
+                                                    )}
                                                 </div>
+
+                                                {/* Category Field */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-600 mb-1">Description</label>
-                                                    <p className="text-slate-700">{item.description || 'No description available'}</p>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        Category
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <select
+                                                            value={editedItem.category_id || ''}
+                                                            onChange={(e) => handleInputChange('category_id', parseInt(e.target.value))}
+                                                            className="w-full px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-[#FF385C] focus:border-[#FF385C]"
+                                                        >
+                                                            <option value="">Select Category</option>
+                                                            {categories.map((cat: any) => (
+                                                                <option key={cat.id} value={cat.id}>
+                                                                    {cat.category} - {cat.subcategory}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    ) : (
+                                                        <p className="text-slate-900 font-medium">
+                                                            {category ? `${category.category} - ${category.subcategory}` : 'Uncategorized'}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Manufacturer Field */}
+                                                <div>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        Manufacturer
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <Input
+                                                            value={editedItem.manufacturer || ''}
+                                                            onChange={(e) => handleInputChange('manufacturer', e.target.value)}
+                                                            className="w-full"
+                                                        />
+                                                    ) : (
+                                                        <p className="text-slate-900 font-medium">{item.manufacturer}</p>
+                                                    )}
+                                                </div>
+
+                                                {/* Unit Cost Field */}
+                                                <div>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        Unit Cost
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <Input
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={editedItem.unit_cost || ''}
+                                                            onChange={(e) => handleInputChange('unit_cost', e.target.value)}
+                                                            className="w-full"
+                                                            placeholder="0.00"
+                                                        />
+                                                    ) : (
+                                                        <p className="text-slate-900 font-medium">${item.unit_cost || '0.00'}</p>
+                                                    )}
+                                                </div>
+
+                                                {/* Minimum Stock Field */}
+                                                <div>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        Minimum Stock
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <Input
+                                                            type="number"
+                                                            value={editedItem.minimum_stock || ''}
+                                                            onChange={(e) => handleInputChange('minimum_stock', parseInt(e.target.value) || 0)}
+                                                            className="w-full"
+                                                            placeholder="0"
+                                                        />
+                                                    ) : (
+                                                        <p className="text-slate-900 font-medium">{item.minimum_stock || 0}</p>
+                                                    )}
+                                                </div>
+
+                                                {/* Description Field */}
+                                                <div>
+                                                    <label className="flex items-center text-sm font-medium text-slate-600 mb-1">
+                                                        Description
+                                                        {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
+                                                    </label>
+                                                    {isEditing ? (
+                                                        <textarea
+                                                            value={editedItem.description || ''}
+                                                            onChange={(e) => handleInputChange('description', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-[#FF385C] focus:border-[#FF385C] min-h-[80px]"
+                                                            placeholder="Item description..."
+                                                        />
+                                                    ) : (
+                                                        <p className="text-slate-700">{item.description || 'No description available'}</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

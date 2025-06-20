@@ -132,7 +132,10 @@ const LoginPage: React.FC = () => {
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <div className="flex items-center">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                                        Loading...
+                                    </div>
                                 ) : (
                                     <>
                                         <Lock size={16}/>
