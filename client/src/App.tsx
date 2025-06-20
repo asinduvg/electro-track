@@ -30,7 +30,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Loading...</div>
+                <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-600 border-t-[#FF385C]"></div>
             </div>
         );
     }
@@ -48,7 +48,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Loading...</div>
+                <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-600 border-t-[#FF385C]"></div>
             </div>
         );
     }
