@@ -24,10 +24,13 @@ function useTransactions() {
     const {dbOperation} = useDatabase();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         (async () => {
+            setIsLoading(true);
             await dbOperation<Transaction[]>(db_getTransactions, setTransactions, setError, ERR_TXN_LOAD);
+            setIsLoading(false);
         })()
     }, [dbOperation]);
 

@@ -19,7 +19,7 @@ const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined
 
 export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
 
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const checkPermissionError = (err: Error) => {
         return err.message?.toLowerCase().includes('permission denied') ||

@@ -37,6 +37,7 @@ function useItems() {
     const {dbOperation} = useDatabase();
     const [items, setItems] = useState<Item[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const getItemById = async (id: string): Promise<Item | null> => {
         const existingItem = items.find(item => item.id === id);
@@ -118,7 +119,9 @@ function useItems() {
 
     useEffect(() => {
         (async () => {
+            setIsLoading(true);
             await dbOperation<Item[]>(db_getItems, setItems, setError, ERR_ITEMS_LOAD);
+            setIsLoading(false);
         })()
     }, [dbOperation]);
 
@@ -134,7 +137,8 @@ function useItems() {
         stocksWithLocation,
         hasStock,
         error,
-        refreshItems
+        refreshItems,
+        isLoading
     };
 
 }

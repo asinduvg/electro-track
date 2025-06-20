@@ -15,14 +15,17 @@ function useStocks() {
     const {dbOperation} = useDatabase();
     const [stocks, setStocks] = useState<Stock[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         (async () => {
+            setIsLoading(true);
             await dbOperation<Stock[]>(db_getStocks, setStocks, setError, ERR_STOCKS_LOAD);
+            setIsLoading(false);
         })()
     }, [dbOperation]);
 
-    return {stocks, error};
+    return {stocks, error, isLoading};
 }
 
 export default useStocks;

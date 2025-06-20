@@ -32,10 +32,13 @@ function useLocations() {
     const {dbOperation} = useDatabase();
     const [locations, setLocations] = useState<Location[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         (async () => {
+            setIsLoading(true);
             await dbOperation<Location[]>(db_getLocations, setLocations, setError, ERR_LOCATIONS_LOAD);
+            setIsLoading(false);
         })()
     }, [dbOperation]);
 
@@ -101,7 +104,8 @@ function useLocations() {
         itemsStoredInLocation,
         totalValueInLocation,
         totalInventoryValue,
-        error
+        error,
+        isLoading
     };
 }
 
