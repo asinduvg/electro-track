@@ -127,6 +127,20 @@ const CategoryManagementPage: React.FC = () => {
                     </Button>
                 </div>
 
+                {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-red-600">{error}</p>
+                            <button 
+                                onClick={() => setError(null)}
+                                className="text-red-400 hover:text-red-600"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Search and Stats */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     <div className="lg:col-span-2">
@@ -278,7 +292,15 @@ const CategoryManagementPage: React.FC = () => {
 
                 {/* Add Category Modal */}
                 {showAddModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) {
+                                setShowAddModal(false);
+                                setError(null);
+                            }
+                        }}
+                    >
                         <div className="bg-white dark:bg-[#484848] rounded-xl p-6 w-full max-w-md mx-4">
                             <h3 className="text-lg font-semibold text-[#222222] dark:text-white mb-4">Add New Category</h3>
                             <div className="space-y-4">
@@ -330,7 +352,15 @@ const CategoryManagementPage: React.FC = () => {
 
                 {/* Edit Category Modal */}
                 {showEditModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) {
+                                setShowEditModal(false);
+                                setError(null);
+                            }
+                        }}
+                    >
                         <div className="bg-white dark:bg-[#484848] rounded-xl p-6 w-full max-w-md mx-4">
                             <h3 className="text-lg font-semibold text-[#222222] dark:text-white mb-4">Edit Category</h3>
                             <div className="space-y-4">

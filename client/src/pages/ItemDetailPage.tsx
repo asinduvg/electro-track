@@ -207,9 +207,9 @@ const ItemDetailPage: React.FC = () => {
                                     {/* Item Image */}
                                     <div className="space-y-4">
                                         <div className="aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative">
-                                            {item.image_url ? (
+                                            {(editedItem.image_url || item.image_url) ? (
                                                 <img
-                                                    src={item.image_url}
+                                                    src={editedItem.image_url || item.image_url}
                                                     alt={item.name}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -223,7 +223,7 @@ const ItemDetailPage: React.FC = () => {
                                             )}
                                             
                                             {isEditing && (
-                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                                                     <label className="cursor-pointer bg-white text-slate-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
                                                         <Camera className="inline-block mr-2 h-4 w-4" />
                                                         Change Image

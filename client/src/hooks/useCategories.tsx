@@ -53,7 +53,41 @@ function useCategories() {
         })()
     }, [dbOperation]);
 
-    return {categories, getCategory, getSubcategory, createCategory, getSubcategoriesForCategory, error, isLoading};
+    const updateCategory = async (id: number, updates: Partial<CategoryInsert>): Promise<Category | null> => {
+        try {
+            const updatedCategory = await apiClient.updateCategory(id, updates);
+            setCategories(prev => prev.map(cat => cat.id === id ? updatedCategory : cat));
+            return updatedCategory;
+        } catch (error) {
+            console.error('Failed to update category:', error);
+            setError('Failed to update category');
+            return null;
+        }
+    };
+
+    const deleteCategory = async (id: number): Promise<boolean> => {
+        try {
+            await apiClient.deleteCategory(id);
+            setCategories(prev => prev.filter(cat => cat.id !== id));
+            return true;
+        } catch (error) {
+            console.error('Failed to delete category:', error);
+            setError('Failed to delete category');
+            return false;
+        }
+    };
+
+    return {
+        categories, 
+        getCategory, 
+        getSubcategory, 
+        createCategory, 
+        updateCategory,
+        deleteCategory,
+        getSubcategoriesForCategory, 
+        error, 
+        isLoading
+    };
 }
 
 export default useCategories;
