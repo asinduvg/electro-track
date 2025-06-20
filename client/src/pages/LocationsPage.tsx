@@ -8,7 +8,7 @@ import useLocations from '../hooks/useLocations';
 import { LocationGridSkeleton } from '../components/ui/InventorySkeletons';
 
 const LocationsPage: React.FC = () => {
-    const { locations, createLocation } = useLocations();
+    const { locations, createLocation, isLoading: locationsLoading } = useLocations();
     const [showAddModal, setShowAddModal] = useState(false);
     const [newLocation, setNewLocation] = useState({
         building: '',
@@ -32,6 +32,29 @@ const LocationsPage: React.FC = () => {
         setNewLocation({ building: '', room: '', unit: '' });
         setShowAddModal(false);
     };
+
+    if (locationsLoading) {
+        return (
+            <div className="min-h-screen bg-slate-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-900">Storage Locations</h1>
+                            <p className="mt-2 text-slate-600">Manage warehouse locations and storage units</p>
+                        </div>
+                        <Button 
+                            onClick={() => setShowAddModal(true)}
+                            className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl"
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Location
+                        </Button>
+                    </div>
+                    <LocationGridSkeleton />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">

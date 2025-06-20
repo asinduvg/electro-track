@@ -52,7 +52,7 @@ function useTransactions() {
         })
     }
 
-    return {transactions, createTransaction, getItemDetailsForTransactions, error};
+    return {transactions, createTransaction, getItemDetailsForTransactions, error, isLoading};
 }
 
 export default useTransactions;

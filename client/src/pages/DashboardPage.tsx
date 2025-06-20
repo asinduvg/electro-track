@@ -33,9 +33,9 @@ import { DashboardStatsSkeleton, AnalyticsChartSkeleton, TransactionHistorySkele
 
 const DashboardPage: React.FC = () => {
     const { currentUser } = useAuth();
-    const { items, getTotalQuantity } = useItems();
-    const { stocks } = useStocks();
-    const { transactions, getItemDetailsForTransactions } = useTransactions();
+    const { items, getTotalQuantity, isLoading: itemsLoading } = useItems();
+    const { stocks, isLoading: stocksLoading } = useStocks();
+    const { transactions, getItemDetailsForTransactions, isLoading: transactionsLoading } = useTransactions();
 
     console.log("Dashboard page", currentUser);
 
@@ -101,9 +101,34 @@ const DashboardPage: React.FC = () => {
         document.body.removeChild(link);
     };
 
+    // Check if data is still loading
+    const isLoading = itemsLoading || stocksLoading || transactionsLoading;
+
     // Authentication is now handled by routing
     if (!currentUser) {
         return <div>Loading...</div>;
+    }
+
+    if (isLoading) {
+        return (
+            <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
+                            Component Overview
+                        </h1>
+                        <p className="text-slate-600 mt-2">
+                            Monitor your electronic inventory at a glance
+                        </p>
+                    </div>
+                </div>
+                <DashboardStatsSkeleton />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <AnalyticsChartSkeleton />
+                    <TransactionHistorySkeleton />
+                </div>
+            </div>
+        );
     }
 
     return (

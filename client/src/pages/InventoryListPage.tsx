@@ -13,9 +13,9 @@ import { InventoryTableSkeleton, ItemCardGridSkeleton } from '../components/ui/I
 
 const InventoryListPage: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const { items, getTotalQuantity } = useItems();
-    const { stocks } = useStocks();
-    const { categories } = useCategories();
+    const { items, getTotalQuantity, isLoading: itemsLoading } = useItems();
+    const { stocks, isLoading: stocksLoading } = useStocks();
+    const { categories, isLoading: categoriesLoading } = useCategories();
     
     // Filter and sorting state
     const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +36,9 @@ const InventoryListPage: React.FC = () => {
         }
       }, [searchParams]);
     
+    // Check if data is loading
+    const isLoading = itemsLoading || stocksLoading || categoriesLoading;
+
     // Filtered and sorted items
     const filteredAndSortedItems = useMemo(() => {
         let filtered = items.filter(item => {
@@ -138,6 +141,28 @@ const InventoryListPage: React.FC = () => {
                 return <Badge variant="secondary">{status}</Badge>;
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-slate-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-900">Inventory Items</h1>
+                            <p className="mt-2 text-slate-600">Manage your electronic components and equipment</p>
+                        </div>
+                        <Link to="/inventory/add">
+                            <Button className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add New Item
+                            </Button>
+                        </Link>
+                    </div>
+                    <InventoryTableSkeleton rows={15} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">

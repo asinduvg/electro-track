@@ -20,6 +20,7 @@ function useCategories() {
     const {dbOperation} = useDatabase();
     const [categories, setCategories] = useState<Category[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const createCategory = async (category: CategoryInsert): Promise<Category | null> => {
         return await dbOperation<Category>(
@@ -46,11 +47,13 @@ function useCategories() {
 
     useEffect(() => {
         (async () => {
+            setIsLoading(true);
             await dbOperation<Category[]>(db_getCategories, setCategories, setError, ERR_CATEGORIES_LOAD);
+            setIsLoading(false);
         })()
     }, [dbOperation]);
 
-    return {categories, getCategory, getSubcategory, createCategory, getSubcategoriesForCategory, error};
+    return {categories, getCategory, getSubcategory, createCategory, getSubcategoriesForCategory, error, isLoading};
 }
 
 export default useCategories;
