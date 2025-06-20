@@ -115,7 +115,13 @@ const CategoryManagementPage: React.FC = () => {
                         <h1 className="text-3xl font-bold text-[#222222] dark:text-white">Category Management</h1>
                         <p className="mt-2 text-[#717171]">Organize and manage inventory categories and subcategories</p>
                     </div>
-                    <Button onClick={() => setShowAddModal(true)}>
+                    <Button 
+                        onClick={() => {
+                            setShowAddModal(true);
+                            setError(null);
+                        }}
+                        className="bg-[#FF385C] hover:bg-[#E31C5F] text-white"
+                    >
                         <Plus className="mr-2 h-4 w-4" />
                         Add Category
                     </Button>
@@ -188,7 +194,11 @@ const CategoryManagementPage: React.FC = () => {
                                                     >
                                                         <Edit className="h-3 w-3" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm">
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm"
+                                                        onClick={() => handleDeleteCategory(subcat)}
+                                                    >
                                                         <Trash2 className="h-3 w-3" />
                                                     </Button>
                                                 </div>
@@ -249,7 +259,11 @@ const CategoryManagementPage: React.FC = () => {
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm">
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm"
+                                                        onClick={() => handleDeleteCategory(category)}
+                                                    >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
@@ -290,12 +304,21 @@ const CategoryManagementPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="flex space-x-3 mt-6">
-                                <Button onClick={handleAddCategory} className="flex-1">
+                                <Button 
+                                    onClick={() => {
+                                        handleAddCategory();
+                                        setError(null);
+                                    }}
+                                    className="flex-1"
+                                >
                                     Create Category
                                 </Button>
                                 <Button 
                                     variant="outline" 
-                                    onClick={() => setShowAddModal(false)}
+                                    onClick={() => {
+                                        setShowAddModal(false);
+                                        setError(null);
+                                    }}
                                     className="flex-1"
                                 >
                                     Cancel
@@ -333,12 +356,18 @@ const CategoryManagementPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="flex space-x-3 mt-6">
-                                <Button className="flex-1">
+                                <Button 
+                                    onClick={handleUpdateCategory}
+                                    className="flex-1"
+                                >
                                     Update Category
                                 </Button>
                                 <Button 
                                     variant="outline" 
-                                    onClick={() => setShowEditModal(false)}
+                                    onClick={() => {
+                                        setShowEditModal(false);
+                                        setError(null);
+                                    }}
                                     className="flex-1"
                                 >
                                     Cancel

@@ -94,6 +94,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/categories/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const category = await storage.updateCategory(parseInt(req.params.id), updates);
+      if (!category) {
+        return res.status(404).json({ error: "Category not found" });
+      }
+      res.json(category);
+    } catch (error) {
+      console.error("Update category error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteCategory(parseInt(req.params.id));
+      if (!success) {
+        return res.status(404).json({ error: "Category not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete category error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Locations routes
   app.get("/api/locations", async (req, res) => {
     try {
