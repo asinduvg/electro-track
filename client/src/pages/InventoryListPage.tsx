@@ -9,6 +9,7 @@ import { Input } from '../components/ui/Input';
 import useItems from '../hooks/useItems';
 import useStocks from '../hooks/useStocks';
 import useCategories from '../hooks/useCategories';
+import { InventoryTableSkeleton, ItemCardGridSkeleton } from '../components/ui/InventorySkeletons';
 
 const InventoryListPage: React.FC = () => {
     const [searchParams] = useSearchParams();

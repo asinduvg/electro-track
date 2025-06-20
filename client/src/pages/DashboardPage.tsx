@@ -29,6 +29,7 @@ import useTransactions from "../hooks/useTransactions.tsx";
 import useStocks from "../hooks/useStocks.tsx";
 import StockAlerts from "../components/StockAlerts";
 import InventoryAnalytics from "../components/InventoryAnalytics";
+import { DashboardStatsSkeleton, AnalyticsChartSkeleton, TransactionHistorySkeleton } from "../components/ui/InventorySkeletons";
 
 const DashboardPage: React.FC = () => {
     const { currentUser } = useAuth();

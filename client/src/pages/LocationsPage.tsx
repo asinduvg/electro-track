@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { MapPin, Plus, Building, X } from 'lucide-react';
 import useLocations from '../hooks/useLocations';
+import { LocationGridSkeleton } from '../components/ui/InventorySkeletons';
 
 const LocationsPage: React.FC = () => {
     const { locations, createLocation } = useLocations();
