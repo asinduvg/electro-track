@@ -174,7 +174,8 @@ const WithdrawItemsPage: React.FC = () => {
                                         </TableCell>
                                         <TableCell>
                                             <span className={`font-medium ${
-                                                isLowStock ? 'text-red-600' : 'text-green-600'
+                                                totalStock === 0 ? 'text-red-600' : 
+                                                isLowStock ? 'text-orange-600' : 'text-green-600'
                                             }`}>
                                                 {totalStock}
                                             </span>
@@ -292,9 +293,9 @@ const WithdrawItemsPage: React.FC = () => {
                                                     variant="ghost" 
                                                     size="sm"
                                                     onClick={() => removeWithdrawItem(index)}
-                                                    className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                                    className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-gray-500"
                                                 >
-                                                    <X className="h-4 w-4" />
+                                                    <X className="h-5 w-5" />
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
