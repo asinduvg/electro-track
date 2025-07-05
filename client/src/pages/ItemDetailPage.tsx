@@ -54,7 +54,7 @@ const ItemDetailPage: React.FC = () => {
     }, [id, items, item]);
 
     const handleInputChange = (field: string, value: any) => {
-        setEditedItem(prev => ({ ...prev, [field]: value }));
+        setEditedItem((prev: any) => ({ ...prev, [field]: value }));
         setHasChanges(true);
     };
 
@@ -67,7 +67,7 @@ const ItemDetailPage: React.FC = () => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const imageUrl = event.target?.result as string;
-                setEditedItem(prev => ({
+                setEditedItem((prev: any) => ({
                     ...prev,
                     image_url: imageUrl
                 }));
@@ -138,6 +138,43 @@ const ItemDetailPage: React.FC = () => {
                 return <Badge variant="secondary">Discontinued</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
+        }
+    };
+
+    // Calculate what the automatic status should be based on stock levels
+    const getAutomaticStatus = (itemId: string, minimumStock: number) => {
+        const totalStock = getTotalQuantity(itemId, stocks);
+        if (totalStock === 0) return 'out_of_stock';
+        if (totalStock <= minimumStock) return 'low_stock';
+        return 'in_stock';
+    };
+
+    // Get valid status options based on current stock levels
+    const getValidStatusOptions = (itemId: string, minimumStock: number | null, currentStatus: string) => {
+        const automaticStatus = getAutomaticStatus(itemId, minimumStock || 0);
+        
+        // If current status is discontinued, only allow discontinued or the correct automatic status
+        if (currentStatus === 'discontinued') {
+            return [
+                { value: 'discontinued', label: 'Discontinued', disabled: false },
+                { value: automaticStatus, label: getStatusLabel(automaticStatus), disabled: false }
+            ];
+        }
+        
+        // For non-discontinued items, only allow discontinued or show automatic status (disabled)
+        return [
+            { value: automaticStatus, label: `${getStatusLabel(automaticStatus)} (Automatic)`, disabled: true },
+            { value: 'discontinued', label: 'Discontinued', disabled: false }
+        ];
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'in_stock': return 'In Stock';
+            case 'low_stock': return 'Low Stock';
+            case 'out_of_stock': return 'Out of Stock';
+            case 'discontinued': return 'Discontinued';
+            default: return status;
         }
     };
 
@@ -285,16 +322,28 @@ const ItemDetailPage: React.FC = () => {
                                                         {isEditing && <Edit className="ml-2 h-3 w-3 text-slate-400" />}
                                                     </label>
                                                     {isEditing ? (
-                                                        <select
-                                                            value={editedItem.status || ''}
-                                                            onChange={(e) => handleInputChange('status', e.target.value)}
-                                                            className="w-full px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-[#FF385C] focus:border-[#FF385C]"
-                                                        >
-                                                            <option value="in_stock">In Stock</option>
-                                                            <option value="low_stock">Low Stock</option>
-                                                            <option value="out_of_stock">Out of Stock</option>
-                                                            <option value="discontinued">Discontinued</option>
-                                                        </select>
+                                                        <div className="space-y-2">
+                                                            <select
+                                                                value={editedItem.status || ''}
+                                                                onChange={(e) => handleInputChange('status', e.target.value)}
+                                                                className="w-full px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-[#FF385C] focus:border-[#FF385C]"
+                                                            >
+                                                                {getValidStatusOptions(item.id, item.minimum_stock, editedItem.status || item.status).map((option) => (
+                                                                    <option
+                                                                        key={option.value}
+                                                                        value={option.value}
+                                                                        disabled={option.disabled}
+                                                                        className={option.disabled ? 'text-slate-400' : ''}
+                                                                    >
+                                                                        {option.label}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <p className="text-xs text-slate-500">
+                                                                Stock status (In Stock, Low Stock, Out of Stock) updates automatically based on inventory levels. 
+                                                                Only "Discontinued" can be set manually.
+                                                            </p>
+                                                        </div>
                                                     ) : (
                                                         <div>{getStatusBadge(item.status)}</div>
                                                     )}
