@@ -10,7 +10,8 @@ import {
     Search, 
     Folder,
     FolderOpen,
-    Tag
+    Tag,
+    X
 } from 'lucide-react';
 import useCategories from '../hooks/useCategories';
 import useItems from '../hooks/useItems';
@@ -192,6 +193,18 @@ const CategoryManagementPage: React.FC = () => {
                                             </span>
                                             <span className="text-sm text-[#717171]">({subcategories.length} subcategories)</span>
                                         </div>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => {
+                                                setNewCategory({ category: mainCategory, subcategory: '' });
+                                                setShowAddModal(true);
+                                            }}
+                                            className="flex items-center space-x-1"
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                            <span>Add Subcategory</span>
+                                        </Button>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 ml-7">
                                         {subcategories.map((subcat) => (

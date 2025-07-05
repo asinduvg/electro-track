@@ -3,12 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { MapPin, Plus, Building, X } from 'lucide-react';
+import { MapPin, Plus, Building, X, Edit, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import useLocations from '../hooks/useLocations';
+import useStocks from '../hooks/useStocks';
 import { LocationGridSkeleton } from '../components/ui/InventorySkeletons';
 
 const LocationsPage: React.FC = () => {
     const { locations, createLocation, isLoading: locationsLoading } = useLocations();
+    const { stocks } = useStocks();
     const [showAddModal, setShowAddModal] = useState(false);
     const [newLocation, setNewLocation] = useState({
         building: '',
@@ -31,6 +34,10 @@ const LocationsPage: React.FC = () => {
     const resetForm = () => {
         setNewLocation({ building: '', room: '', unit: '' });
         setShowAddModal(false);
+    };
+
+    const getItemsInLocation = (locationId: string) => {
+        return stocks.filter(stock => stock.location_id === locationId).length;
     };
 
     if (locationsLoading) {
@@ -123,16 +130,22 @@ const LocationsPage: React.FC = () => {
                                                 <TableCell className="text-slate-700 hidden sm:table-cell">{location.room || 'N/A'}</TableCell>
                                                 <TableCell className="font-medium text-slate-900">{location.unit}</TableCell>
                                                 <TableCell className="text-slate-600 hidden md:table-cell">
-                                                    <span className="text-slate-600">0 items</span>
+                                                    <span className="text-slate-600">{getItemsInLocation(location.id)} items</span>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex gap-2">
-                                                        <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-xs">
-                                                            Edit
-                                                        </Button>
-                                                        <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-xs hidden sm:inline-flex">
-                                                            View
-                                                        </Button>
+                                                        <Link to={`/locations/edit/${location.id}`}>
+                                                            <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-xs">
+                                                                <Edit className="h-3 w-3 mr-1" />
+                                                                Edit
+                                                            </Button>
+                                                        </Link>
+                                                        <Link to={`/locations/view/${location.id}`}>
+                                                            <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-xs hidden sm:inline-flex">
+                                                                <Eye className="h-3 w-3 mr-1" />
+                                                                View
+                                                            </Button>
+                                                        </Link>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

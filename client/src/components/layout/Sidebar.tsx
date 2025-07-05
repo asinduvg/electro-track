@@ -115,12 +115,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
             {/* Status Indicator */}
             {!isCollapsed && (
                 <div className="px-6 py-4 border-t border-slate-800/50">
-                    <div className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
+                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-lg border border-emerald-500/30">
                         <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                            <span className="text-xs text-slate-300">System Online</span>
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                            <span className="text-xs text-white font-medium">System Online</span>
                         </div>
-                        <div className="text-xs text-slate-400">v2.1.0</div>
+                        <div className="text-xs text-emerald-300 font-semibold">v2.1.0</div>
                     </div>
                 </div>
             )}
@@ -129,11 +129,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
             <div className="border-t border-slate-800/50 p-4">
                 <button
                     onClick={logout}
-                    className={`flex items-center w-full ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium text-slate-300 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 group`}
+                    className={`flex items-center w-full ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium text-white bg-red-600/80 hover:bg-red-600 rounded-xl transition-all duration-200 group border border-red-500/50 hover:border-red-400`}
                     title={isCollapsed ? "Sign Out" : undefined}
                 >
-                    <LogOut className={`${isCollapsed ? '' : 'mr-3'} h-5 w-5 group-hover:text-red-400`} />
-                    {!isCollapsed && <span>Sign Out</span>}
+                    <LogOut className={`${isCollapsed ? '' : 'mr-3'} h-5 w-5 text-white`} />
+                    {!isCollapsed && <span className="text-white font-medium">Sign Out</span>}
                 </button>
             </div>
         </div>

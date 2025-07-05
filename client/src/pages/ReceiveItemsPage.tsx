@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useTransactions from '../hooks/useTransactions';
+import useStocks from '../hooks/useStocks';
 
 interface ReceiveItem {
     itemId: string;
@@ -18,9 +19,10 @@ interface ReceiveItem {
 }
 
 const ReceiveItemsPage: React.FC = () => {
-    const { items } = useItems();
+    const { items, getTotalQuantity } = useItems();
     const { locations } = useLocations();
     const { createTransaction } = useTransactions();
+    const { stocks } = useStocks();
     const [receiveItems, setReceiveItems] = useState<ReceiveItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,6 +64,7 @@ const ReceiveItemsPage: React.FC = () => {
         setIsSubmitting(true);
         try {
             for (const receiveItem of receiveItems) {
+                // Create transaction for the receive operation - database triggers will handle stock updates
                 await createTransaction({
                     item_id: receiveItem.itemId,
                     type: 'receive',
@@ -73,6 +76,8 @@ const ReceiveItemsPage: React.FC = () => {
             }
             setReceiveItems([]);
             alert('Items received successfully!');
+            // Refresh the page to show updated stock
+            window.location.reload();
         } catch (error) {
             console.error('Error receiving items:', error);
             alert('Failed to receive items. Please try again.');
@@ -144,7 +149,7 @@ const ReceiveItemsPage: React.FC = () => {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="secondary">Stock data needed</Badge>
+                                        <Badge variant="secondary">{getTotalQuantity(item.id, stocks)} units</Badge>
                                     </TableCell>
                                     <TableCell>
                                         <Button 

@@ -315,6 +315,7 @@ const AddItemPage: React.FC = () => {
                                         onChange={handleInputChange}
                                         type="number"
                                         step="0.01"
+                                        min="0"
                                         placeholder="0.00" 
                                         required
                                         className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
@@ -329,6 +330,7 @@ const AddItemPage: React.FC = () => {
                                         value={formData.minimum_stock}
                                         onChange={handleInputChange}
                                         type="number"
+                                        min="0"
                                         placeholder="0" 
                                         required
                                         className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"

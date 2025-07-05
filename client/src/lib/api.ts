@@ -69,6 +69,19 @@ class ApiClient {
     });
   }
 
+  async updateCategory(id: number, updates: any) {
+    return this.request(`/categories/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteCategory(id: number) {
+    return this.request(`/categories/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Locations
   async getLocations() {
     return this.request('/locations');
