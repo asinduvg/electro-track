@@ -10,6 +10,7 @@ import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useTransactions from '../hooks/useTransactions';
 import useStocks from '../hooks/useStocks';
+import { useAuth } from '../context/AuthContext';
 
 interface ReceiveItem {
     itemId: string;
@@ -19,10 +20,11 @@ interface ReceiveItem {
 }
 
 const ReceiveItemsPage: React.FC = () => {
-    const { items, getTotalQuantity } = useItems();
+    const { items, getTotalQuantity, refreshItems } = useItems();
     const { locations } = useLocations();
     const { createTransaction } = useTransactions();
-    const { stocks } = useStocks();
+    const { stocks, refreshStocks } = useStocks();
+    const { currentUser } = useAuth();
     const [receiveItems, setReceiveItems] = useState<ReceiveItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,6 +62,10 @@ const ReceiveItemsPage: React.FC = () => {
 
     const handleSubmitReceive = async () => {
         if (receiveItems.length === 0) return;
+        if (!currentUser?.id) {
+            alert('User not authenticated. Please log in.');
+            return;
+        }
 
         setIsSubmitting(true);
         try {
@@ -71,13 +77,16 @@ const ReceiveItemsPage: React.FC = () => {
                     quantity: receiveItem.quantity,
                     to_location_id: receiveItem.locationId,
                     notes: receiveItem.notes || `Received ${receiveItem.quantity} units`,
-                    performed_by: '550e8400-e29b-41d4-a716-446655440000' // Admin user ID
+                    performed_by: currentUser.id
                 });
             }
+            
+            // Refresh data to reflect new stock levels
+            await refreshItems();
+            await refreshStocks();
+            
             setReceiveItems([]);
             alert('Items received successfully!');
-            // Refresh the page to show updated stock
-            window.location.reload();
         } catch (error) {
             console.error('Error receiving items:', error);
             alert('Failed to receive items. Please try again.');

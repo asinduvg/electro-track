@@ -25,7 +25,11 @@ function useStocks() {
         })()
     }, [dbOperation]);
 
-    return {stocks, error, isLoading};
+    const refreshStocks = async () => {
+        await dbOperation<Stock[]>(db_getStocks, setStocks, setError, ERR_STOCKS_LOAD);
+    };
+
+    return {stocks, error, isLoading, refreshStocks};
 }
 
 export default useStocks;
