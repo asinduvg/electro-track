@@ -119,7 +119,7 @@ const WithdrawItemsPage: React.FC = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                    <Link to="/inventory/items">
+                    <Link to="/inventory/items" className="inventory-back-button">
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Back to Inventory

@@ -140,7 +140,7 @@ const InventoryListPage: React.FC = () => {
                             <div className="h-8 bg-slate-200 rounded w-64 animate-pulse"></div>
                             <div className="h-5 bg-slate-200 rounded w-96 animate-pulse"></div>
                         </div>
-                        <Link to="/inventory/add">
+                        <Link to="/inventory/add" className="add-item-button">
                             <Button className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Add New Item
@@ -161,7 +161,7 @@ const InventoryListPage: React.FC = () => {
                         <h1 className="text-3xl font-bold text-slate-900">Inventory Items</h1>
                         <p className="mt-2 text-slate-600">Manage your electronic components and equipment</p>
                     </div>
-                    <Link to="/inventory/add">
+                    <Link to="/inventory/add" className="add-item-button">
                         <Button className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl">
                             <Plus className="mr-2 h-4 w-4" />
                             Add New Item
@@ -404,7 +404,7 @@ const InventoryListPage: React.FC = () => {
                                                 <Package className="mx-auto h-12 w-12 text-slate-400 mb-4" />
                                                 <h3 className="text-lg font-medium text-slate-900 mb-2">No items found</h3>
                                                 <p className="text-slate-500 mb-4">Try adjusting your search criteria or add a new item.</p>
-                                                <Link to="/inventory/add">
+                                                <Link to="/inventory/add" className="add-item-button">
                                                     <Button className="bg-[#FF385C] hover:bg-[#E31C5F] text-white">
                                                         <Plus className="mr-2 h-4 w-4" />
                                                         Add New Item

@@ -5,8 +5,9 @@ import { Button } from '../components/ui/Button';
 import ReceiveItemsPage from './ReceiveItemsPage';
 import WithdrawItemsPage from './WithdrawItemsPage';
 import InventoryListPage from './InventoryListPage';
+import AddItemPage from './AddItemPage';
 
-type TabType = 'items' | 'receive' | 'withdraw' | 'transfer';
+type TabType = 'items' | 'receive' | 'withdraw' | 'transfer' | 'add';
 
 const InventoryTabsPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<TabType>('items');
@@ -16,6 +17,7 @@ const InventoryTabsPage: React.FC = () => {
         { id: 'receive', label: 'Receive', icon: PackageCheck, description: 'Receive new stock' },
         { id: 'withdraw', label: 'Withdraw', icon: PackageMinus, description: 'Withdraw items from stock' },
         { id: 'transfer', label: 'Transfer', icon: ArrowRightLeft, description: 'Transfer items between locations' },
+        { id: 'add', label: 'Add Item', icon: Plus, description: 'Add new items to inventory' },
     ];
 
     const renderTabContent = () => {
@@ -27,6 +29,7 @@ const InventoryTabsPage: React.FC = () => {
                             {`
                                 .receive-page .inventory-back-button { display: none !important; }
                                 .receive-page h1 { display: none !important; }
+                                .receive-page .add-item-button { display: none !important; }
                             `}
                         </style>
                         <div className="receive-page">
@@ -41,6 +44,7 @@ const InventoryTabsPage: React.FC = () => {
                             {`
                                 .withdraw-page .inventory-back-button { display: none !important; }
                                 .withdraw-page h1 { display: none !important; }
+                                .withdraw-page .add-item-button { display: none !important; }
                             `}
                         </style>
                         <div className="withdraw-page">
@@ -56,9 +60,34 @@ const InventoryTabsPage: React.FC = () => {
                         <p className="text-gray-500">Transfer functionality coming soon...</p>
                     </div>
                 );
+            case 'add':
+                return (
+                    <div className="relative">
+                        <style>
+                            {`
+                                .add-item-page .inventory-back-button { display: none !important; }
+                                .add-item-page h1 { display: none !important; }
+                            `}
+                        </style>
+                        <div className="add-item-page">
+                            <AddItemPage />
+                        </div>
+                    </div>
+                );
             case 'items':
             default:
-                return <InventoryListPage />;
+                return (
+                    <div className="relative">
+                        <style>
+                            {`
+                                .items-page .add-item-button { display: none !important; }
+                            `}
+                        </style>
+                        <div className="items-page">
+                            <InventoryListPage />
+                        </div>
+                    </div>
+                );
         }
     };
 

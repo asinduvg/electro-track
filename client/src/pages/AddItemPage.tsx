@@ -183,7 +183,7 @@ const AddItemPage: React.FC = () => {
                                 e.preventDefault();
                                 navigate('/inventory/items');
                             }}
-                            className="flex items-center bg-white border-slate-200 hover:bg-slate-50"
+                            className="flex items-center bg-white border-slate-200 hover:bg-slate-50 inventory-back-button"
                             type="button"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
