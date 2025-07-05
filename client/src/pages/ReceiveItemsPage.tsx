@@ -71,7 +71,7 @@ const ReceiveItemsPage: React.FC = () => {
                     quantity: receiveItem.quantity,
                     to_location_id: receiveItem.locationId,
                     notes: receiveItem.notes || `Received ${receiveItem.quantity} units`,
-                    performed_by: 'Current User'
+                    performed_by: '481692d1-e646-4721-84fc-93e22479cd02' // Default admin user ID
                 });
             }
             setReceiveItems([]);
