@@ -6,6 +6,7 @@ import ReceiveItemsPage from './ReceiveItemsPage';
 import WithdrawItemsPage from './WithdrawItemsPage';
 import InventoryListPage from './InventoryListPage';
 import AddItemForm from '../components/AddItemForm';
+import TransferItemsComponent from '../components/TransferItemsComponent';
 
 type TabType = 'items' | 'receive' | 'withdraw' | 'transfer' | 'add';
 
@@ -53,13 +54,7 @@ const InventoryTabsPage: React.FC = () => {
                     </div>
                 );
             case 'transfer':
-                return (
-                    <div className="text-center py-12">
-                        <ArrowRightLeft className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Transfer Items</h3>
-                        <p className="text-gray-500">Transfer functionality coming soon...</p>
-                    </div>
-                );
+                return <TransferItemsComponent />;
             case 'add':
                 return <AddItemForm />;
             case 'items':

@@ -16,7 +16,7 @@ import UsersPage from './pages/UsersPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 
-import TransferItemsPage from './pages/TransferItemsPage';
+
 import SuppliersPage from './pages/SuppliersPage';
 import AlertsPage from './pages/AlertsPage';
 import BulkOperationsPage from './pages/BulkOperationsPage';
@@ -147,16 +147,7 @@ function App() {
                                 } 
                             />
 
-                            <Route 
-                                path="/inventory/transfer" 
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout>
-                                            <TransferItemsPage />
-                                        </Layout>
-                                    </ProtectedRoute>
-                                } 
-                            />
+
                             <Route 
                                 path="/suppliers" 
                                 element={

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Badge } from '../components/ui/Badge';
-import { ArrowRightLeft, Plus, ArrowLeft, Search, AlertTriangle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from './ui/Table';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Badge } from './ui/Badge';
+import { ArrowRightLeft, Plus, Search, AlertTriangle, X } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
 import useTransactions from '../hooks/useTransactions';
+import { useAuth } from '../context/AuthContext';
 
 interface TransferItem {
     itemId: string;
@@ -19,14 +19,17 @@ interface TransferItem {
     notes?: string;
 }
 
-const TransferItemsPage: React.FC = () => {
-    const { items, getTotalQuantity } = useItems();
-    const { locations } = useLocations();
-    const { stocks } = useStocks();
+const TransferItemsComponent: React.FC = () => {
+    const { items, getTotalQuantity, refreshItems, isLoading: itemsLoading } = useItems();
+    const { locations, isLoading: locationsLoading } = useLocations();
+    const { stocks, refreshStocks, isLoading: stocksLoading } = useStocks();
     const { createTransaction } = useTransactions();
+    const { currentUser } = useAuth();
     const [transferItems, setTransferItems] = useState<TransferItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const isLoading = itemsLoading || locationsLoading || stocksLoading;
 
     const filteredItems = items.filter(item =>
         item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,6 +79,10 @@ const TransferItemsPage: React.FC = () => {
 
     const handleSubmitTransfer = async () => {
         if (transferItems.length === 0) return;
+        if (!currentUser?.id) {
+            alert('User not authenticated. Please log in.');
+            return;
+        }
 
         // Validate all transfers
         for (const transferItem of transferItems) {
@@ -99,9 +106,14 @@ const TransferItemsPage: React.FC = () => {
                     from_location_id: transferItem.fromLocationId,
                     to_location_id: transferItem.toLocationId,
                     notes: transferItem.notes || `Transferred ${transferItem.quantity} units`,
-                    performed_by: 'Current User'
+                    performed_by: currentUser.id
                 });
             }
+            
+            // Refresh data to reflect new stock levels
+            await refreshItems();
+            await refreshStocks();
+            
             setTransferItems([]);
             alert('Items transferred successfully!');
         } catch (error) {
@@ -112,31 +124,59 @@ const TransferItemsPage: React.FC = () => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                {/* Search Items Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
+                            <Search className="mr-2 h-5 w-5" />
+                            Select Items to Transfer
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="mb-4">
+                            <div className="h-10 w-64 bg-slate-200 rounded-md animate-pulse"></div>
+                        </div>
+                        
+                        <div className="border border-gray-200 rounded-md overflow-hidden">
+                            <div className="bg-gray-50 px-6 py-3 border-b">
+                                <div className="flex space-x-8">
+                                    <div className="h-4 w-12 bg-slate-200 rounded animate-pulse"></div>
+                                    <div className="h-4 w-16 bg-slate-200 rounded animate-pulse"></div>
+                                    <div className="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
+                                    <div className="h-4 w-16 bg-slate-200 rounded animate-pulse"></div>
+                                </div>
+                            </div>
+                            
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="px-6 py-4 border-b border-gray-100 last:border-b-0">
+                                    <div className="flex items-center space-x-8">
+                                        <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
+                                        <div className="flex-1">
+                                            <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-1"></div>
+                                            <div className="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                        </div>
+                                        <div className="h-4 w-16 bg-slate-200 rounded animate-pulse"></div>
+                                        <div className="flex gap-1">
+                                            <div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse"></div>
+                                            <div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse"></div>
+                                        </div>
+                                        <div className="h-8 w-16 bg-slate-200 rounded-md animate-pulse"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Link to="/inventory/items">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Inventory
-                        </Button>
-                    </Link>
-                    <h1 className="text-3xl font-bold text-gray-900">Transfer Items</h1>
-                </div>
-                
-                {transferItems.length > 0 && (
-                    <Button 
-                        onClick={handleSubmitTransfer}
-                        disabled={isSubmitting}
-                        className="flex items-center"
-                    >
-                        <ArrowRightLeft className="h-4 w-4 mr-2" />
-                        {isSubmitting ? 'Processing...' : `Transfer ${transferItems.length} Items`}
-                    </Button>
-                )}
-            </div>
-
             {/* Search Items */}
             <Card>
                 <CardHeader>
@@ -237,7 +277,7 @@ const TransferItemsPage: React.FC = () => {
                                     <TableHeaderCell>To Location</TableHeaderCell>
                                     <TableHeaderCell>Available</TableHeaderCell>
                                     <TableHeaderCell>Notes</TableHeaderCell>
-                                    <TableHeaderCell>Actions</TableHeaderCell>
+                                    <TableHeaderCell className="w-12">&nbsp;</TableHeaderCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -306,17 +346,16 @@ const TransferItemsPage: React.FC = () => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <span className={`font-medium ${
-                                                    availableStock === 0 ? 'text-red-600' : 'text-green-600'
-                                                }`}>
+                                                <span className={`font-medium ${availableStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                     {availableStock}
                                                 </span>
                                             </TableCell>
                                             <TableCell>
                                                 <Input
-                                                    placeholder="Optional notes..."
+                                                    type="text"
                                                     value={transferItem.notes || ''}
                                                     onChange={(e) => updateTransferItem(index, 'notes', e.target.value)}
+                                                    placeholder="Optional notes"
                                                     className="w-32"
                                                 />
                                             </TableCell>
@@ -326,7 +365,7 @@ const TransferItemsPage: React.FC = () => {
                                                     size="sm"
                                                     onClick={() => removeTransferItem(index)}
                                                 >
-                                                    Remove
+                                                    <X className="h-4 w-4" />
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
@@ -337,8 +376,23 @@ const TransferItemsPage: React.FC = () => {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Floating Transfer Button */}
+            {transferItems.length > 0 && (
+                <div className="fixed bottom-6 right-6">
+                    <Button 
+                        onClick={handleSubmitTransfer}
+                        disabled={isSubmitting}
+                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl"
+                        size="lg"
+                    >
+                        <ArrowRightLeft className="h-5 w-5 mr-2" />
+                        {isSubmitting ? 'Processing...' : `Transfer ${transferItems.length} Items`}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };
 
-export default TransferItemsPage;
+export default TransferItemsComponent;
