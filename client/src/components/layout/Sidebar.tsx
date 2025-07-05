@@ -126,10 +126,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
             )}
 
             {/* Footer */}
-            <div className="border-t border-slate-800/50 p-6">
+            <div className="border-t border-slate-800/50 p-4">
                 <button
                     onClick={logout}
-                    className={`flex items-center w-full ${isCollapsed ? 'justify-center px-3' : 'px-6'} py-4 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all duration-200 group border border-slate-200 hover:border-slate-300`}
+                    className={`flex items-center w-full ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all duration-200 group border border-slate-200 hover:border-slate-300`}
                     title={isCollapsed ? "Sign Out" : undefined}
                 >
                     <LogOut className={`${isCollapsed ? '' : 'mr-3'} h-5 w-5 text-slate-600`} />

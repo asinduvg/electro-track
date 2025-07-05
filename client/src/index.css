@@ -60,11 +60,20 @@
         @apply border-border;
     }
 
-    body {
-        @apply bg-background text-foreground antialiased;
+    html, body {
+        @apply bg-white text-foreground antialiased;
         font-family: 'Cereal', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         font-feature-settings: "rlig" 1, "calt" 1;
         letter-spacing: -0.01em;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* Hide Replit development banner */
+    #replit-dev-banner {
+        display: none !important;
     }
 
     select {
