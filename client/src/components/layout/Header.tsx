@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({toggleSidebar}) => {
 
         if (path === '/dashboard') return 'Dashboard';
         if (path === '/inventory/items') return 'Inventory Items';
-        if (path === '/inventory/add') return 'Add New Item';
+
         if (path === '/inventory/receive') return 'Receive Items';
         if (path === '/inventory/transfer') return 'Transfer Items';
         if (path === '/inventory/dispose') return 'Dispose Items';

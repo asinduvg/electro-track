@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { Package, Plus, Check } from 'lucide-react';
+import { Package, Plus, Check, Upload, X, Image } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useCategories from '../hooks/useCategories';
 import { FormSkeleton } from './ui/InventorySkeletons';
@@ -33,6 +33,8 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [successMessage, setSuccessMessage] = useState('');
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     // Group categories by main category
     const mainCategories = categories.reduce((acc: any, cat: any) => {
@@ -74,6 +76,41 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
             ...prev,
             category_id: ''
         }));
+    };
+
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setFormErrors(prev => ({ ...prev, image: 'Please select a valid image file' }));
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setFormErrors(prev => ({ ...prev, image: 'Image size must be less than 5MB' }));
+                return;
+            }
+            
+            setSelectedImage(file);
+            
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+            
+            // Clear any previous image errors
+            setFormErrors(prev => ({ ...prev, image: '' }));
+        }
+    };
+
+    const removeImage = () => {
+        setSelectedImage(null);
+        setImagePreview(null);
+        setFormErrors(prev => ({ ...prev, image: '' }));
     };
 
     const validateForm = () => {
@@ -121,6 +158,8 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
                 status: 'in_stock'
             });
             setSelectedMainCategory('');
+            setSelectedImage(null);
+            setImagePreview(null);
             setSuccessMessage('Item added successfully!');
             
             // Clear success message after 3 seconds
@@ -335,6 +374,51 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
                                 placeholder="Enter item description"
                                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF385C] focus:border-transparent resize-none"
                             />
+                        </div>
+
+                        {/* Image Upload */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                Item Image
+                            </label>
+                            
+                            {!imagePreview ? (
+                                <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-[#FF385C] transition-colors">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageSelect}
+                                        className="hidden"
+                                        id="image-upload"
+                                    />
+                                    <label htmlFor="image-upload" className="cursor-pointer">
+                                        <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+                                        <p className="text-slate-600 font-medium mb-2">Click to upload an image</p>
+                                        <p className="text-slate-500 text-sm">
+                                            PNG, JPG, GIF up to 5MB
+                                        </p>
+                                    </label>
+                                </div>
+                            ) : (
+                                <div className="relative">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="w-full max-w-xs rounded-lg border border-slate-300"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={removeImage}
+                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {formErrors.image && (
+                                <p className="text-red-500 text-sm mt-1">{formErrors.image}</p>
+                            )}
                         </div>
 
                         {/* Submit Button */}
