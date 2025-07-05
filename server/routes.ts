@@ -312,6 +312,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const transactionData = insertTransactionSchema.parse(req.body);
       const transaction = await storage.createTransaction(transactionData);
+      
+      // Handle stock updates based on transaction type
+      if (transaction.type === 'receive' && transaction.to_location_id) {
+        // For receive transactions, create or update item location
+        const existingItemLocations = await storage.getItemLocations(transaction.item_id);
+        const existingLocation = existingItemLocations.find(il => il.location_id === transaction.to_location_id);
+        
+        if (existingLocation) {
+          // Update existing item location
+          await storage.updateItemLocation(existingLocation.id, {
+            quantity: existingLocation.quantity + transaction.quantity
+          });
+        } else {
+          // Create new item location
+          await storage.createItemLocation({
+            item_id: transaction.item_id,
+            location_id: transaction.to_location_id,
+            quantity: transaction.quantity,
+            status: 'in_stock'
+          });
+        }
+      } else if (transaction.type === 'withdraw' && transaction.from_location_id) {
+        // For withdraw transactions, update item location
+        const existingItemLocations = await storage.getItemLocations(transaction.item_id);
+        const existingLocation = existingItemLocations.find(il => il.location_id === transaction.from_location_id);
+        
+        if (existingLocation) {
+          await storage.updateItemLocation(existingLocation.id, {
+            quantity: Math.max(0, existingLocation.quantity - transaction.quantity)
+          });
+        }
+      } else if (transaction.type === 'transfer' && transaction.from_location_id && transaction.to_location_id) {
+        // For transfer transactions, update both locations
+        const existingItemLocations = await storage.getItemLocations(transaction.item_id);
+        
+        // Update from location
+        const fromLocation = existingItemLocations.find(il => il.location_id === transaction.from_location_id);
+        if (fromLocation) {
+          await storage.updateItemLocation(fromLocation.id, {
+            quantity: Math.max(0, fromLocation.quantity - transaction.quantity)
+          });
+        }
+        
+        // Update to location
+        const toLocation = existingItemLocations.find(il => il.location_id === transaction.to_location_id);
+        if (toLocation) {
+          await storage.updateItemLocation(toLocation.id, {
+            quantity: toLocation.quantity + transaction.quantity
+          });
+        } else {
+          // Create new item location if it doesn't exist
+          await storage.createItemLocation({
+            item_id: transaction.item_id,
+            location_id: transaction.to_location_id,
+            quantity: transaction.quantity,
+            status: 'in_stock'
+          });
+        }
+      }
+      
       res.status(201).json(transaction);
     } catch (error) {
       console.error("Create transaction error:", error);
