@@ -187,123 +187,126 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">Add New Item</h2>
-                <p className="text-slate-500">Create a new inventory component</p>
-            </div>
-
-            {successMessage && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center">
-                    <Check className="h-5 w-5 text-green-600 mr-2" />
-                    <span className="text-green-800">{successMessage}</span>
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">Add New Item</h1>
+                        <p className="mt-2 text-slate-600">Create a new inventory component</p>
+                    </div>
                 </div>
-            )}
 
-            <Card className="bg-white border-0 shadow-lg">
-                <CardHeader className="pb-6">
-                    <CardTitle className="flex items-center text-xl">
-                        <Package className="mr-2 h-6 w-6 text-[#FF385C]" />
-                        Item Details
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {formErrors.general && (
-                            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <span className="text-red-800">{formErrors.general}</span>
-                            </div>
-                        )}
+                {successMessage && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center">
+                        <Check className="h-5 w-5 text-green-600 mr-2" />
+                        <span className="text-green-800">{successMessage}</span>
+                    </div>
+                )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* SKU */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    SKU *
-                                </label>
-                                <Input
-                                    name="sku"
-                                    value={formData.sku}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter SKU"
-                                    className={formErrors.sku ? 'border-red-500' : ''}
-                                />
-                                {formErrors.sku && (
-                                    <p className="text-red-500 text-sm mt-1">{formErrors.sku}</p>
-                                )}
-                            </div>
+                <Card className="bg-white border-0 shadow-lg">
+                    <CardHeader className="pb-6">
+                        <CardTitle className="flex items-center text-xl">
+                            <Package className="mr-2 h-6 w-6 text-[#FF385C]" />
+                            Item Details
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {formErrors.general && (
+                                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <span className="text-red-800">{formErrors.general}</span>
+                                </div>
+                            )}
 
-                            {/* Name */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    Name *
-                                </label>
-                                <Input
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter item name"
-                                    className={formErrors.name ? 'border-red-500' : ''}
-                                />
-                                {formErrors.name && (
-                                    <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
-                                )}
-                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* SKU */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        SKU *
+                                    </label>
+                                    <Input
+                                        name="sku"
+                                        value={formData.sku}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter SKU"
+                                        className={formErrors.sku ? 'border-red-500' : ''}
+                                    />
+                                    {formErrors.sku && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.sku}</p>
+                                    )}
+                                </div>
 
-                            {/* Manufacturer */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    Manufacturer
-                                </label>
-                                <Input
-                                    name="manufacturer"
-                                    value={formData.manufacturer}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter manufacturer"
-                                />
-                            </div>
+                                {/* Name */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Name *
+                                    </label>
+                                    <Input
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter item name"
+                                        className={formErrors.name ? 'border-red-500' : ''}
+                                    />
+                                    {formErrors.name && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                                    )}
+                                </div>
 
-                            {/* Unit Cost */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    Unit Cost * ($)
-                                </label>
-                                <Input
-                                    name="unit_cost"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={formData.unit_cost}
-                                    onChange={handleInputChange}
-                                    placeholder="0.00"
-                                    className={formErrors.unit_cost ? 'border-red-500' : ''}
-                                />
-                                {formErrors.unit_cost && (
-                                    <p className="text-red-500 text-sm mt-1">{formErrors.unit_cost}</p>
-                                )}
-                            </div>
+                                {/* Manufacturer */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Manufacturer
+                                    </label>
+                                    <Input
+                                        name="manufacturer"
+                                        value={formData.manufacturer}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter manufacturer"
+                                    />
+                                </div>
 
-                            {/* Main Category */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    Main Category *
-                                </label>
-                                <select
-                                    value={selectedMainCategory}
-                                    onChange={handleMainCategoryChange}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF385C] focus:border-transparent"
-                                >
-                                    <option value="">Select main category</option>
-                                    {Object.keys(mainCategories).map(category => (
-                                        <option key={category} value={category}>
-                                            {category}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                                {/* Unit Cost */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Unit Cost * ($)
+                                    </label>
+                                    <Input
+                                        name="unit_cost"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={formData.unit_cost}
+                                        onChange={handleInputChange}
+                                        placeholder="0.00"
+                                        className={formErrors.unit_cost ? 'border-red-500' : ''}
+                                    />
+                                    {formErrors.unit_cost && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.unit_cost}</p>
+                                    )}
+                                </div>
 
-                            {/* Subcategory */}
-                            <div>
+                                {/* Main Category */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Main Category *
+                                    </label>
+                                    <select
+                                        value={selectedMainCategory}
+                                        onChange={handleMainCategoryChange}
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF385C] focus:border-transparent"
+                                    >
+                                        <option value="">Select main category</option>
+                                        {Object.keys(mainCategories).map(category => (
+                                            <option key={category} value={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Subcategory */}
+                                <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                     Subcategory *
                                 </label>
@@ -448,6 +451,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
                     </form>
                 </CardContent>
             </Card>
+            </div>
         </div>
     );
 };
