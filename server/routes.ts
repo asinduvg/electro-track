@@ -210,18 +210,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = req.body;
       console.log("Updating item with data:", updates);
       
+      // Remove timestamp fields that should not be updated manually
+      const { created_at, updated_at, id, ...updateData } = updates;
+      
       // Validate numeric fields
-      if (updates.unit_cost !== undefined) {
-        updates.unit_cost = parseFloat(updates.unit_cost) || 0;
+      if (updateData.unit_cost !== undefined) {
+        updateData.unit_cost = parseFloat(updateData.unit_cost) || 0;
       }
-      if (updates.minimum_stock !== undefined) {
-        updates.minimum_stock = parseInt(updates.minimum_stock) || 0;
+      if (updateData.minimum_stock !== undefined) {
+        updateData.minimum_stock = parseInt(updateData.minimum_stock) || 0;
       }
-      if (updates.category_id !== undefined) {
-        updates.category_id = parseInt(updates.category_id) || null;
+      if (updateData.maximum_stock !== undefined) {
+        updateData.maximum_stock = parseInt(updateData.maximum_stock) || null;
+      }
+      if (updateData.category_id !== undefined) {
+        updateData.category_id = parseInt(updateData.category_id) || null;
       }
       
-      const item = await storage.updateItem(req.params.id, updates);
+      const item = await storage.updateItem(req.params.id, updateData);
       if (!item) {
         return res.status(404).json({ error: "Item not found" });
       }

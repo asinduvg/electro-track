@@ -115,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
             {/* Status Indicator */}
             {!isCollapsed && (
                 <div className="px-6 py-4 border-t border-slate-800/50">
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-lg border border-emerald-500/30">
+                    <div className="flex items-center justify-between p-3 rounded-lg">
                         <div className="flex items-center space-x-2">
                             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                             <span className="text-xs text-white font-medium">System Online</span>
@@ -129,11 +129,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
             <div className="border-t border-slate-800/50 p-4">
                 <button
                     onClick={logout}
-                    className={`flex items-center w-full ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium text-white bg-red-600/80 hover:bg-red-600 rounded-xl transition-all duration-200 group border border-red-500/50 hover:border-red-400`}
-                    title={isCollapsed ? "Sign Out" : undefined}
+                    className={`flex items-center w-full ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all duration-200 group border border-slate-200 hover:border-slate-300`}
+                    title={isCollapsed ? "Settings" : undefined}
                 >
-                    <LogOut className={`${isCollapsed ? '' : 'mr-3'} h-5 w-5 text-white`} />
-                    {!isCollapsed && <span className="text-white font-medium">Sign Out</span>}
+                    <Settings className={`${isCollapsed ? '' : 'mr-3'} h-5 w-5 text-slate-600`} />
+                    {!isCollapsed && <span className="text-slate-600 font-medium">Settings</span>}
                 </button>
             </div>
         </div>
