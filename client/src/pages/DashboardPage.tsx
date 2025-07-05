@@ -536,7 +536,7 @@ const DashboardPage: React.FC = () => {
                             </Link>
 
                             <Link
-                                to="/inventory/withdraw"
+                                to="/inventory"
                                 className="group relative overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 border border-orange-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-orange-100"
                             >
                                 <div className="flex flex-col items-start">
@@ -556,7 +556,7 @@ const DashboardPage: React.FC = () => {
                             </Link>
 
                             <Link
-                                to="/inventory/transfer"
+                                to="/inventory"
                                 className="group relative overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 hover:from-violet-100 hover:to-purple-100 border border-violet-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100"
                             >
                                 <div className="flex flex-col items-start">

@@ -15,8 +15,7 @@ import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
-import ReceiveItemsPage from './pages/ReceiveItemsPage';
-import WithdrawItemsPage from './pages/WithdrawItemsPage';
+
 import TransferItemsPage from './pages/TransferItemsPage';
 import SuppliersPage from './pages/SuppliersPage';
 import AlertsPage from './pages/AlertsPage';
@@ -86,7 +85,7 @@ function App() {
                                 } 
                             />
                             <Route 
-                                path="/inventory/items" 
+                                path="/inventory" 
                                 element={
                                     <ProtectedRoute>
                                         <Layout>
@@ -147,26 +146,7 @@ function App() {
                                     </ProtectedRoute>
                                 } 
                             />
-                            <Route 
-                                path="/inventory/receive" 
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout>
-                                            <ReceiveItemsPage />
-                                        </Layout>
-                                    </ProtectedRoute>
-                                } 
-                            />
-                            <Route 
-                                path="/inventory/withdraw" 
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout>
-                                            <WithdrawItemsPage />
-                                        </Layout>
-                                    </ProtectedRoute>
-                                } 
-                            />
+
                             <Route 
                                 path="/inventory/transfer" 
                                 element={

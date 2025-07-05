@@ -11,6 +11,7 @@ import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
 import useTransactions from '../hooks/useTransactions';
 import { useAuth } from '../context/AuthContext';
+import { InventoryTableSkeleton } from '../components/ui/InventorySkeletons';
 
 interface WithdrawItem {
     itemId: string;
@@ -20,14 +21,16 @@ interface WithdrawItem {
 }
 
 const WithdrawItemsPage: React.FC = () => {
-    const { items, getTotalQuantity, refreshItems } = useItems();
-    const { locations } = useLocations();
-    const { stocks, refreshStocks } = useStocks();
+    const { items, getTotalQuantity, refreshItems, isLoading: itemsLoading } = useItems();
+    const { locations, isLoading: locationsLoading } = useLocations();
+    const { stocks, refreshStocks, isLoading: stocksLoading } = useStocks();
     const { createTransaction } = useTransactions();
     const { currentUser } = useAuth();
     const [withdrawItems, setWithdrawItems] = useState<WithdrawItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const isLoading = itemsLoading || locationsLoading || stocksLoading;
 
     const filteredItems = items.filter(item =>
         item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,35 +163,38 @@ const WithdrawItemsPage: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {filteredItems.slice(0, 10).map((item) => {
-                                const totalStock = getTotalQuantity(item.id, stocks);
-                                const isLowStock = totalStock <= (item.minimum_stock || 1);
-                                return (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.sku}</TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <div className="font-medium">{item.name}</div>
-                                                <div className="text-sm text-gray-500">{item.description}</div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className={`font-medium ${
-                                                totalStock === 0 ? 'text-red-600' : 
-                                                isLowStock ? 'text-orange-600' : 'text-green-600'
-                                            }`}>
-                                                {totalStock}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            {totalStock === 0 ? (
-                                                <Badge variant="danger">Out of Stock</Badge>
-                                            ) : isLowStock ? (
-                                                <Badge variant="warning">Low Stock</Badge>
-                                            ) : (
-                                                <Badge variant="success">Available</Badge>
-                                            )}
-                                        </TableCell>
+                            {isLoading ? (
+                                <InventoryTableSkeleton />
+                            ) : (
+                                filteredItems.slice(0, 10).map((item) => {
+                                    const totalStock = getTotalQuantity(item.id, stocks);
+                                    const isLowStock = totalStock <= (item.minimum_stock || 1);
+                                    return (
+                                        <TableRow key={item.id}>
+                                            <TableCell className="font-medium">{item.sku}</TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{item.name}</div>
+                                                    <div className="text-sm text-gray-500">{item.description}</div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className={`font-medium ${
+                                                    totalStock === 0 ? 'text-red-600' : 
+                                                    isLowStock ? 'text-orange-600' : 'text-green-600'
+                                                }`}>
+                                                    {totalStock}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                {totalStock === 0 ? (
+                                                    <Badge variant="danger">Out of Stock</Badge>
+                                                ) : isLowStock ? (
+                                                    <Badge variant="warning">Low Stock</Badge>
+                                                ) : (
+                                                    <Badge variant="success">Available</Badge>
+                                                )}
+                                            </TableCell>
                                         <TableCell>
                                             <Button 
                                                 variant="outline" 
@@ -202,7 +208,8 @@ const WithdrawItemsPage: React.FC = () => {
                                         </TableCell>
                                     </TableRow>
                                 );
-                            })}
+                            })
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>

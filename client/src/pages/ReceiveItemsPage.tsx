@@ -11,6 +11,7 @@ import useLocations from '../hooks/useLocations';
 import useTransactions from '../hooks/useTransactions';
 import useStocks from '../hooks/useStocks';
 import { useAuth } from '../context/AuthContext';
+import { InventoryTableSkeleton } from '../components/ui/InventorySkeletons';
 
 interface ReceiveItem {
     itemId: string;
@@ -20,14 +21,16 @@ interface ReceiveItem {
 }
 
 const ReceiveItemsPage: React.FC = () => {
-    const { items, getTotalQuantity, refreshItems } = useItems();
-    const { locations } = useLocations();
+    const { items, getTotalQuantity, refreshItems, isLoading: itemsLoading } = useItems();
+    const { locations, isLoading: locationsLoading } = useLocations();
     const { createTransaction } = useTransactions();
-    const { stocks, refreshStocks } = useStocks();
+    const { stocks, refreshStocks, isLoading: stocksLoading } = useStocks();
     const { currentUser } = useAuth();
     const [receiveItems, setReceiveItems] = useState<ReceiveItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const isLoading = itemsLoading || locationsLoading || stocksLoading;
 
     const filteredItems = items.filter(item =>
         item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -139,30 +142,34 @@ const ReceiveItemsPage: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {filteredItems.slice(0, 10).map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell className="font-medium">{item.sku}</TableCell>
-                                    <TableCell>
-                                        <div>
-                                            <div className="font-medium">{item.name}</div>
-                                            <div className="text-sm text-gray-500">{item.description}</div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">{getTotalQuantity(item.id, stocks)} units</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm"
-                                            onClick={() => addItemToReceive(item.id)}
-                                        >
-                                            <Plus className="h-4 w-4 mr-1" />
-                                            Add
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {isLoading ? (
+                                <InventoryTableSkeleton />
+                            ) : (
+                                filteredItems.slice(0, 10).map((item) => (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="font-medium">{item.sku}</TableCell>
+                                        <TableCell>
+                                            <div>
+                                                <div className="font-medium">{item.name}</div>
+                                                <div className="text-sm text-gray-500">{item.description}</div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary">{getTotalQuantity(item.id, stocks)} units</Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => addItemToReceive(item.id)}
+                                            >
+                                                <Plus className="h-4 w-4 mr-1" />
+                                                Add
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>

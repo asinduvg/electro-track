@@ -135,3 +135,11 @@ Changelog:
   * Created new AddItemForm component that works properly within tab system
   * Removed standalone /inventory/add route - all functionality now in tabs
   * Fixed add item functionality to work without navigation dependencies
+- July 05, 2025. Enhanced inventory system with validation and UI improvements:
+  * Added comprehensive image upload functionality to Add Item tab with drag-drop, preview, and 5MB validation
+  * Added unit cost validation to prevent negative values (HTML min attribute and form validation)
+  * Refactored main inventory URL from '/inventory/items' to '/inventory' for cleaner navigation
+  * Removed separate receive (/inventory/receive) and withdraw (/inventory/withdraw) routes
+  * Removed Filter button from inventory items list as requested
+  * Added skeleton loading components to Receive and Withdraw tabs for consistent UI
+  * Updated all navigation links and dashboard references to use new '/inventory' URL

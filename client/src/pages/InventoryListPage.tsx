@@ -217,14 +217,7 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
                                     ))}
                                 </select>
                                 
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                                    className="flex items-center border-slate-200 hover:bg-slate-50"
-                                >
-                                    <Filter className="mr-2 h-4 w-4" />
-                                    {showAdvancedFilters ? 'Hide' : 'More'} Filters
-                                </Button>
+
                             </div>
                         </div>
                         

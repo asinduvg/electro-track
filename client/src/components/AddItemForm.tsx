@@ -120,6 +120,9 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
         if (!formData.name.trim()) errors.name = 'Name is required';
         if (!formData.category_id) errors.category_id = 'Category is required';
         if (!formData.unit_cost) errors.unit_cost = 'Unit cost is required';
+        if (formData.unit_cost && parseFloat(formData.unit_cost) < 0) {
+            errors.unit_cost = 'Unit cost cannot be negative';
+        }
         if (!formData.minimum_stock) errors.minimum_stock = 'Minimum stock is required';
         if (formData.minimum_stock && parseInt(formData.minimum_stock) <= 0) {
             errors.minimum_stock = 'Minimum stock must be greater than 0';
@@ -269,6 +272,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
                                     name="unit_cost"
                                     type="number"
                                     step="0.01"
+                                    min="0"
                                     value={formData.unit_cost}
                                     onChange={handleInputChange}
                                     placeholder="0.00"

@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
     
     const navigation = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['admin', 'inventory_manager', 'warehouse_staff', 'department_user'] },
-        { name: 'Components', href: '/inventory/items', icon: Package, roles: ['admin', 'inventory_manager', 'warehouse_staff', 'department_user'] },
+        { name: 'Components', href: '/inventory', icon: Package, roles: ['admin', 'inventory_manager', 'warehouse_staff', 'department_user'] },
         { name: 'Categories', href: '/categories', icon: FolderTree, roles: ['admin', 'inventory_manager'] },
         { name: 'Storage', href: '/locations', icon: MapPin, roles: ['admin', 'inventory_manager', 'warehouse_staff'] },
         { name: 'Suppliers', href: '/suppliers', icon: Building2, roles: ['admin', 'inventory_manager'] },
