@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } fro
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { PackageCheck, Plus, ArrowLeft, Search, Scan } from 'lucide-react';
+import { PackageCheck, Plus, ArrowLeft, Search, Scan, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
@@ -108,16 +108,7 @@ const ReceiveItemsPage: React.FC = () => {
                     <h1 className="text-3xl font-bold text-gray-900">Receive Items</h1>
                 </div>
                 
-                {receiveItems.length > 0 && (
-                    <Button 
-                        onClick={handleSubmitReceive}
-                        disabled={isSubmitting}
-                        className="flex items-center"
-                    >
-                        <PackageCheck className="h-4 w-4 mr-2" />
-                        {isSubmitting ? 'Processing...' : `Receive ${receiveItems.length} Items`}
-                    </Button>
-                )}
+
             </div>
 
             {/* Search Items */}
@@ -240,11 +231,12 @@ const ReceiveItemsPage: React.FC = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <Button 
-                                                    variant="outline" 
+                                                    variant="ghost" 
                                                     size="sm"
                                                     onClick={() => removeReceiveItem(index)}
+                                                    className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
                                                 >
-                                                    Remove
+                                                    <X className="h-4 w-4" />
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
@@ -254,6 +246,21 @@ const ReceiveItemsPage: React.FC = () => {
                         </Table>
                     </CardContent>
                 </Card>
+            )}
+            
+            {/* Floating Receive Button */}
+            {receiveItems.length > 0 && (
+                <div className="fixed bottom-6 right-6 z-50">
+                    <Button 
+                        onClick={handleSubmitReceive}
+                        disabled={isSubmitting}
+                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg px-6 py-3 text-lg font-semibold rounded-lg"
+                        size="lg"
+                    >
+                        <PackageCheck className="h-5 w-5 mr-2" />
+                        {isSubmitting ? 'Processing...' : `Receive ${receiveItems.length} Items`}
+                    </Button>
+                </div>
             )}
         </div>
     );

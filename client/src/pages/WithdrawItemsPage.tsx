@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } fro
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { PackageMinus, Minus, ArrowLeft, Search, AlertTriangle } from 'lucide-react';
+import { PackageMinus, Minus, ArrowLeft, Search, AlertTriangle, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
@@ -128,16 +128,7 @@ const WithdrawItemsPage: React.FC = () => {
                     <h1 className="text-3xl font-bold text-gray-900">Withdraw Items</h1>
                 </div>
                 
-                {withdrawItems.length > 0 && (
-                    <Button 
-                        onClick={handleSubmitWithdraw}
-                        disabled={isSubmitting}
-                        className="flex items-center"
-                    >
-                        <PackageMinus className="h-4 w-4 mr-2" />
-                        {isSubmitting ? 'Processing...' : `Withdraw ${withdrawItems.length} Items`}
-                    </Button>
-                )}
+
             </div>
 
             {/* Search Items */}
@@ -190,9 +181,9 @@ const WithdrawItemsPage: React.FC = () => {
                                         </TableCell>
                                         <TableCell>
                                             {isLowStock ? (
-                                                <Badge variant="danger">Low Stock</Badge>
+                                                <Badge variant="warning">Low Stock</Badge>
                                             ) : totalStock === 0 ? (
-                                                <Badge variant="secondary">Out of Stock</Badge>
+                                                <Badge variant="danger">Out of Stock</Badge>
                                             ) : (
                                                 <Badge variant="success">Available</Badge>
                                             )}
@@ -234,7 +225,8 @@ const WithdrawItemsPage: React.FC = () => {
                                     <TableHeaderCell>From Location</TableHeaderCell>
                                     <TableHeaderCell>Available</TableHeaderCell>
                                     <TableHeaderCell>Notes</TableHeaderCell>
-                                    <TableHeaderCell>Actions</TableHeaderCell>
+                                    <TableHeaderCell className="w-12">&nbsp;</TableHeaderCell>
+
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -297,11 +289,12 @@ const WithdrawItemsPage: React.FC = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <Button 
-                                                    variant="outline" 
+                                                    variant="ghost" 
                                                     size="sm"
                                                     onClick={() => removeWithdrawItem(index)}
+                                                    className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
                                                 >
-                                                    Remove
+                                                    <X className="h-4 w-4" />
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
@@ -311,6 +304,21 @@ const WithdrawItemsPage: React.FC = () => {
                         </Table>
                     </CardContent>
                 </Card>
+            )}
+            
+            {/* Floating Withdraw Button */}
+            {withdrawItems.length > 0 && (
+                <div className="fixed bottom-6 right-6 z-50">
+                    <Button 
+                        onClick={handleSubmitWithdraw}
+                        disabled={isSubmitting}
+                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg px-6 py-3 text-lg font-semibold rounded-lg"
+                        size="lg"
+                    >
+                        <PackageMinus className="h-5 w-5 mr-2" />
+                        {isSubmitting ? 'Processing...' : `Withdraw ${withdrawItems.length} Items`}
+                    </Button>
+                </div>
             )}
         </div>
     );
