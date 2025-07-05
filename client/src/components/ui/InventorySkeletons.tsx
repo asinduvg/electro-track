@@ -224,52 +224,57 @@ export const SearchResultsSkeleton: React.FC = () => {
   );
 };
 
-// Add Item Form Skeleton
+// Add Item Form Skeleton - matches Items tab quality
 export const AddItemFormSkeleton: React.FC = () => {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Header */}
-      <div className="mb-8">
-        <Skeleton className="h-8 w-48 mb-2" />
-        <Skeleton className="h-5 w-64" />
-      </div>
-      
-      {/* Form Card */}
-      <div className="bg-white border-0 shadow-lg rounded-lg">
-        <div className="pb-6 p-6 border-b">
-          <div className="flex items-center">
-            <Skeleton className="h-6 w-6 mr-2" />
-            <Skeleton className="h-6 w-32" />
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48 animate-pulse" />
+            <Skeleton className="h-5 w-64 animate-pulse" />
           </div>
         </div>
         
-        <div className="p-6 space-y-6">
-          {/* Form Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Form Fields */}
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i}>
-                <Skeleton className="h-4 w-24 mb-2" />
-                <Skeleton className="h-10 w-full rounded-md" />
+        {/* Form Card with proper shadow and styling */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center">
+              <Skeleton className="h-6 w-6 mr-2 animate-pulse" />
+              <Skeleton className="h-6 w-32 animate-pulse" />
+            </div>
+          </div>
+          
+          <div className="p-6 space-y-6">
+            {/* Form Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24 animate-pulse" />
+                  <Skeleton className="h-10 w-full rounded-md animate-pulse" />
+                </div>
+              ))}
+            </div>
+            
+            {/* Description Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20 animate-pulse" />
+              <Skeleton className="h-20 w-full rounded-md animate-pulse" />
+            </div>
+            
+            {/* Image Upload Section */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28 animate-pulse" />
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                <Skeleton className="h-32 w-full rounded-md animate-pulse" />
               </div>
-            ))}
-          </div>
-          
-          {/* Description Field */}
-          <div>
-            <Skeleton className="h-4 w-20 mb-2" />
-            <Skeleton className="h-20 w-full rounded-md" />
-          </div>
-          
-          {/* Image Upload Section */}
-          <div>
-            <Skeleton className="h-4 w-28 mb-2" />
-            <Skeleton className="h-32 w-full rounded-md border-2 border-dashed" />
-          </div>
-          
-          {/* Submit Button */}
-          <div className="pt-4">
-            <Skeleton className="h-10 w-32 rounded-md" />
+            </div>
+            
+            {/* Submit Button */}
+            <div className="pt-4">
+              <Skeleton className="h-10 w-32 rounded-md animate-pulse" />
+            </div>
           </div>
         </div>
       </div>
@@ -277,130 +282,235 @@ export const AddItemFormSkeleton: React.FC = () => {
   );
 };
 
-// Receive Items Page Skeleton
+// Receive Items Page Skeleton - matches Items tab quality
 export const ReceiveItemsSkeleton: React.FC = () => {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Skeleton className="h-9 w-32 rounded-md" />
-          <Skeleton className="h-9 w-48" />
-        </div>
-      </div>
-      
-      {/* Search Items Card */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        <div className="p-6 border-b">
-          <div className="flex items-center">
-            <Skeleton className="h-5 w-5 mr-2" />
-            <Skeleton className="h-6 w-48" />
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header matching Items tab style */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48 animate-pulse" />
+            <Skeleton className="h-5 w-64 animate-pulse" />
           </div>
         </div>
         
-        <div className="p-6">
-          {/* Search Input */}
-          <div className="mb-4">
-            <Skeleton className="h-10 w-64 rounded-md" />
+        {/* Search Items Card with proper styling */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center">
+              <Skeleton className="h-5 w-5 mr-2 animate-pulse" />
+              <Skeleton className="h-6 w-48 animate-pulse" />
+            </div>
           </div>
           
-          {/* Items Table */}
-          <div className="border border-gray-200 rounded-md overflow-hidden">
-            <div className="bg-gray-50 px-6 py-3 border-b">
-              <div className="flex space-x-8">
-                <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-16" />
-              </div>
+          <div className="p-6">
+            {/* Search Input */}
+            <div className="mb-4">
+              <Skeleton className="h-10 w-64 rounded-md animate-pulse" />
             </div>
             
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="px-6 py-4 border-b border-gray-100 last:border-b-0">
-                <div className="flex items-center space-x-8">
-                  <Skeleton className="h-4 w-20" />
-                  <div className="flex-1">
-                    <Skeleton className="h-4 w-32 mb-1" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <Skeleton className="h-6 w-16 rounded-full" />
-                  <Skeleton className="h-8 w-16 rounded-md" />
-                </div>
-              </div>
-            ))}
+            {/* Items Table matching InventoryTableSkeleton structure */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {['SKU', 'Name', 'Current Stock', 'Actions'].map((_, i) => (
+                      <th key={i} className="px-6 py-3 text-left">
+                        <Skeleton className="h-4 w-16 animate-pulse" />
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <tr key={i} className="border-b border-gray-200">
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-20 animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-32 animate-pulse" />
+                          <Skeleton className="h-3 w-24 animate-pulse" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-6 w-16 rounded-full animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-8 w-16 rounded-md animate-pulse" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6">
-        <Skeleton className="h-14 w-14 rounded-full" />
+        
+        {/* Floating Action Button */}
+        <div className="fixed bottom-6 right-6">
+          <Skeleton className="h-14 w-14 rounded-full animate-pulse shadow-lg" />
+        </div>
       </div>
     </div>
   );
 };
 
-// Withdraw Items Page Skeleton
+// Withdraw Items Page Skeleton - matches Items tab quality
 export const WithdrawItemsSkeleton: React.FC = () => {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Skeleton className="h-9 w-32 rounded-md" />
-          <Skeleton className="h-9 w-48" />
-        </div>
-      </div>
-      
-      {/* Search Items Card */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        <div className="p-6 border-b">
-          <div className="flex items-center">
-            <Skeleton className="h-5 w-5 mr-2" />
-            <Skeleton className="h-6 w-48" />
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header matching Items tab style */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48 animate-pulse" />
+            <Skeleton className="h-5 w-64 animate-pulse" />
           </div>
         </div>
         
-        <div className="p-6">
-          {/* Search Input */}
-          <div className="mb-4">
-            <Skeleton className="h-10 w-64 rounded-md" />
+        {/* Search Items Card with proper styling */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center">
+              <Skeleton className="h-5 w-5 mr-2 animate-pulse" />
+              <Skeleton className="h-6 w-48 animate-pulse" />
+            </div>
           </div>
           
-          {/* Items Table */}
-          <div className="border border-gray-200 rounded-md overflow-hidden">
-            <div className="bg-gray-50 px-6 py-3 border-b">
-              <div className="flex space-x-8">
-                <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-16" />
-              </div>
+          <div className="p-6">
+            {/* Search Input */}
+            <div className="mb-4">
+              <Skeleton className="h-10 w-64 rounded-md animate-pulse" />
             </div>
             
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="px-6 py-4 border-b border-gray-100 last:border-b-0">
-                <div className="flex items-center space-x-8">
-                  <Skeleton className="h-4 w-20" />
-                  <div className="flex-1">
-                    <Skeleton className="h-4 w-32 mb-1" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Skeleton className="h-6 w-16 rounded-full" />
-                    <Skeleton className="h-4 w-12" />
-                  </div>
-                  <Skeleton className="h-8 w-16 rounded-md" />
-                </div>
-              </div>
-            ))}
+            {/* Items Table matching InventoryTableSkeleton structure */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {['SKU', 'Name', 'Total Stock', 'Status', 'Actions'].map((_, i) => (
+                      <th key={i} className="px-6 py-3 text-left">
+                        <Skeleton className="h-4 w-16 animate-pulse" />
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <tr key={i} className="border-b border-gray-200">
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-20 animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-32 animate-pulse" />
+                          <Skeleton className="h-3 w-24 animate-pulse" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-12 animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-6 w-20 rounded-full animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-8 w-16 rounded-md animate-pulse" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+        
+        {/* Floating Action Button */}
+        <div className="fixed bottom-6 right-6">
+          <Skeleton className="h-14 w-14 rounded-full animate-pulse shadow-lg" />
+        </div>
       </div>
-      
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6">
-        <Skeleton className="h-14 w-14 rounded-full" />
+    </div>
+  );
+};
+
+// Transfer Items Page Skeleton - matches Items tab quality
+export const TransferItemsSkeleton: React.FC = () => {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header matching Items tab style */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48 animate-pulse" />
+            <Skeleton className="h-5 w-64 animate-pulse" />
+          </div>
+        </div>
+        
+        {/* Search Items Card with proper styling */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center">
+              <Skeleton className="h-5 w-5 mr-2 animate-pulse" />
+              <Skeleton className="h-6 w-48 animate-pulse" />
+            </div>
+          </div>
+          
+          <div className="p-6">
+            {/* Search Input */}
+            <div className="mb-4">
+              <Skeleton className="h-10 w-64 rounded-md animate-pulse" />
+            </div>
+            
+            {/* Items Table matching InventoryTableSkeleton structure */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {["SKU", "Name", "Total Stock", "Locations", "Actions"].map((_, i) => (
+                      <th key={i} className="px-6 py-3 text-left">
+                        <Skeleton className="h-4 w-16 animate-pulse" />
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <tr key={i} className="border-b border-gray-200">
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-20 animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-32 animate-pulse" />
+                          <Skeleton className="h-3 w-24 animate-pulse" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-12 animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-1">
+                          <Skeleton className="h-6 w-16 rounded-full animate-pulse" />
+                          <Skeleton className="h-6 w-16 rounded-full animate-pulse" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-8 w-16 rounded-md animate-pulse" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        {/* Floating Action Button */}
+        <div className="fixed bottom-6 right-6">
+          <Skeleton className="h-14 w-14 rounded-full animate-pulse shadow-lg" />
+        </div>
       </div>
     </div>
   );

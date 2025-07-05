@@ -10,6 +10,7 @@ import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
 import useTransactions from '../hooks/useTransactions';
 import { useAuth } from '../context/AuthContext';
+import { TransferItemsSkeleton } from './ui/InventorySkeletons';
 
 interface TransferItem {
     itemId: string;
@@ -125,54 +126,7 @@ const TransferItemsComponent: React.FC = () => {
     };
 
     if (isLoading) {
-        return (
-            <div className="space-y-6">
-                {/* Search Items Card */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <Search className="mr-2 h-5 w-5" />
-                            Select Items to Transfer
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="mb-4">
-                            <div className="h-10 w-64 bg-slate-200 rounded-md animate-pulse"></div>
-                        </div>
-                        
-                        <div className="border border-gray-200 rounded-md overflow-hidden">
-                            <div className="bg-gray-50 px-6 py-3 border-b">
-                                <div className="flex space-x-8">
-                                    <div className="h-4 w-12 bg-slate-200 rounded animate-pulse"></div>
-                                    <div className="h-4 w-16 bg-slate-200 rounded animate-pulse"></div>
-                                    <div className="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
-                                    <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
-                                    <div className="h-4 w-16 bg-slate-200 rounded animate-pulse"></div>
-                                </div>
-                            </div>
-                            
-                            {Array.from({ length: 10 }).map((_, i) => (
-                                <div key={i} className="px-6 py-4 border-b border-gray-100 last:border-b-0">
-                                    <div className="flex items-center space-x-8">
-                                        <div className="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
-                                        <div className="flex-1">
-                                            <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-1"></div>
-                                            <div className="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
-                                        </div>
-                                        <div className="h-4 w-16 bg-slate-200 rounded animate-pulse"></div>
-                                        <div className="flex gap-1">
-                                            <div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse"></div>
-                                            <div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse"></div>
-                                        </div>
-                                        <div className="h-8 w-16 bg-slate-200 rounded-md animate-pulse"></div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        );
+        return <TransferItemsSkeleton />;
     }
 
     return (
