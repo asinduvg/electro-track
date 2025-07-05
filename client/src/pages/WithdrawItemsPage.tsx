@@ -4,12 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } fro
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { PackageMinus, Plus, ArrowLeft, Search, AlertTriangle } from 'lucide-react';
+import { PackageMinus, Minus, ArrowLeft, Search, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
 import useTransactions from '../hooks/useTransactions';
+import { useAuth } from '../context/AuthContext';
 
 interface WithdrawItem {
     itemId: string;
@@ -19,10 +20,11 @@ interface WithdrawItem {
 }
 
 const WithdrawItemsPage: React.FC = () => {
-    const { items, getTotalQuantity } = useItems();
+    const { items, getTotalQuantity, refreshItems } = useItems();
     const { locations } = useLocations();
-    const { stocks } = useStocks();
+    const { stocks, refreshStocks } = useStocks();
     const { createTransaction } = useTransactions();
+    const { currentUser } = useAuth();
     const [withdrawItems, setWithdrawItems] = useState<WithdrawItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,6 +75,10 @@ const WithdrawItemsPage: React.FC = () => {
 
     const handleSubmitWithdraw = async () => {
         if (withdrawItems.length === 0) return;
+        if (!currentUser?.id) {
+            alert('User not authenticated. Please log in.');
+            return;
+        }
 
         // Validate all items can be withdrawn
         for (const withdrawItem of withdrawItems) {
@@ -91,9 +97,14 @@ const WithdrawItemsPage: React.FC = () => {
                     quantity: withdrawItem.quantity,
                     from_location_id: withdrawItem.locationId,
                     notes: withdrawItem.notes || `Withdrew ${withdrawItem.quantity} units`,
-                    performed_by: 'Current User'
+                    performed_by: currentUser.id
                 });
             }
+            
+            // Refresh data to reflect new stock levels
+            await refreshItems();
+            await refreshStocks();
+            
             setWithdrawItems([]);
             alert('Items withdrawn successfully!');
         } catch (error) {
@@ -193,8 +204,8 @@ const WithdrawItemsPage: React.FC = () => {
                                                 onClick={() => addItemToWithdraw(item.id)}
                                                 disabled={totalStock === 0}
                                             >
-                                                <Plus className="h-4 w-4 mr-1" />
-                                                Add
+                                                <Minus className="h-4 w-4 mr-1" />
+                                                Withdraw
                                             </Button>
                                         </TableCell>
                                     </TableRow>
