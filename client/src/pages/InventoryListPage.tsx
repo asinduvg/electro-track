@@ -55,53 +55,50 @@ const InventoryListPage: React.FC = () => {
             const matchesCategory = categoryFilter === 'all' || item.category_id?.toString() === categoryFilter;
             
             // Price range filter
-            const itemPrice = Number(item.unit_cost) || 0;
-            const matchesPriceMin = !priceRangeMin || itemPrice >= Number(priceRangeMin);
-            const matchesPriceMax = !priceRangeMax || itemPrice <= Number(priceRangeMax);
+            const matchesPriceRange = (!priceRangeMin || parseFloat(item.unit_cost) >= parseFloat(priceRangeMin)) &&
+                                    (!priceRangeMax || parseFloat(item.unit_cost) <= parseFloat(priceRangeMax));
             
             // Stock range filter
-            const itemStock = getTotalQuantity(item.id, stocks);
-            const matchesStockMin = !stockRangeMin || itemStock >= Number(stockRangeMin);
-            const matchesStockMax = !stockRangeMax || itemStock <= Number(stockRangeMax);
+            const totalStock = getTotalQuantity(item.id, stocks);
+            const matchesStockRange = (!stockRangeMin || totalStock >= parseInt(stockRangeMin)) &&
+                                    (!stockRangeMax || totalStock <= parseInt(stockRangeMax));
             
-            return matchesSearch && matchesStatus && matchesCategory && 
-                   matchesPriceMin && matchesPriceMax && matchesStockMin && matchesStockMax;
+            return matchesSearch && matchesStatus && matchesCategory && matchesPriceRange && matchesStockRange;
         });
-        
+
         // Sort items
-        filtered.sort((a, b) => {
-            let aValue: any;
-            let bValue: any;
+        return filtered.sort((a, b) => {
+            let comparison = 0;
             
             switch (sortField) {
                 case 'name':
-                    aValue = a.name?.toLowerCase() || '';
-                    bValue = b.name?.toLowerCase() || '';
+                    comparison = (a.name || '').localeCompare(b.name || '');
                     break;
                 case 'sku':
-                    aValue = a.sku?.toLowerCase() || '';
-                    bValue = b.sku?.toLowerCase() || '';
+                    comparison = (a.sku || '').localeCompare(b.sku || '');
                     break;
                 case 'stock':
-                    aValue = getTotalQuantity(a.id, stocks);
-                    bValue = getTotalQuantity(b.id, stocks);
+                    const stockA = getTotalQuantity(a.id, stocks);
+                    const stockB = getTotalQuantity(b.id, stocks);
+                    comparison = stockA - stockB;
                     break;
                 case 'cost':
-                    aValue = Number(a.unit_cost) || 0;
-                    bValue = Number(b.unit_cost) || 0;
+                    comparison = parseFloat(a.unit_cost) - parseFloat(b.unit_cost);
                     break;
-                default:
-                    return 0;
             }
             
-            if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-            if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-            return 0;
+            return sortDirection === 'asc' ? comparison : -comparison;
         });
-        
-        return filtered;
-    }, [items, searchQuery, statusFilter, categoryFilter, sortField, sortDirection, stocks, getTotalQuantity, 
-        priceRangeMin, priceRangeMax, stockRangeMin, stockRangeMax]);
+    }, [items, stocks, searchQuery, statusFilter, categoryFilter, priceRangeMin, priceRangeMax, stockRangeMin, stockRangeMax, sortField, sortDirection, getTotalQuantity]);
+
+    const handleSort = (field: 'name' | 'sku' | 'stock' | 'cost') => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
 
     const clearAllFilters = () => {
         setSearchQuery('');
@@ -111,20 +108,6 @@ const InventoryListPage: React.FC = () => {
         setPriceRangeMax('');
         setStockRangeMin('');
         setStockRangeMax('');
-    };
-    
-    const handleSort = (field: typeof sortField) => {
-        if (sortField === field) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortField(field);
-            setSortDirection('asc');
-        }
-    };
-    
-    const getSortIcon = (field: typeof sortField) => {
-        if (sortField !== field) return <ArrowUpDown className="h-4 w-4" />;
-        return sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
     };
 
     const getStatusBadge = (status: string) => {
@@ -142,14 +125,20 @@ const InventoryListPage: React.FC = () => {
         }
     };
 
+    const getSortIcon = (field: 'name' | 'sku' | 'stock' | 'cost') => {
+        if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3" />;
+        return sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />;
+    };
+
+    // Show skeleton while loading
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900">Inventory Items</h1>
-                            <p className="mt-2 text-slate-600">Manage your electronic components and equipment</p>
+                        <div className="space-y-2">
+                            <div className="h-8 bg-slate-200 rounded w-64 animate-pulse"></div>
+                            <div className="h-5 bg-slate-200 rounded w-96 animate-pulse"></div>
                         </div>
                         <Link to="/inventory/add">
                             <Button className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-3 font-medium transition-colors shadow-lg hover:shadow-xl">
@@ -194,7 +183,7 @@ const InventoryListPage: React.FC = () => {
                                 />
                             </div>
                             
-                            <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex flex-wrap gap-3">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -220,146 +209,151 @@ const InventoryListPage: React.FC = () => {
                                     ))}
                                 </select>
                                 
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                                    className={`flex items-center px-4 py-3 transition-colors ${
-                                        showAdvancedFilters 
-                                            ? 'bg-[#FFE5E9] border-[#FF385C] text-[#FF385C]' 
-                                            : 'bg-white border-slate-200 hover:bg-slate-50'
-                                    }`}
+                                    className="flex items-center border-slate-200 hover:bg-slate-50"
                                 >
                                     <Filter className="mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">
-                                        {showAdvancedFilters ? 'Hide Filters' : 'More Filters'}
-                                    </span>
+                                    {showAdvancedFilters ? 'Hide' : 'More'} Filters
                                 </Button>
                             </div>
                         </div>
                         
-                        {/* Advanced Filters Panel */}
                         {showAdvancedFilters && (
-                            <div className="mt-6 pt-6 border-t border-slate-200">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="mt-4 pt-4 border-t border-slate-200">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Min Price ($)
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            placeholder="0.00"
-                                            value={priceRangeMin}
-                                            onChange={(e) => setPriceRangeMin(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
-                                        />
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Price Range</label>
+                                        <div className="flex space-x-2">
+                                            <Input
+                                                type="number"
+                                                placeholder="Min $"
+                                                value={priceRangeMin}
+                                                onChange={(e) => setPriceRangeMin(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                            <Input
+                                                type="number"
+                                                placeholder="Max $"
+                                                value={priceRangeMax}
+                                                onChange={(e) => setPriceRangeMax(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                        </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Max Price ($)
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            placeholder="999.99"
-                                            value={priceRangeMax}
-                                            onChange={(e) => setPriceRangeMax(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Min Stock
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            placeholder="0"
-                                            value={stockRangeMin}
-                                            onChange={(e) => setStockRangeMin(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Max Stock
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            placeholder="9999"
-                                            value={stockRangeMax}
-                                            onChange={(e) => setStockRangeMax(e.target.value)}
-                                            className="border-slate-200 focus:border-slate-400 focus:ring-slate-400"
-                                        />
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Stock Range</label>
+                                        <div className="flex space-x-2">
+                                            <Input
+                                                type="number"
+                                                placeholder="Min stock"
+                                                value={stockRangeMin}
+                                                onChange={(e) => setStockRangeMin(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                            <Input
+                                                type="number"
+                                                placeholder="Max stock"
+                                                value={stockRangeMax}
+                                                onChange={(e) => setStockRangeMax(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="mt-4 flex justify-end">
+                                <div className="mt-4">
                                     <Button
                                         variant="outline"
                                         onClick={clearAllFilters}
-                                        className="px-4 py-2 text-sm bg-white border-slate-200 hover:bg-slate-50"
+                                        className="text-slate-600 hover:text-slate-800"
                                     >
                                         Clear All Filters
                                     </Button>
                                 </div>
                             </div>
                         )}
-                        
-                        <div className="mt-4 text-sm text-slate-600">
-                            Showing {filteredAndSortedItems.length} of {items.length} items
-                        </div>
                     </CardContent>
                 </Card>
 
+                {/* Results Summary */}
+                <div className="mb-6">
+                    <div className="flex items-center justify-between">
+                        <p className="text-slate-600">
+                            Showing {filteredAndSortedItems.length} of {items.length} items
+                        </p>
+                        
+                        {/* Sort Controls */}
+                        <div className="flex items-center space-x-2">
+                            <span className="text-sm text-slate-600">Sort by:</span>
+                            <select
+                                value={sortField}
+                                onChange={(e) => setSortField(e.target.value as 'name' | 'sku' | 'stock' | 'cost')}
+                                className="px-3 py-2 border border-slate-200 rounded text-sm"
+                            >
+                                <option value="name">Name</option>
+                                <option value="sku">SKU</option>
+                                <option value="stock">Stock</option>
+                                <option value="cost">Cost</option>
+                            </select>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                                className="flex items-center"
+                            >
+                                {sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Items Table */}
                 <Card className="bg-white border-0 shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="flex items-center text-slate-900">
-                            <Package className="mr-2 h-5 w-5 text-emerald-600" />
-                            All Items ({items.length})
-                        </CardTitle>
-                    </CardHeader>
                     <CardContent className="p-0">
                         <div className="overflow-x-auto">
                             <Table>
-                                <TableHead>
-                                    <TableRow className="border-slate-200">
-                                        <TableHeaderCell className="text-slate-700">
-                                            <button 
-                                                onClick={() => handleSort('sku')}
-                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
-                                            >
-                                                <span>SKU</span>
+                                <TableHead className="bg-slate-50">
+                                    <TableRow>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100 transition-colors"
+                                            onClick={() => handleSort('sku')}
+                                        >
+                                            <div className="flex items-center">
+                                                SKU
                                                 {getSortIcon('sku')}
-                                            </button>
+                                            </div>
                                         </TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700">
-                                            <button 
-                                                onClick={() => handleSort('name')}
-                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
-                                            >
-                                                <span>Name</span>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100 transition-colors"
+                                            onClick={() => handleSort('name')}
+                                        >
+                                            <div className="flex items-center">
+                                                Name
                                                 {getSortIcon('name')}
-                                            </button>
+                                            </div>
                                         </TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700 hidden md:table-cell">Category</TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700">
-                                            <button 
-                                                onClick={() => handleSort('stock')}
-                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
-                                            >
-                                                <span>Stock</span>
+                                        <TableHeaderCell className="text-slate-700 font-semibold hidden md:table-cell">Category</TableHeaderCell>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100 transition-colors"
+                                            onClick={() => handleSort('stock')}
+                                        >
+                                            <div className="flex items-center">
+                                                Total Stock
                                                 {getSortIcon('stock')}
-                                            </button>
+                                            </div>
                                         </TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700 hidden lg:table-cell">
-                                            <button 
-                                                onClick={() => handleSort('cost')}
-                                                className="flex items-center space-x-1 hover:text-emerald-600 transition-colors"
-                                            >
-                                                <span>Unit Cost</span>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100 transition-colors hidden lg:table-cell"
+                                            onClick={() => handleSort('cost')}
+                                        >
+                                            <div className="flex items-center">
+                                                Unit Cost
                                                 {getSortIcon('cost')}
-                                            </button>
+                                            </div>
                                         </TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700">Status</TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700">Actions</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Status</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Actions</TableHeaderCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -407,11 +401,15 @@ const InventoryListPage: React.FC = () => {
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={7} className="text-center py-12">
-                                                <div className="flex flex-col items-center">
-                                                    <Package className="h-12 w-12 text-slate-400 mb-4" />
-                                                    <p className="text-slate-500">No items found</p>
-                                                    <p className="text-sm text-slate-400 mt-1">Try adjusting your search or filters</p>
-                                                </div>
+                                                <Package className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+                                                <h3 className="text-lg font-medium text-slate-900 mb-2">No items found</h3>
+                                                <p className="text-slate-500 mb-4">Try adjusting your search criteria or add a new item.</p>
+                                                <Link to="/inventory/add">
+                                                    <Button className="bg-[#FF385C] hover:bg-[#E31C5F] text-white">
+                                                        <Plus className="mr-2 h-4 w-4" />
+                                                        Add New Item
+                                                    </Button>
+                                                </Link>
                                             </TableCell>
                                         </TableRow>
                                     )}

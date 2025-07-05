@@ -7,7 +7,7 @@ import Layout from './components/layout/Layout';
 // Pages
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import InventoryListPage from './pages/InventoryListPage';
+import InventoryTabsPage from './pages/InventoryTabsPage';
 import AddItemPage from './pages/AddItemPage';
 
 import ItemDetailPage from './pages/ItemDetailPage';
@@ -90,7 +90,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <Layout>
-                                            <InventoryListPage />
+                                            <InventoryTabsPage />
                                         </Layout>
                                     </ProtectedRoute>
                                 } 
