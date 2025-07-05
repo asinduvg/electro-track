@@ -254,6 +254,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Item locations routes
   app.get("/api/item-locations", async (req, res) => {
     try {
+      // Add cache-busting headers to ensure fresh data
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       const itemLocations = await storage.getAllItemLocations();
       res.json(itemLocations);
     } catch (error) {
