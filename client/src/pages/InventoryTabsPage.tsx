@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Package, PackageCheck, PackageMinus, ArrowRightLeft, Plus } from 'lucide-react';
+import { Package, PackageCheck, PackageMinus, ArrowRightLeft, Plus, PackagePlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import ReceiveItemsPage from './ReceiveItemsPage';
 import WithdrawItemsPage from './WithdrawItemsPage';
 import InventoryListPage from './InventoryListPage';
-import AddItemPage from './AddItemPage';
+import AddItemForm from '../components/AddItemForm';
 
 type TabType = 'items' | 'receive' | 'withdraw' | 'transfer' | 'add';
 
@@ -14,10 +14,10 @@ const InventoryTabsPage: React.FC = () => {
 
     const tabs = [
         { id: 'items', label: 'Items', icon: Package, description: 'View and manage inventory items' },
+        { id: 'add', label: 'Add Item', icon: PackagePlus, description: 'Add new items to inventory' },
         { id: 'receive', label: 'Receive', icon: PackageCheck, description: 'Receive new stock' },
         { id: 'withdraw', label: 'Withdraw', icon: PackageMinus, description: 'Withdraw items from stock' },
         { id: 'transfer', label: 'Transfer', icon: ArrowRightLeft, description: 'Transfer items between locations' },
-        { id: 'add', label: 'Add Item', icon: Plus, description: 'Add new items to inventory' },
     ];
 
     const renderTabContent = () => {
@@ -61,19 +61,7 @@ const InventoryTabsPage: React.FC = () => {
                     </div>
                 );
             case 'add':
-                return (
-                    <div className="relative">
-                        <style>
-                            {`
-                                .add-item-page .inventory-back-button { display: none !important; }
-                                .add-item-page h1 { display: none !important; }
-                            `}
-                        </style>
-                        <div className="add-item-page">
-                            <AddItemPage />
-                        </div>
-                    </div>
-                );
+                return <AddItemForm />;
             case 'items':
             default:
                 return (
@@ -84,7 +72,7 @@ const InventoryTabsPage: React.FC = () => {
                             `}
                         </style>
                         <div className="items-page">
-                            <InventoryListPage />
+                            <InventoryListPage hideAddButton={true} />
                         </div>
                     </div>
                 );

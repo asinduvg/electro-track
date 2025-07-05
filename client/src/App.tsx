@@ -8,7 +8,7 @@ import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import InventoryTabsPage from './pages/InventoryTabsPage';
-import AddItemPage from './pages/AddItemPage';
+
 
 import ItemDetailPage from './pages/ItemDetailPage';
 import LocationsPage from './pages/LocationsPage';
@@ -105,16 +105,7 @@ function App() {
                                     </ProtectedRoute>
                                 } 
                             />
-                            <Route 
-                                path="/inventory/add" 
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout>
-                                            <AddItemPage />
-                                        </Layout>
-                                    </ProtectedRoute>
-                                } 
-                            />
+
 
                             <Route 
                                 path="/locations" 

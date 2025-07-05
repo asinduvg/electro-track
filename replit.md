@@ -127,3 +127,11 @@ Changelog:
   * Fixed stock status logic - items with 0 stock now correctly show "Out of Stock" instead of "Low Stock"
   * Added color-coded stock numbers to main inventory page (red=0, orange=low, green=normal)
   * Enforced minimum stock validation to be greater than 0 (minimum value is 1)
+- July 05, 2025. Implemented comprehensive tab-based inventory system:
+  * Created unified inventory page with five tabs: Items, Add Item, Receive, Withdraw, Transfer
+  * Moved Add Item tab to second position with PackagePlus icon (box with plus symbol)
+  * Removed all "Back to Inventory" buttons from embedded pages within tabs
+  * Removed all "Add New Item" buttons from Items tab to eliminate duplication
+  * Created new AddItemForm component that works properly within tab system
+  * Removed standalone /inventory/add route - all functionality now in tabs
+  * Fixed add item functionality to work without navigation dependencies
