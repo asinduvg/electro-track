@@ -11,7 +11,7 @@ import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
 import useTransactions from '../hooks/useTransactions';
 import { useAuth } from '../context/AuthContext';
-import { InventoryTableSkeleton } from '../components/ui/InventorySkeletons';
+import { WithdrawItemsSkeleton } from '../components/ui/InventorySkeletons';
 
 interface WithdrawItem {
     itemId: string;
@@ -118,6 +118,10 @@ const WithdrawItemsPage: React.FC = () => {
         }
     };
 
+    if (isLoading) {
+        return <WithdrawItemsSkeleton />;
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -163,38 +167,35 @@ const WithdrawItemsPage: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {isLoading ? (
-                                <InventoryTableSkeleton />
-                            ) : (
-                                filteredItems.slice(0, 10).map((item) => {
-                                    const totalStock = getTotalQuantity(item.id, stocks);
-                                    const isLowStock = totalStock <= (item.minimum_stock || 1);
-                                    return (
-                                        <TableRow key={item.id}>
-                                            <TableCell className="font-medium">{item.sku}</TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="font-medium">{item.name}</div>
-                                                    <div className="text-sm text-gray-500">{item.description}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`font-medium ${
-                                                    totalStock === 0 ? 'text-red-600' : 
-                                                    isLowStock ? 'text-orange-600' : 'text-green-600'
-                                                }`}>
-                                                    {totalStock}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                {totalStock === 0 ? (
-                                                    <Badge variant="danger">Out of Stock</Badge>
-                                                ) : isLowStock ? (
-                                                    <Badge variant="warning">Low Stock</Badge>
-                                                ) : (
-                                                    <Badge variant="success">Available</Badge>
-                                                )}
-                                            </TableCell>
+                            {filteredItems.slice(0, 10).map((item) => {
+                                const totalStock = getTotalQuantity(item.id, stocks);
+                                const isLowStock = totalStock <= (item.minimum_stock || 1);
+                                return (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="font-medium">{item.sku}</TableCell>
+                                        <TableCell>
+                                            <div>
+                                                <div className="font-medium">{item.name}</div>
+                                                <div className="text-sm text-gray-500">{item.description}</div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={`font-medium ${
+                                                totalStock === 0 ? 'text-red-600' : 
+                                                isLowStock ? 'text-orange-600' : 'text-green-600'
+                                            }`}>
+                                                {totalStock}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            {totalStock === 0 ? (
+                                                <Badge variant="danger">Out of Stock</Badge>
+                                            ) : isLowStock ? (
+                                                <Badge variant="warning">Low Stock</Badge>
+                                            ) : (
+                                                <Badge variant="success">Available</Badge>
+                                            )}
+                                        </TableCell>
                                         <TableCell>
                                             <Button 
                                                 variant="outline" 
@@ -208,8 +209,7 @@ const WithdrawItemsPage: React.FC = () => {
                                         </TableCell>
                                     </TableRow>
                                 );
-                            })
-                            )}
+                            })}
                         </TableBody>
                     </Table>
                 </CardContent>

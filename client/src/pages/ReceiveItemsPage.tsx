@@ -11,7 +11,7 @@ import useLocations from '../hooks/useLocations';
 import useTransactions from '../hooks/useTransactions';
 import useStocks from '../hooks/useStocks';
 import { useAuth } from '../context/AuthContext';
-import { InventoryTableSkeleton } from '../components/ui/InventorySkeletons';
+import { ReceiveItemsSkeleton } from '../components/ui/InventorySkeletons';
 
 interface ReceiveItem {
     itemId: string;
@@ -98,6 +98,10 @@ const ReceiveItemsPage: React.FC = () => {
         }
     };
 
+    if (isLoading) {
+        return <ReceiveItemsSkeleton />;
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -142,34 +146,30 @@ const ReceiveItemsPage: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {isLoading ? (
-                                <InventoryTableSkeleton />
-                            ) : (
-                                filteredItems.slice(0, 10).map((item) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.sku}</TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <div className="font-medium">{item.name}</div>
-                                                <div className="text-sm text-gray-500">{item.description}</div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary">{getTotalQuantity(item.id, stocks)} units</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                onClick={() => addItemToReceive(item.id)}
-                                            >
-                                                <Plus className="h-4 w-4 mr-1" />
-                                                Add
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
+                            {filteredItems.slice(0, 10).map((item) => (
+                                <TableRow key={item.id}>
+                                    <TableCell className="font-medium">{item.sku}</TableCell>
+                                    <TableCell>
+                                        <div>
+                                            <div className="font-medium">{item.name}</div>
+                                            <div className="text-sm text-gray-500">{item.description}</div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary">{getTotalQuantity(item.id, stocks)} units</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => addItemToReceive(item.id)}
+                                        >
+                                            <Plus className="h-4 w-4 mr-1" />
+                                            Add
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </CardContent>

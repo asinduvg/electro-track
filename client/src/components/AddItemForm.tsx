@@ -5,7 +5,7 @@ import { Input } from './ui/Input';
 import { Package, Plus, Check, Upload, X, Image } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useCategories from '../hooks/useCategories';
-import { FormSkeleton } from './ui/InventorySkeletons';
+import { AddItemFormSkeleton } from './ui/InventorySkeletons';
 import useLocations from '../hooks/useLocations';
 
 interface AddItemFormProps {
@@ -183,7 +183,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onSuccess }) => {
     };
 
     if (categoriesLoading || locationsLoading) {
-        return <FormSkeleton />;
+        return <AddItemFormSkeleton />;
     }
 
     return (

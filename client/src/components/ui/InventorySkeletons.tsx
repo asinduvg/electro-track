@@ -223,3 +223,185 @@ export const SearchResultsSkeleton: React.FC = () => {
     </div>
   );
 };
+
+// Add Item Form Skeleton
+export const AddItemFormSkeleton: React.FC = () => {
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Header */}
+      <div className="mb-8">
+        <Skeleton className="h-8 w-48 mb-2" />
+        <Skeleton className="h-5 w-64" />
+      </div>
+      
+      {/* Form Card */}
+      <div className="bg-white border-0 shadow-lg rounded-lg">
+        <div className="pb-6 p-6 border-b">
+          <div className="flex items-center">
+            <Skeleton className="h-6 w-6 mr-2" />
+            <Skeleton className="h-6 w-32" />
+          </div>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          {/* Form Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Form Fields */}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i}>
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            ))}
+          </div>
+          
+          {/* Description Field */}
+          <div>
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-20 w-full rounded-md" />
+          </div>
+          
+          {/* Image Upload Section */}
+          <div>
+            <Skeleton className="h-4 w-28 mb-2" />
+            <Skeleton className="h-32 w-full rounded-md border-2 border-dashed" />
+          </div>
+          
+          {/* Submit Button */}
+          <div className="pt-4">
+            <Skeleton className="h-10 w-32 rounded-md" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Receive Items Page Skeleton
+export const ReceiveItemsSkeleton: React.FC = () => {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-9 w-32 rounded-md" />
+          <Skeleton className="h-9 w-48" />
+        </div>
+      </div>
+      
+      {/* Search Items Card */}
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="p-6 border-b">
+          <div className="flex items-center">
+            <Skeleton className="h-5 w-5 mr-2" />
+            <Skeleton className="h-6 w-48" />
+          </div>
+        </div>
+        
+        <div className="p-6">
+          {/* Search Input */}
+          <div className="mb-4">
+            <Skeleton className="h-10 w-64 rounded-md" />
+          </div>
+          
+          {/* Items Table */}
+          <div className="border border-gray-200 rounded-md overflow-hidden">
+            <div className="bg-gray-50 px-6 py-3 border-b">
+              <div className="flex space-x-8">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </div>
+            
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="px-6 py-4 border-b border-gray-100 last:border-b-0">
+                <div className="flex items-center space-x-8">
+                  <Skeleton className="h-4 w-20" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-32 mb-1" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-8 w-16 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 right-6">
+        <Skeleton className="h-14 w-14 rounded-full" />
+      </div>
+    </div>
+  );
+};
+
+// Withdraw Items Page Skeleton
+export const WithdrawItemsSkeleton: React.FC = () => {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-9 w-32 rounded-md" />
+          <Skeleton className="h-9 w-48" />
+        </div>
+      </div>
+      
+      {/* Search Items Card */}
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="p-6 border-b">
+          <div className="flex items-center">
+            <Skeleton className="h-5 w-5 mr-2" />
+            <Skeleton className="h-6 w-48" />
+          </div>
+        </div>
+        
+        <div className="p-6">
+          {/* Search Input */}
+          <div className="mb-4">
+            <Skeleton className="h-10 w-64 rounded-md" />
+          </div>
+          
+          {/* Items Table */}
+          <div className="border border-gray-200 rounded-md overflow-hidden">
+            <div className="bg-gray-50 px-6 py-3 border-b">
+              <div className="flex space-x-8">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </div>
+            
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="px-6 py-4 border-b border-gray-100 last:border-b-0">
+                <div className="flex items-center space-x-8">
+                  <Skeleton className="h-4 w-20" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-32 mb-1" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                  <Skeleton className="h-8 w-16 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 right-6">
+        <Skeleton className="h-14 w-14 rounded-full" />
+      </div>
+    </div>
+  );
+};
