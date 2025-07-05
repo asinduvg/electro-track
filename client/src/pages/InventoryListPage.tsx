@@ -382,7 +382,14 @@ const InventoryListPage: React.FC = () => {
                                                     <TableCell className="text-slate-600 hidden md:table-cell">
                                                         {category ? `${category.category} - ${category.subcategory}` : 'Uncategorized'}
                                                     </TableCell>
-                                                    <TableCell className="text-slate-900 font-semibold">{totalStock}</TableCell>
+                                                    <TableCell>
+                                                        <span className={`font-semibold ${
+                                                            totalStock === 0 ? 'text-red-600' : 
+                                                            totalStock <= (item.minimum_stock || 1) ? 'text-orange-600' : 'text-green-600'
+                                                        }`}>
+                                                            {totalStock}
+                                                        </span>
+                                                    </TableCell>
                                                     <TableCell className="text-slate-900 hidden lg:table-cell">${Number(item.unit_cost).toFixed(2)}</TableCell>
                                                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                                                     <TableCell>

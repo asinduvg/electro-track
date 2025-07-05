@@ -120,3 +120,10 @@ Preferred communication style: Simple, everyday language.
 
 Changelog:
 - July 05, 2025. Initial setup
+- July 05, 2025. Fixed UI consistency issues:
+  * Fixed status color inconsistency - low stock now shows orange (warning) across all pages
+  * Removed confusing "Remove" buttons and replaced with clear "×" icons in withdraw/receive tables
+  * Moved primary action buttons (Withdraw/Receive) to prominent bottom-right floating position
+  * Fixed stock status logic - items with 0 stock now correctly show "Out of Stock" instead of "Low Stock"
+  * Added color-coded stock numbers to main inventory page (red=0, orange=low, green=normal)
+  * Enforced minimum stock validation to be greater than 0 (minimum value is 1)

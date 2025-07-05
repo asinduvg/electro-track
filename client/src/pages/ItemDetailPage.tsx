@@ -424,7 +424,7 @@ const ItemDetailPage: React.FC = () => {
                                                             type="number"
                                                             min="0"
                                                             value={editedItem.minimum_stock || ''}
-                                                            onChange={(e) => handleInputChange('minimum_stock', Math.max(0, parseInt(e.target.value) || 0))}
+                                                            onChange={(e) => handleInputChange('minimum_stock', Math.max(1, parseInt(e.target.value) || 1))}
                                                             className="w-full"
                                                             placeholder="0"
                                                         />

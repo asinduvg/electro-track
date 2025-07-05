@@ -156,7 +156,7 @@ const AddItemPage: React.FC = () => {
                 ...formData,
                 category_id: parseInt(formData.category_id),
                 unit_cost: formData.unit_cost,
-                minimum_stock: parseInt(formData.minimum_stock),
+                minimum_stock: Math.max(1, parseInt(formData.minimum_stock) || 1),
                 image_url: imageDataUrls[0] || null // Store first image as primary
             };
 

@@ -162,7 +162,7 @@ const WithdrawItemsPage: React.FC = () => {
                         <TableBody>
                             {filteredItems.slice(0, 10).map((item) => {
                                 const totalStock = getTotalQuantity(item.id, stocks);
-                                const isLowStock = totalStock <= (item.minimum_stock || 0);
+                                const isLowStock = totalStock <= (item.minimum_stock || 1);
                                 return (
                                     <TableRow key={item.id}>
                                         <TableCell className="font-medium">{item.sku}</TableCell>
@@ -181,10 +181,10 @@ const WithdrawItemsPage: React.FC = () => {
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            {isLowStock ? (
-                                                <Badge variant="warning">Low Stock</Badge>
-                                            ) : totalStock === 0 ? (
+                                            {totalStock === 0 ? (
                                                 <Badge variant="danger">Out of Stock</Badge>
+                                            ) : isLowStock ? (
+                                                <Badge variant="warning">Low Stock</Badge>
                                             ) : (
                                                 <Badge variant="success">Available</Badge>
                                             )}
