@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '../components/ui/Table';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { PackageMinus, Minus, Search, AlertTriangle, X } from 'lucide-react';
+import { PackageMinus, Minus, Search, X, Filter, ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
-import useStocks from '../hooks/useStocks';
 import useTransactions from '../hooks/useTransactions';
+import useStocks from '../hooks/useStocks';
+import useCategories from '../hooks/useCategories';
 import { useAuth } from '../context/AuthContext';
 import { WithdrawItemsSkeleton } from '../components/ui/InventorySkeletons';
 
@@ -22,21 +23,130 @@ interface WithdrawItem {
 const WithdrawItemsPage: React.FC = () => {
     const { items, getTotalQuantity, refreshItems, isLoading: itemsLoading } = useItems();
     const { locations, isLoading: locationsLoading } = useLocations();
-    const { stocks, refreshStocks, isLoading: stocksLoading } = useStocks();
     const { createTransaction } = useTransactions();
+    const { stocks, refreshStocks, isLoading: stocksLoading } = useStocks();
+    const { categories, isLoading: categoriesLoading } = useCategories();
     const { currentUser } = useAuth();
     const [withdrawItems, setWithdrawItems] = useState<WithdrawItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [categoryFilter, setCategoryFilter] = useState('all');
+    const [sortField, setSortField] = useState<'name' | 'sku' | 'stock' | 'cost'>('name');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [priceRangeMin, setPriceRangeMin] = useState('');
+    const [priceRangeMax, setPriceRangeMax] = useState('');
+    const [stockRangeMin, setStockRangeMin] = useState('');
+    const [stockRangeMax, setStockRangeMax] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const isLoading = itemsLoading || locationsLoading || stocksLoading;
+    const isLoading = itemsLoading || locationsLoading || stocksLoading || categoriesLoading;
 
-    const filteredItems = items.filter(item =>
-        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.sku?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Filtered and sorted items
+    const filteredAndSortedItems = useMemo(() => {
+        let filtered = items.filter(item => {
+            // Search filter
+            const matchesSearch = !searchQuery || 
+                item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+            
+            // Status filter
+            const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+            
+            // Category filter
+            const matchesCategory = categoryFilter === 'all' || item.category_id?.toString() === categoryFilter;
+            
+            // Price range filter
+            const matchesPriceRange = (!priceRangeMin || parseFloat(item.unit_cost) >= parseFloat(priceRangeMin)) &&
+                                    (!priceRangeMax || parseFloat(item.unit_cost) <= parseFloat(priceRangeMax));
+            
+            // Stock range filter
+            const totalStock = getTotalQuantity(item.id, stocks);
+            const matchesStockRange = (!stockRangeMin || totalStock >= parseInt(stockRangeMin)) &&
+                                    (!stockRangeMax || totalStock <= parseInt(stockRangeMax));
+            
+            return matchesSearch && matchesStatus && matchesCategory && matchesPriceRange && matchesStockRange;
+        });
+
+        // Sort items
+        return filtered.sort((a, b) => {
+            let comparison = 0;
+            
+            switch (sortField) {
+                case 'name':
+                    comparison = (a.name || '').localeCompare(b.name || '');
+                    break;
+                case 'sku':
+                    comparison = (a.sku || '').localeCompare(b.sku || '');
+                    break;
+                case 'stock':
+                    const stockA = getTotalQuantity(a.id, stocks);
+                    const stockB = getTotalQuantity(b.id, stocks);
+                    comparison = stockA - stockB;
+                    break;
+                case 'cost':
+                    comparison = parseFloat(a.unit_cost) - parseFloat(b.unit_cost);
+                    break;
+            }
+            
+            return sortDirection === 'asc' ? comparison : -comparison;
+        });
+    }, [items, stocks, searchQuery, statusFilter, categoryFilter, priceRangeMin, priceRangeMax, stockRangeMin, stockRangeMax, sortField, sortDirection, getTotalQuantity]);
+
+    const handleSort = (field: 'name' | 'sku' | 'stock' | 'cost') => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const clearAllFilters = () => {
+        setSearchQuery('');
+        setStatusFilter('all');
+        setCategoryFilter('all');
+        setPriceRangeMin('');
+        setPriceRangeMax('');
+        setStockRangeMin('');
+        setStockRangeMax('');
+    };
+
+    const getSortIcon = (field: 'name' | 'sku' | 'stock' | 'cost') => {
+        if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3" />;
+        return sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />;
+    };
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'in_stock':
+                return <Badge variant="success">In Stock</Badge>;
+            case 'low_stock':
+                return <Badge variant="warning">Low Stock</Badge>;
+            case 'out_of_stock':
+                return <Badge variant="danger">Out of Stock</Badge>;
+            case 'discontinued':
+                return <Badge variant="secondary">Discontinued</Badge>;
+            default:
+                return <Badge variant="secondary">{status}</Badge>;
+        }
+    };
+
+    const getStockFromLocation = (itemId: string, locationId: string) => {
+        const stock = stocks.find(s => s.item_id === itemId && s.location_id === locationId);
+        return stock?.quantity || 0;
+    };
 
     const addItemToWithdraw = (itemId: string) => {
+        const item = items.find(i => i.id === itemId);
+        if (!item) return;
+
+        // Find the location with the most stock for this item
+        const itemStocks = stocks.filter(s => s.item_id === itemId && s.quantity > 0);
+        const maxStockLocation = itemStocks.reduce((max, current) => 
+            current.quantity > max.quantity ? current : max, itemStocks[0]);
+
         const existingIndex = withdrawItems.findIndex(wi => wi.itemId === itemId);
         if (existingIndex >= 0) {
             const updated = [...withdrawItems];
@@ -45,7 +155,7 @@ const WithdrawItemsPage: React.FC = () => {
         } else {
             setWithdrawItems([...withdrawItems, {
                 itemId,
-                locationId: locations[0]?.id || '',
+                locationId: maxStockLocation?.location_id || locations[0]?.id || '',
                 quantity: 1,
                 notes: ''
             }]);
@@ -62,16 +172,8 @@ const WithdrawItemsPage: React.FC = () => {
         setWithdrawItems(withdrawItems.filter((_, i) => i !== index));
     };
 
-    const getItemStock = (itemId: string, locationId?: string) => {
-        if (locationId) {
-            const stock = stocks.find(s => s.item_id === itemId && s.location_id === locationId);
-            return stock?.quantity || 0;
-        }
-        return getTotalQuantity(itemId, stocks);
-    };
-
     const canWithdraw = (itemId: string, locationId: string, quantity: number) => {
-        const availableStock = getItemStock(itemId, locationId);
+        const availableStock = getStockFromLocation(itemId, locationId);
         return availableStock >= quantity;
     };
 
@@ -82,10 +184,10 @@ const WithdrawItemsPage: React.FC = () => {
             return;
         }
 
-        // Validate all items can be withdrawn
+        // Validate all withdrawals
         for (const withdrawItem of withdrawItems) {
             if (!canWithdraw(withdrawItem.itemId, withdrawItem.locationId, withdrawItem.quantity)) {
-                alert('Insufficient stock for one or more items. Please check quantities.');
+                alert('Insufficient stock for one or more items.');
                 return;
             }
         }
@@ -117,7 +219,19 @@ const WithdrawItemsPage: React.FC = () => {
     };
 
     if (isLoading) {
-        return <WithdrawItemsSkeleton />;
+        return (
+            <div className="min-h-screen bg-slate-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <div className="space-y-2">
+                            <div className="h-8 bg-slate-200 rounded w-64 animate-pulse"></div>
+                            <div className="h-5 bg-slate-200 rounded w-96 animate-pulse"></div>
+                        </div>
+                    </div>
+                    <WithdrawItemsSkeleton />
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -143,15 +257,130 @@ const WithdrawItemsPage: React.FC = () => {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
+                            
+                            <div className="flex flex-wrap gap-3">
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="in_stock">In Stock</option>
+                                    <option value="low_stock">Low Stock</option>
+                                    <option value="out_of_stock">Out of Stock</option>
+                                    <option value="discontinued">Discontinued</option>
+                                </select>
+                                
+                                <select
+                                    value={categoryFilter}
+                                    onChange={(e) => setCategoryFilter(e.target.value)}
+                                    className="px-4 py-3 border border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-colors bg-white"
+                                >
+                                    <option value="all">All Categories</option>
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.category} - {category.subcategory}
+                                        </option>
+                                    ))}
+                                </select>
+                                
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                                    className="px-4 py-3 border-slate-200 hover:bg-slate-50"
+                                >
+                                    <Filter className="h-4 w-4 mr-2" />
+                                    Advanced
+                                </Button>
+                            </div>
                         </div>
+                        
+                        {showAdvancedFilters && (
+                            <div className="mt-4 pt-4 border-t border-slate-200">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Price Range</label>
+                                        <div className="flex space-x-2">
+                                            <Input
+                                                type="number"
+                                                placeholder="Min $"
+                                                value={priceRangeMin}
+                                                onChange={(e) => setPriceRangeMin(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                            <Input
+                                                type="number"
+                                                placeholder="Max $"
+                                                value={priceRangeMax}
+                                                onChange={(e) => setPriceRangeMax(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Stock Range</label>
+                                        <div className="flex space-x-2">
+                                            <Input
+                                                type="number"
+                                                placeholder="Min stock"
+                                                value={stockRangeMin}
+                                                onChange={(e) => setStockRangeMin(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                            <Input
+                                                type="number"
+                                                placeholder="Max stock"
+                                                value={stockRangeMax}
+                                                onChange={(e) => setStockRangeMax(e.target.value)}
+                                                className="flex-1"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={clearAllFilters}
+                                        className="text-slate-600 hover:text-slate-800"
+                                    >
+                                        Clear All Filters
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
                 {/* Results Summary */}
                 <div className="mb-6">
-                    <p className="text-slate-600">
-                        Showing {filteredItems.slice(0, 10).length} of {filteredItems.length} items
-                    </p>
+                    <div className="flex items-center justify-between">
+                        <p className="text-slate-600">
+                            Showing {filteredAndSortedItems.length} of {items.length} items
+                        </p>
+                        
+                        {/* Sort Controls */}
+                        <div className="flex items-center space-x-2">
+                            <span className="text-sm text-slate-600">Sort by:</span>
+                            <select
+                                value={sortField}
+                                onChange={(e) => setSortField(e.target.value as 'name' | 'sku' | 'stock' | 'cost')}
+                                className="px-3 py-2 border border-slate-200 rounded text-sm"
+                            >
+                                <option value="name">Name</option>
+                                <option value="sku">SKU</option>
+                                <option value="stock">Stock</option>
+                                <option value="cost">Cost</option>
+                            </select>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                                className="px-3 py-2"
+                            >
+                                {sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                            </Button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Items Table */}
@@ -167,17 +396,48 @@ const WithdrawItemsPage: React.FC = () => {
                             <Table>
                                 <TableHead className="bg-slate-50">
                                     <TableRow>
-                                        <TableHeaderCell className="text-slate-700 font-semibold">SKU</TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700 font-semibold">Name</TableHeaderCell>
-                                        <TableHeaderCell className="text-slate-700 font-semibold">Total Stock</TableHeaderCell>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
+                                            onClick={() => handleSort('sku')}
+                                        >
+                                            <div className="flex items-center">
+                                                SKU {getSortIcon('sku')}
+                                            </div>
+                                        </TableHeaderCell>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
+                                            onClick={() => handleSort('name')}
+                                        >
+                                            <div className="flex items-center">
+                                                Name {getSortIcon('name')}
+                                            </div>
+                                        </TableHeaderCell>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
+                                            onClick={() => handleSort('stock')}
+                                        >
+                                            <div className="flex items-center">
+                                                Available Stock {getSortIcon('stock')}
+                                            </div>
+                                        </TableHeaderCell>
+                                        <TableHeaderCell 
+                                            className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
+                                            onClick={() => handleSort('cost')}
+                                        >
+                                            <div className="flex items-center">
+                                                Unit Cost {getSortIcon('cost')}
+                                            </div>
+                                        </TableHeaderCell>
                                         <TableHeaderCell className="text-slate-700 font-semibold">Status</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Locations</TableHeaderCell>
                                         <TableHeaderCell className="text-slate-700 font-semibold">Actions</TableHeaderCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {filteredItems.slice(0, 10).map((item) => {
+                                    {filteredAndSortedItems.map((item) => {
                                         const totalStock = getTotalQuantity(item.id, stocks);
-                                        const isLowStock = totalStock <= (item.minimum_stock || 1);
+                                        const itemStocks = stocks.filter(s => s.item_id === item.id && s.quantity > 0);
+                                        
                                         return (
                                             <TableRow key={item.id} className="border-slate-200 hover:bg-slate-50 transition-colors">
                                                 <TableCell className="font-medium text-slate-900">{item.sku}</TableCell>
@@ -190,19 +450,34 @@ const WithdrawItemsPage: React.FC = () => {
                                                 <TableCell>
                                                     <span className={`font-medium ${
                                                         totalStock === 0 ? 'text-red-600' : 
-                                                        isLowStock ? 'text-orange-600' : 'text-green-600'
+                                                        totalStock <= (item.minimum_stock || 0) ? 'text-orange-600' : 
+                                                        'text-green-600'
                                                     }`}>
                                                         {totalStock}
                                                     </span>
                                                 </TableCell>
+                                                <TableCell className="font-medium text-slate-900">
+                                                    ${parseFloat(item.unit_cost).toFixed(2)}
+                                                </TableCell>
                                                 <TableCell>
-                                                    {totalStock === 0 ? (
-                                                        <Badge variant="danger">Out of Stock</Badge>
-                                                    ) : isLowStock ? (
-                                                        <Badge variant="warning">Low Stock</Badge>
-                                                    ) : (
-                                                        <Badge variant="success">Available</Badge>
-                                                    )}
+                                                    {getStatusBadge(item.status)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {itemStocks.slice(0, 3).map((stock) => {
+                                                            const location = locations.find(l => l.id === stock.location_id);
+                                                            return (
+                                                                <Badge key={stock.id} variant="secondary" className="text-xs">
+                                                                    {location?.unit}: {stock.quantity}
+                                                                </Badge>
+                                                            );
+                                                        })}
+                                                        {itemStocks.length > 3 && (
+                                                            <Badge variant="secondary" className="text-xs">
+                                                                +{itemStocks.length - 3} more
+                                                            </Badge>
+                                                        )}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button 
@@ -250,7 +525,7 @@ const WithdrawItemsPage: React.FC = () => {
                                     <TableBody>
                                         {withdrawItems.map((withdrawItem, index) => {
                                             const item = items.find(i => i.id === withdrawItem.itemId);
-                                            const availableStock = getItemStock(withdrawItem.itemId, withdrawItem.locationId);
+                                            const availableStock = getStockFromLocation(withdrawItem.itemId, withdrawItem.locationId);
                                             const isValidQuantity = canWithdraw(withdrawItem.itemId, withdrawItem.locationId, withdrawItem.quantity);
                                             
                                             return (
@@ -302,7 +577,7 @@ const WithdrawItemsPage: React.FC = () => {
                                                             placeholder="Optional notes..."
                                                             value={withdrawItem.notes || ''}
                                                             onChange={(e) => updateWithdrawItem(index, 'notes', e.target.value)}
-                                                            className="w-32"
+                                                            className="w-40"
                                                         />
                                                     </TableCell>
                                                     <TableCell>
