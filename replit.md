@@ -151,3 +151,8 @@ Changelog:
   * Added proper skeleton loading states for transfer tab
   * Removed standalone /inventory/transfer route and TransferItemsPage
   * Updated Header component to remove obsolete transfer route reference
+- July 06, 2025. Cleaned up navigation and UI consistency:
+  * Removed Add Component, Receive Items, Withdraw Items, and Transfer Items from dashboard quick actions
+  * Fixed item detail page back button to navigate to main inventory page (/inventory) instead of /inventory/items
+  * Updated Transfer tab action button from "Add" to "Transfer" with transfer emoji (🔄)
+  * Maintained only Generate Report button in dashboard quick actions for essential functionality

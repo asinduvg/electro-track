@@ -116,7 +116,7 @@ const ItemDetailPage: React.FC = () => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                     {error || 'Item not found'}
                 </h2>
-                <Link to="/inventory/items">
+                <Link to="/inventory">
                     <Button variant="outline" className="mt-4">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Inventory
@@ -186,7 +186,7 @@ const ItemDetailPage: React.FC = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div className="flex items-center space-x-4">
-                        <Link to="/inventory/items">
+                        <Link to="/inventory">
                             <Button 
                                 variant="outline" 
                                 className="flex items-center bg-white border-slate-200 hover:bg-slate-50"
