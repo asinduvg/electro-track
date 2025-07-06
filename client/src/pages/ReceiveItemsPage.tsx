@@ -4,8 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } fro
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { PackageCheck, Plus, ArrowLeft, Search, Scan, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { PackageCheck, Plus, Search, X } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useTransactions from '../hooks/useTransactions';
@@ -73,7 +72,6 @@ const ReceiveItemsPage: React.FC = () => {
         setIsSubmitting(true);
         try {
             for (const receiveItem of receiveItems) {
-                // Create transaction for the receive operation - database triggers will handle stock updates
                 await createTransaction({
                     item_id: receiveItem.itemId,
                     type: 'receive',
@@ -84,7 +82,6 @@ const ReceiveItemsPage: React.FC = () => {
                 });
             }
             
-            // Refresh data to reflect new stock levels
             await refreshItems();
             await refreshStocks();
             
@@ -103,172 +100,187 @@ const ReceiveItemsPage: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Link to="/inventory/items" className="inventory-back-button">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Inventory
-                        </Button>
-                    </Link>
-                    <h1 className="text-3xl font-bold text-gray-900">Receive Items</h1>
-                </div>
-                
-
-            </div>
-
-            {/* Search Items */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <Search className="mr-2 h-5 w-5" />
-                        Select Items to Receive
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="mb-4">
-                        <Input
-                            placeholder="Search items by name or SKU..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="max-w-md"
-                        />
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">Receive Items</h1>
+                        <p className="mt-2 text-slate-600">Add new stock to your inventory</p>
                     </div>
-                    
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableHeaderCell>SKU</TableHeaderCell>
-                                <TableHeaderCell>Name</TableHeaderCell>
-                                <TableHeaderCell>Current Stock</TableHeaderCell>
-                                <TableHeaderCell>Actions</TableHeaderCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredItems.slice(0, 10).map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell className="font-medium">{item.sku}</TableCell>
-                                    <TableCell>
-                                        <div>
-                                            <div className="font-medium">{item.name}</div>
-                                            <div className="text-sm text-gray-500">{item.description}</div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">{getTotalQuantity(item.id, stocks)} units</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm"
-                                            onClick={() => addItemToReceive(item.id)}
-                                        >
-                                            <Plus className="h-4 w-4 mr-1" />
-                                            Add
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Items to Receive */}
-            {receiveItems.length > 0 && (
-                <Card>
+                {/* Search and Filters */}
+                <Card className="bg-white border-0 shadow-lg mb-6">
+                    <CardContent className="p-6">
+                        <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Input
+                                    placeholder="Search items by name, SKU, or description..."
+                                    className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Results Summary */}
+                <div className="mb-6">
+                    <p className="text-slate-600">
+                        Showing {filteredItems.slice(0, 10).length} of {filteredItems.length} items
+                    </p>
+                </div>
+
+                {/* Items Table */}
+                <Card className="bg-white border-0 shadow-lg mb-6">
                     <CardHeader>
                         <CardTitle className="flex items-center">
-                            <PackageCheck className="mr-2 h-5 w-5" />
-                            Items to Receive ({receiveItems.length})
+                            <Search className="mr-2 h-5 w-5" />
+                            Select Items to Receive
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableHeaderCell>Item</TableHeaderCell>
-                                    <TableHeaderCell>Quantity</TableHeaderCell>
-                                    <TableHeaderCell>Location</TableHeaderCell>
-                                    <TableHeaderCell>Notes</TableHeaderCell>
-                                    <TableHeaderCell>Actions</TableHeaderCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {receiveItems.map((receiveItem, index) => {
-                                    const item = items.find(i => i.id === receiveItem.itemId);
-                                    return (
-                                        <TableRow key={index}>
-                                            <TableCell>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHead className="bg-slate-50">
+                                    <TableRow>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">SKU</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Name</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Current Stock</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Actions</TableHeaderCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredItems.slice(0, 10).map((item) => (
+                                        <TableRow key={item.id} className="border-slate-200 hover:bg-slate-50 transition-colors">
+                                            <TableCell className="font-medium text-slate-900">{item.sku}</TableCell>
+                                            <TableCell className="text-slate-900">
                                                 <div>
-                                                    <div className="font-medium">{item?.name}</div>
-                                                    <div className="text-sm text-gray-500">{item?.sku}</div>
+                                                    <div className="font-medium">{item.name}</div>
+                                                    <div className="text-sm text-slate-500">{item.description}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    value={receiveItem.quantity}
-                                                    onChange={(e) => updateReceiveItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                                                    className="w-20"
-                                                    min="1"
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <select
-                                                    value={receiveItem.locationId}
-                                                    onChange={(e) => updateReceiveItem(index, 'locationId', e.target.value)}
-                                                    className="px-3 py-2 border border-gray-300 rounded-md"
-                                                >
-                                                    {locations.map((location) => (
-                                                        <option key={location.id} value={location.id}>
-                                                            {location.unit}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    placeholder="Optional notes..."
-                                                    value={receiveItem.notes || ''}
-                                                    onChange={(e) => updateReceiveItem(index, 'notes', e.target.value)}
-                                                    className="w-32"
-                                                />
+                                                <Badge variant="secondary">{getTotalQuantity(item.id, stocks)} units</Badge>
                                             </TableCell>
                                             <TableCell>
                                                 <Button 
-                                                    variant="ghost" 
+                                                    variant="outline" 
                                                     size="sm"
-                                                    onClick={() => removeReceiveItem(index)}
-                                                    className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-gray-500"
+                                                    onClick={() => addItemToReceive(item.id)}
+                                                    className="bg-white border-slate-200 hover:bg-slate-50 text-xs"
                                                 >
-                                                    <X className="h-5 w-5" />
+                                                    <Plus className="h-4 w-4 mr-1" />
+                                                    Add
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
-            )}
-            
-            {/* Floating Receive Button */}
-            {receiveItems.length > 0 && (
-                <div className="fixed bottom-6 right-6 z-50">
-                    <Button 
-                        onClick={handleSubmitReceive}
-                        disabled={isSubmitting}
-                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg px-6 py-3 text-lg font-semibold rounded-lg"
-                        size="lg"
-                    >
-                        <PackageCheck className="h-5 w-5 mr-2" />
-                        {isSubmitting ? 'Processing...' : `Receive ${receiveItems.length} Items`}
-                    </Button>
-                </div>
-            )}
+
+                {/* Items to Receive */}
+                {receiveItems.length > 0 && (
+                    <Card className="bg-white border-0 shadow-lg mb-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center">
+                                <PackageCheck className="mr-2 h-5 w-5" />
+                                Items to Receive ({receiveItems.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHead className="bg-slate-50">
+                                        <TableRow>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Item</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Quantity</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Location</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Notes</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Actions</TableHeaderCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {receiveItems.map((receiveItem, index) => {
+                                            const item = items.find(i => i.id === receiveItem.itemId);
+                                            return (
+                                                <TableRow key={index} className="border-slate-200 hover:bg-slate-50 transition-colors">
+                                                    <TableCell className="text-slate-900">
+                                                        <div>
+                                                            <div className="font-medium">{item?.name}</div>
+                                                            <div className="text-sm text-slate-500">{item?.sku}</div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input
+                                                            type="number"
+                                                            value={receiveItem.quantity}
+                                                            onChange={(e) => updateReceiveItem(index, 'quantity', parseInt(e.target.value) || 0)}
+                                                            className="w-20"
+                                                            min="1"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <select
+                                                            value={receiveItem.locationId}
+                                                            onChange={(e) => updateReceiveItem(index, 'locationId', e.target.value)}
+                                                            className="px-3 py-2 border border-gray-300 rounded-md"
+                                                        >
+                                                            {locations.map((location) => (
+                                                                <option key={location.id} value={location.id}>
+                                                                    {location.unit}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input
+                                                            placeholder="Optional notes..."
+                                                            value={receiveItem.notes || ''}
+                                                            onChange={(e) => updateReceiveItem(index, 'notes', e.target.value)}
+                                                            className="w-32"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm"
+                                                            onClick={() => removeReceiveItem(index)}
+                                                            className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-gray-500"
+                                                        >
+                                                            <X className="h-5 w-5" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+                
+                {/* Floating Receive Button */}
+                {receiveItems.length > 0 && (
+                    <div className="fixed bottom-6 right-6 z-50">
+                        <Button 
+                            onClick={handleSubmitReceive}
+                            disabled={isSubmitting}
+                            className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg px-6 py-3 text-lg font-semibold rounded-lg"
+                            size="lg"
+                        >
+                            <PackageCheck className="h-5 w-5 mr-2" />
+                            {isSubmitting ? 'Processing...' : `Receive ${receiveItems.length} Items`}
+                        </Button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

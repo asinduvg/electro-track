@@ -4,8 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } fro
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { PackageMinus, Minus, ArrowLeft, Search, AlertTriangle, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { PackageMinus, Minus, Search, AlertTriangle, X } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useLocations from '../hooks/useLocations';
 import useStocks from '../hooks/useStocks';
@@ -104,7 +103,6 @@ const WithdrawItemsPage: React.FC = () => {
                 });
             }
             
-            // Refresh data to reflect new stock levels
             await refreshItems();
             await refreshStocks();
             
@@ -123,211 +121,225 @@ const WithdrawItemsPage: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Link to="/inventory/items" className="inventory-back-button">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Inventory
-                        </Button>
-                    </Link>
-                    <h1 className="text-3xl font-bold text-gray-900">Withdraw Items</h1>
-                </div>
-                
-
-            </div>
-
-            {/* Search Items */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <Search className="mr-2 h-5 w-5" />
-                        Select Items to Withdraw
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="mb-4">
-                        <Input
-                            placeholder="Search items by name or SKU..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="max-w-md"
-                        />
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">Withdraw Items</h1>
+                        <p className="mt-2 text-slate-600">Remove items from your inventory</p>
                     </div>
-                    
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableHeaderCell>SKU</TableHeaderCell>
-                                <TableHeaderCell>Name</TableHeaderCell>
-                                <TableHeaderCell>Total Stock</TableHeaderCell>
-                                <TableHeaderCell>Status</TableHeaderCell>
-                                <TableHeaderCell>Actions</TableHeaderCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredItems.slice(0, 10).map((item) => {
-                                const totalStock = getTotalQuantity(item.id, stocks);
-                                const isLowStock = totalStock <= (item.minimum_stock || 1);
-                                return (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.sku}</TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <div className="font-medium">{item.name}</div>
-                                                <div className="text-sm text-gray-500">{item.description}</div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className={`font-medium ${
-                                                totalStock === 0 ? 'text-red-600' : 
-                                                isLowStock ? 'text-orange-600' : 'text-green-600'
-                                            }`}>
-                                                {totalStock}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            {totalStock === 0 ? (
-                                                <Badge variant="danger">Out of Stock</Badge>
-                                            ) : isLowStock ? (
-                                                <Badge variant="warning">Low Stock</Badge>
-                                            ) : (
-                                                <Badge variant="success">Available</Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                onClick={() => addItemToWithdraw(item.id)}
-                                                disabled={totalStock === 0}
-                                            >
-                                                <Minus className="h-4 w-4 mr-1" />
-                                                Withdraw
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Items to Withdraw */}
-            {withdrawItems.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <PackageMinus className="mr-2 h-5 w-5" />
-                            Items to Withdraw ({withdrawItems.length})
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableHeaderCell>Item</TableHeaderCell>
-                                    <TableHeaderCell>Quantity</TableHeaderCell>
-                                    <TableHeaderCell>From Location</TableHeaderCell>
-                                    <TableHeaderCell>Available</TableHeaderCell>
-                                    <TableHeaderCell>Notes</TableHeaderCell>
-                                    <TableHeaderCell className="w-12">&nbsp;</TableHeaderCell>
-
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {withdrawItems.map((withdrawItem, index) => {
-                                    const item = items.find(i => i.id === withdrawItem.itemId);
-                                    const availableStock = getItemStock(withdrawItem.itemId, withdrawItem.locationId);
-                                    const isValidQuantity = canWithdraw(withdrawItem.itemId, withdrawItem.locationId, withdrawItem.quantity);
-                                    
-                                    return (
-                                        <TableRow key={index}>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="font-medium">{item?.name}</div>
-                                                    <div className="text-sm text-gray-500">{item?.sku}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    value={withdrawItem.quantity}
-                                                    onChange={(e) => updateWithdrawItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                                                    className={`w-20 ${!isValidQuantity ? 'border-red-500' : ''}`}
-                                                    min="1"
-                                                    max={availableStock}
-                                                />
-                                                {!isValidQuantity && (
-                                                    <div className="flex items-center text-red-500 text-xs mt-1">
-                                                        <AlertTriangle className="h-3 w-3 mr-1" />
-                                                        Exceeds stock
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <select
-                                                    value={withdrawItem.locationId}
-                                                    onChange={(e) => updateWithdrawItem(index, 'locationId', e.target.value)}
-                                                    className="px-3 py-2 border border-gray-300 rounded-md"
-                                                >
-                                                    {locations.map((location) => (
-                                                        <option key={location.id} value={location.id}>
-                                                            {location.unit}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`font-medium ${
-                                                    availableStock === 0 ? 'text-red-600' : 'text-green-600'
-                                                }`}>
-                                                    {availableStock}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    placeholder="Optional notes..."
-                                                    value={withdrawItem.notes || ''}
-                                                    onChange={(e) => updateWithdrawItem(index, 'notes', e.target.value)}
-                                                    className="w-32"
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="sm"
-                                                    onClick={() => removeWithdrawItem(index)}
-                                                    className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-gray-500"
-                                                >
-                                                    <X className="h-5 w-5" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
+                {/* Search and Filters */}
+                <Card className="bg-white border-0 shadow-lg mb-6">
+                    <CardContent className="p-6">
+                        <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Input
+                                    placeholder="Search items by name, SKU, or description..."
+                                    className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
-            )}
-            
-            {/* Floating Withdraw Button */}
-            {withdrawItems.length > 0 && (
-                <div className="fixed bottom-6 right-6 z-50">
-                    <Button 
-                        onClick={handleSubmitWithdraw}
-                        disabled={isSubmitting}
-                        className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg px-6 py-3 text-lg font-semibold rounded-lg"
-                        size="lg"
-                    >
-                        <PackageMinus className="h-5 w-5 mr-2" />
-                        {isSubmitting ? 'Processing...' : `Withdraw ${withdrawItems.length} Items`}
-                    </Button>
+
+                {/* Results Summary */}
+                <div className="mb-6">
+                    <p className="text-slate-600">
+                        Showing {filteredItems.slice(0, 10).length} of {filteredItems.length} items
+                    </p>
                 </div>
-            )}
+
+                {/* Items Table */}
+                <Card className="bg-white border-0 shadow-lg mb-6">
+                    <CardHeader>
+                        <CardTitle className="flex items-center">
+                            <Search className="mr-2 h-5 w-5" />
+                            Select Items to Withdraw
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHead className="bg-slate-50">
+                                    <TableRow>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">SKU</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Name</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Total Stock</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Status</TableHeaderCell>
+                                        <TableHeaderCell className="text-slate-700 font-semibold">Actions</TableHeaderCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredItems.slice(0, 10).map((item) => {
+                                        const totalStock = getTotalQuantity(item.id, stocks);
+                                        const isLowStock = totalStock <= (item.minimum_stock || 1);
+                                        return (
+                                            <TableRow key={item.id} className="border-slate-200 hover:bg-slate-50 transition-colors">
+                                                <TableCell className="font-medium text-slate-900">{item.sku}</TableCell>
+                                                <TableCell className="text-slate-900">
+                                                    <div>
+                                                        <div className="font-medium">{item.name}</div>
+                                                        <div className="text-sm text-slate-500">{item.description}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={`font-medium ${
+                                                        totalStock === 0 ? 'text-red-600' : 
+                                                        isLowStock ? 'text-orange-600' : 'text-green-600'
+                                                    }`}>
+                                                        {totalStock}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {totalStock === 0 ? (
+                                                        <Badge variant="danger">Out of Stock</Badge>
+                                                    ) : isLowStock ? (
+                                                        <Badge variant="warning">Low Stock</Badge>
+                                                    ) : (
+                                                        <Badge variant="success">Available</Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm"
+                                                        onClick={() => addItemToWithdraw(item.id)}
+                                                        disabled={totalStock === 0}
+                                                        className="bg-white border-slate-200 hover:bg-slate-50 text-xs"
+                                                    >
+                                                        <Minus className="h-4 w-4 mr-1" />
+                                                        Withdraw
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Items to Withdraw */}
+                {withdrawItems.length > 0 && (
+                    <Card className="bg-white border-0 shadow-lg mb-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center">
+                                <PackageMinus className="mr-2 h-5 w-5" />
+                                Items to Withdraw ({withdrawItems.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHead className="bg-slate-50">
+                                        <TableRow>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Item</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Quantity</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">From Location</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Available</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Notes</TableHeaderCell>
+                                            <TableHeaderCell className="text-slate-700 font-semibold">Actions</TableHeaderCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {withdrawItems.map((withdrawItem, index) => {
+                                            const item = items.find(i => i.id === withdrawItem.itemId);
+                                            const availableStock = getItemStock(withdrawItem.itemId, withdrawItem.locationId);
+                                            const isValidQuantity = canWithdraw(withdrawItem.itemId, withdrawItem.locationId, withdrawItem.quantity);
+                                            
+                                            return (
+                                                <TableRow key={index} className="border-slate-200 hover:bg-slate-50 transition-colors">
+                                                    <TableCell className="text-slate-900">
+                                                        <div>
+                                                            <div className="font-medium">{item?.name}</div>
+                                                            <div className="text-sm text-slate-500">{item?.sku}</div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input
+                                                            type="number"
+                                                            value={withdrawItem.quantity}
+                                                            onChange={(e) => updateWithdrawItem(index, 'quantity', parseInt(e.target.value) || 0)}
+                                                            className={`w-20 ${!isValidQuantity ? 'border-red-500' : ''}`}
+                                                            min="1"
+                                                            max={availableStock}
+                                                        />
+                                                        {!isValidQuantity && (
+                                                            <div className="flex items-center text-red-500 text-xs mt-1">
+                                                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                                                Exceeds stock
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <select
+                                                            value={withdrawItem.locationId}
+                                                            onChange={(e) => updateWithdrawItem(index, 'locationId', e.target.value)}
+                                                            className="px-3 py-2 border border-gray-300 rounded-md"
+                                                        >
+                                                            {locations.map((location) => (
+                                                                <option key={location.id} value={location.id}>
+                                                                    {location.unit}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className={`font-medium ${
+                                                            availableStock === 0 ? 'text-red-600' : 'text-green-600'
+                                                        }`}>
+                                                            {availableStock}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input
+                                                            placeholder="Optional notes..."
+                                                            value={withdrawItem.notes || ''}
+                                                            onChange={(e) => updateWithdrawItem(index, 'notes', e.target.value)}
+                                                            className="w-32"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm"
+                                                            onClick={() => removeWithdrawItem(index)}
+                                                            className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-gray-500"
+                                                        >
+                                                            <X className="h-5 w-5" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+                
+                {/* Floating Withdraw Button */}
+                {withdrawItems.length > 0 && (
+                    <div className="fixed bottom-6 right-6 z-50">
+                        <Button 
+                            onClick={handleSubmitWithdraw}
+                            disabled={isSubmitting}
+                            className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg px-6 py-3 text-lg font-semibold rounded-lg"
+                            size="lg"
+                        >
+                            <PackageMinus className="h-5 w-5 mr-2" />
+                            {isSubmitting ? 'Processing...' : `Withdraw ${withdrawItems.length} Items`}
+                        </Button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
