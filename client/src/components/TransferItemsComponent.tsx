@@ -200,7 +200,7 @@ const TransferItemsComponent: React.FC = () => {
                                                 onClick={() => addItemToTransfer(item.id)}
                                                 disabled={totalStock === 0}
                                             >
-                                                🔄 Transfer
+                                                ⇄ Transfer
                                             </Button>
                                         </TableCell>
                                     </TableRow>

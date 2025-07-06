@@ -154,5 +154,5 @@ Changelog:
 - July 06, 2025. Cleaned up navigation and UI consistency:
   * Removed Add Component, Receive Items, Withdraw Items, and Transfer Items from dashboard quick actions
   * Fixed item detail page back button to navigate to main inventory page (/inventory) instead of /inventory/items
-  * Updated Transfer tab action button from "Add" to "Transfer" with transfer emoji (🔄)
+  * Updated Transfer tab action button from "Add" to "Transfer" with double arrows (⇄)
   * Maintained only Generate Report button in dashboard quick actions for essential functionality
