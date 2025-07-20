@@ -95,10 +95,18 @@ ElectroTrack is a comprehensive inventory management system designed for electro
 ## Deployment Strategy
 
 ### Development Environment
-- **Platform**: Replit with automatic environment provisioning
-- **Database**: Neon serverless PostgreSQL (automatically provisioned)
+- **Platform**: Replit with automatic environment provisioning OR local development
+- **Database**: Neon serverless PostgreSQL (automatically provisioned in Replit, configurable locally)
 - **Hot Reload**: Vite development server with HMR
 - **Error Handling**: Runtime error overlay for development
+- **Environment Variables**: Replit secrets OR .env file for local development
+
+### Local Development Setup
+- **Prerequisites**: Node.js 18+, PostgreSQL (or Neon database)
+- **Configuration**: .env file with DATABASE_URL, SESSION_SECRET, PORT
+- **Database**: Local PostgreSQL or Neon serverless connection
+- **Environment Loading**: dotenv package for .env file support
+- **Port Configuration**: Configurable via PORT environment variable (default: 5000)
 
 ### Production Build
 - **Frontend**: Vite build with optimized bundle splitting
@@ -108,7 +116,7 @@ ElectroTrack is a comprehensive inventory management system designed for electro
 
 ### Database Strategy
 - **Migrations**: Drizzle Kit for schema management
-- **Connection**: Connection pooling with Neon serverless
+- **Connection**: Connection pooling with Neon serverless (works for both Replit and local)
 - **Backup**: Built-in Neon backup and recovery
 - **Performance**: Optimized queries with proper indexing
 
@@ -172,3 +180,12 @@ Changelog:
   * Enhanced results summary sections with item counts and sort controls
   * Fixed transaction property mappings (to_location_id for receive, from_location_id for withdraw)
   * All tabs now have identical professional appearance and functionality as the Items reference tab
+- July 20, 2025. Added local development support:
+  * Created .env and .env.example files for environment variable management
+  * Added dotenv package for loading environment variables from .env file
+  * Updated server/index.ts to load environment variables and use configurable PORT
+  * Enhanced database connection error messages with local setup instructions
+  * Created comprehensive README.local.md with step-by-step local setup guide
+  * Updated .gitignore to exclude environment files from version control
+  * Documented local development setup in replit.md deployment strategy
+  * Application now supports both Replit cloud environment and local development
