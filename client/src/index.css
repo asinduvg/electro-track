@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -28,6 +30,7 @@
         --warning: 252 100 45; /* Airbnb orange */
         --sidebar: 255 255 255; /* white */
         --sidebar-accent: 247 247 247; /* light gray */
+        --radius: 8px;
     }
 
     .dark {
@@ -58,11 +61,12 @@
 
     * {
         @apply border-border;
+        @apply font-sans;
     }
 
     html, body {
         @apply bg-white text-foreground antialiased;
-        font-family: 'Cereal', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-family: 'Outfit', sans-serif;
         font-feature-settings: "rlig" 1, "calt" 1;
         letter-spacing: -0.01em;
         margin: 0;
@@ -70,7 +74,6 @@
         min-height: 100vh;
         overflow-x: hidden;
     }
-
     /* Hide Replit development banner */
     #replit-dev-banner {
         display: none !important;
