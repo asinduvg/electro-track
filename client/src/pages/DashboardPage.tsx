@@ -194,7 +194,7 @@ const DashboardPage: React.FC = () => {
                         <div className="mt-4 flex items-center text-sm">
                             {lowStockItems.length > 0 ? (
                                 <Link
-                                    to="/inventory/items?status=low_stock"
+                                    to="/inventory?status=low_stock"
                                     className="flex items-center hover:text-orange-100 transition-colors"
                                 >
                                     <ArrowUpRight className="h-4 w-4 mr-2" />
