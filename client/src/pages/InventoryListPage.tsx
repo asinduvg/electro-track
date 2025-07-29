@@ -182,7 +182,7 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
                     <CardContent className="p-6">
                         <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Search className="absolute right-4 top-[20px] z-10 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <Input
                                     placeholder="Search items by name, SKU, or description..."
                                     className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400"

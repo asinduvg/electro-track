@@ -39,40 +39,40 @@ const ReceiveItemsPage: React.FC = () => {
     const [stockRangeMin, setStockRangeMin] = useState('');
     const [stockRangeMax, setStockRangeMax] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     const isLoading = itemsLoading || locationsLoading || stocksLoading || categoriesLoading;
 
     // Filtered and sorted items
     const filteredAndSortedItems = useMemo(() => {
         let filtered = items.filter(item => {
             // Search filter
-            const matchesSearch = !searchQuery || 
+            const matchesSearch = !searchQuery ||
                 item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.description?.toLowerCase().includes(searchQuery.toLowerCase());
-            
+
             // Status filter
             const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-            
+
             // Category filter
             const matchesCategory = categoryFilter === 'all' || item.category_id?.toString() === categoryFilter;
-            
+
             // Price range filter
             const matchesPriceRange = (!priceRangeMin || parseFloat(item.unit_cost) >= parseFloat(priceRangeMin)) &&
-                                    (!priceRangeMax || parseFloat(item.unit_cost) <= parseFloat(priceRangeMax));
-            
+                (!priceRangeMax || parseFloat(item.unit_cost) <= parseFloat(priceRangeMax));
+
             // Stock range filter
             const totalStock = getTotalQuantity(item.id, stocks);
             const matchesStockRange = (!stockRangeMin || totalStock >= parseInt(stockRangeMin)) &&
-                                    (!stockRangeMax || totalStock <= parseInt(stockRangeMax));
-            
+                (!stockRangeMax || totalStock <= parseInt(stockRangeMax));
+
             return matchesSearch && matchesStatus && matchesCategory && matchesPriceRange && matchesStockRange;
         });
 
         // Sort items
         return filtered.sort((a, b) => {
             let comparison = 0;
-            
+
             switch (sortField) {
                 case 'name':
                     comparison = (a.name || '').localeCompare(b.name || '');
@@ -89,7 +89,7 @@ const ReceiveItemsPage: React.FC = () => {
                     comparison = parseFloat(a.unit_cost) - parseFloat(b.unit_cost);
                     break;
             }
-            
+
             return sortDirection === 'asc' ? comparison : -comparison;
         });
     }, [items, stocks, searchQuery, statusFilter, categoryFilter, priceRangeMin, priceRangeMax, stockRangeMin, stockRangeMax, sortField, sortDirection, getTotalQuantity]);
@@ -178,10 +178,10 @@ const ReceiveItemsPage: React.FC = () => {
                     performed_by: currentUser.id
                 });
             }
-            
+
             await refreshItems();
             await refreshStocks();
-            
+
             setReceiveItems([]);
             alert('Items received successfully!');
         } catch (error) {
@@ -223,7 +223,7 @@ const ReceiveItemsPage: React.FC = () => {
                     <CardContent className="p-6">
                         <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Search className="absolute right-4 top-[20px] z-10 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <Input
                                     placeholder="Search items by name, SKU, or description..."
                                     className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
@@ -231,7 +231,7 @@ const ReceiveItemsPage: React.FC = () => {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            
+
                             <div className="flex flex-wrap gap-3">
                                 <select
                                     value={statusFilter}
@@ -244,7 +244,7 @@ const ReceiveItemsPage: React.FC = () => {
                                     <option value="out_of_stock">Out of Stock</option>
                                     <option value="discontinued">Discontinued</option>
                                 </select>
-                                
+
                                 <select
                                     value={categoryFilter}
                                     onChange={(e) => setCategoryFilter(e.target.value)}
@@ -257,7 +257,7 @@ const ReceiveItemsPage: React.FC = () => {
                                         </option>
                                     ))}
                                 </select>
-                                
+
                                 <Button
                                     variant="outline"
                                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -268,7 +268,7 @@ const ReceiveItemsPage: React.FC = () => {
                                 </Button>
                             </div>
                         </div>
-                        
+
                         {showAdvancedFilters && (
                             <div className="mt-4 pt-4 border-t border-slate-200">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -331,7 +331,7 @@ const ReceiveItemsPage: React.FC = () => {
                         <p className="text-slate-600">
                             Showing {filteredAndSortedItems.length} of {items.length} items
                         </p>
-                        
+
                         {/* Sort Controls */}
                         <div className="flex items-center space-x-2">
                             <span className="text-sm text-slate-600">Sort by:</span>
@@ -370,7 +370,7 @@ const ReceiveItemsPage: React.FC = () => {
                             <Table>
                                 <TableHead className="bg-slate-50">
                                     <TableRow>
-                                        <TableHeaderCell 
+                                        <TableHeaderCell
                                             className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
                                             onClick={() => handleSort('sku')}
                                         >
@@ -378,7 +378,7 @@ const ReceiveItemsPage: React.FC = () => {
                                                 SKU {getSortIcon('sku')}
                                             </div>
                                         </TableHeaderCell>
-                                        <TableHeaderCell 
+                                        <TableHeaderCell
                                             className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
                                             onClick={() => handleSort('name')}
                                         >
@@ -386,7 +386,7 @@ const ReceiveItemsPage: React.FC = () => {
                                                 Name {getSortIcon('name')}
                                             </div>
                                         </TableHeaderCell>
-                                        <TableHeaderCell 
+                                        <TableHeaderCell
                                             className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
                                             onClick={() => handleSort('stock')}
                                         >
@@ -394,7 +394,7 @@ const ReceiveItemsPage: React.FC = () => {
                                                 Current Stock {getSortIcon('stock')}
                                             </div>
                                         </TableHeaderCell>
-                                        <TableHeaderCell 
+                                        <TableHeaderCell
                                             className="text-slate-700 font-semibold cursor-pointer hover:bg-slate-100"
                                             onClick={() => handleSort('cost')}
                                         >
@@ -409,7 +409,7 @@ const ReceiveItemsPage: React.FC = () => {
                                 <TableBody>
                                     {filteredAndSortedItems.map((item) => {
                                         const totalStock = getTotalQuantity(item.id, stocks);
-                                        
+
                                         return (
                                             <TableRow key={item.id} className="border-slate-200 hover:bg-slate-50 transition-colors">
                                                 <TableCell className="font-medium text-slate-900">{item.sku}</TableCell>
@@ -420,11 +420,10 @@ const ReceiveItemsPage: React.FC = () => {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className={`font-medium ${
-                                                        totalStock === 0 ? 'text-red-600' : 
-                                                        totalStock <= (item.minimum_stock || 0) ? 'text-orange-600' : 
-                                                        'text-green-600'
-                                                    }`}>
+                                                    <span className={`font-medium ${totalStock === 0 ? 'text-red-600' :
+                                                            totalStock <= (item.minimum_stock || 0) ? 'text-orange-600' :
+                                                                'text-green-600'
+                                                        }`}>
                                                         {totalStock}
                                                     </span>
                                                 </TableCell>
@@ -435,8 +434,8 @@ const ReceiveItemsPage: React.FC = () => {
                                                     {getStatusBadge(item.status)}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Button 
-                                                        variant="outline" 
+                                                    <Button
+                                                        variant="outline"
                                                         size="sm"
                                                         onClick={() => addItemToReceive(item.id)}
                                                         className="bg-white border-slate-200 hover:bg-slate-50 text-xs"
@@ -478,7 +477,7 @@ const ReceiveItemsPage: React.FC = () => {
                                     <TableBody>
                                         {receiveItems.map((receiveItem, index) => {
                                             const item = items.find(i => i.id === receiveItem.itemId);
-                                            
+
                                             return (
                                                 <TableRow key={index} className="border-slate-200 hover:bg-slate-50 transition-colors">
                                                     <TableCell className="text-slate-900">
@@ -518,8 +517,8 @@ const ReceiveItemsPage: React.FC = () => {
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Button 
-                                                            variant="ghost" 
+                                                        <Button
+                                                            variant="ghost"
                                                             size="sm"
                                                             onClick={() => removeReceiveItem(index)}
                                                             className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-gray-500"
@@ -536,11 +535,11 @@ const ReceiveItemsPage: React.FC = () => {
                         </CardContent>
                     </Card>
                 )}
-                
+
                 {/* Floating Receive Button */}
                 {receiveItems.length > 0 && (
                     <div className="fixed bottom-6 right-6 z-50">
-                        <Button 
+                        <Button
                             onClick={handleSubmitReceive}
                             disabled={isSubmitting}
                             className="flex items-center bg-[#FF385C] hover:bg-[#E31C5F] text-white shadow-lg px-6 py-3 text-lg font-semibold rounded-lg"
