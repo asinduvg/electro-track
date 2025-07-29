@@ -10,13 +10,7 @@ interface ModalProps {
   className?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-  className
-}) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, className }) => {
   if (!isOpen) return null;
 
   return (
@@ -45,9 +39,7 @@ export const Modal: React.FC<ModalProps> = ({
 
           <div>
             <div className="mt-3 text-center sm:mt-0 sm:text-left">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">
-                {title}
-              </h3>
+              <h3 className="text-lg font-medium leading-6 text-gray-900">{title}</h3>
               <div className="mt-4">{children}</div>
             </div>
           </div>

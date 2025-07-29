@@ -26,16 +26,20 @@ npm install
 You have two options for the database:
 
 #### Option A: Use Neon Database (Recommended for easy setup)
+
 1. Go to [Neon Console](https://console.neon.tech/)
 2. Create a free account and new project
 3. Copy the connection string from your project dashboard
 
 #### Option B: Local PostgreSQL
+
 1. Install PostgreSQL on your machine
 2. Create a new database:
+
 ```sql
 CREATE DATABASE electrotrack;
 ```
+
 3. Your connection string will be: `postgresql://username:password@localhost:5432/electrotrack`
 
 ### 3. Environment Configuration
@@ -49,6 +53,7 @@ nano .env  # or use your preferred editor
 ```
 
 Update the `.env` file with your database connection:
+
 ```env
 DATABASE_URL=postgresql://username:password@localhost:5432/electrotrack
 SESSION_SECRET=your-secret-key-here
@@ -103,15 +108,18 @@ The project uses Drizzle ORM with PostgreSQL. To make schema changes:
 ### Troubleshooting
 
 #### Database Connection Issues
+
 - Verify your DATABASE_URL in `.env`
 - Ensure PostgreSQL is running (if using local PostgreSQL)
 - Check if the database exists
 
 #### Port Already in Use
+
 - Change the PORT in your `.env` file
 - Or kill the process using port 5000: `lsof -ti:5000 | xargs kill`
 
 #### Module Not Found Errors
+
 - Run `npm install` to ensure all dependencies are installed
 - Check if Node.js version is 18 or higher
 

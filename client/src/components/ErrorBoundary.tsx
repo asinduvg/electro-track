@@ -43,43 +43,38 @@ class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-            <div className="flex justify-center mb-4">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 text-center shadow-lg">
+            <div className="mb-4 flex justify-center">
               <AlertTriangle className="h-12 w-12 text-red-500" />
             </div>
-            
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">
-              Something went wrong
-            </h1>
-            
-            <p className="text-gray-600 mb-6">
-              We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
+
+            <h1 className="mb-2 text-xl font-semibold text-gray-900">Something went wrong</h1>
+
+            <p className="mb-6 text-gray-600">
+              We encountered an unexpected error. Please try refreshing the page or contact support
+              if the problem persists.
             </p>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="bg-gray-100 rounded-lg p-4 mb-6 text-left">
-                <h3 className="font-medium text-gray-900 mb-2">Error Details:</h3>
-                <pre className="text-xs text-gray-700 overflow-auto max-h-32">
+              <div className="mb-6 rounded-lg bg-gray-100 p-4 text-left">
+                <h3 className="mb-2 font-medium text-gray-900">Error Details:</h3>
+                <pre className="max-h-32 overflow-auto text-xs text-gray-700">
                   {this.state.error.toString()}
                 </pre>
               </div>
             )}
 
             <div className="space-y-3">
-              <Button 
+              <Button
                 onClick={this.handleReload}
                 className="w-full"
                 leftIcon={<RefreshCw className="h-4 w-4" />}
               >
                 Refresh Page
               </Button>
-              
-              <Button 
-                variant="secondary"
-                onClick={this.handleReset}
-                className="w-full"
-              >
+
+              <Button variant="secondary" onClick={this.handleReset} className="w-full">
                 Try Again
               </Button>
             </div>

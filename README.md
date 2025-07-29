@@ -5,6 +5,7 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 ## Features
 
 ### Core Functionality
+
 - **Real-time Inventory Tracking** - Monitor stock levels across multiple locations
 - **Transaction Management** - Complete audit trail of all inventory movements
 - **Supplier Management** - Full supplier relationship management with real database integration
@@ -13,6 +14,7 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 - **User Management** - Role-based access control and permissions
 
 ### Enterprise Features
+
 - **Advanced Analytics** - Real-time inventory insights and performance metrics
 - **Stock Alerts** - Automated low stock and out-of-stock notifications
 - **Role-based Permissions** - Granular access control for different user types
@@ -21,6 +23,7 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 - **Real-time Monitoring** - Live dashboard with key performance indicators
 
 ### Technical Features
+
 - **Airbnb Design System** - Modern squared button styling with #FF385C theme
 - **PostgreSQL Database** - Robust data persistence with Drizzle ORM
 - **Authentication System** - Secure user login and session management
@@ -31,23 +34,27 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 ## User Roles & Permissions
 
 ### Admin
+
 - Full system access and configuration
 - User management and role assignment
 - System settings and configuration
 - All CRUD operations
 
 ### Inventory Manager
+
 - Inventory and supplier management
 - Report generation and analytics
 - Transaction oversight
 - Location management
 
 ### Warehouse Staff
+
 - Item transactions and movements
 - Basic inventory operations
 - Location updates
 
 ### Department User
+
 - Read-only access to relevant inventory
 - Basic search and view capabilities
 
@@ -71,31 +78,37 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/login` - User authentication
 
 ### Inventory
+
 - `GET /api/items` - List all items
 - `POST /api/items` - Create new item
 - `PATCH /api/items/:id` - Update item
 - `DELETE /api/items/:id` - Delete item
 
 ### Suppliers
+
 - `GET /api/suppliers` - List all suppliers
 - `POST /api/suppliers` - Create new supplier
 - `PATCH /api/suppliers/:id` - Update supplier
 - `DELETE /api/suppliers/:id` - Delete supplier
 
 ### Locations
+
 - `GET /api/locations` - List all locations
 - `POST /api/locations` - Create new location
 
 ### Transactions
+
 - `GET /api/transactions` - Transaction history
 - `POST /api/transactions` - Create transaction
 
 ## Database Schema
 
 ### Core Tables
+
 - `users` - User accounts and roles
 - `items` - Inventory items with full specifications
 - `locations` - Warehouse locations and storage units
@@ -105,6 +118,7 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 - `item_locations` - Stock levels by location
 
 ### Advanced Tables
+
 - `alerts` - Stock alerts and notifications
 - `user_activity` - User action logging
 - `purchase_orders` - Purchase order management

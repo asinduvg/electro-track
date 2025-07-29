@@ -13,7 +13,7 @@ class ApiClient {
     };
 
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`API Error ${response.status}: ${error}`);

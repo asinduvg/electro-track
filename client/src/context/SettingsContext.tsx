@@ -88,10 +88,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Apply theme on mount and when theme changes
   useEffect(() => {
     const root = window.document.documentElement;
-    
+
     const applyTheme = () => {
       if (theme === 'system') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
         root.classList.toggle('dark', systemTheme === 'dark');
       } else {
         root.classList.toggle('dark', theme === 'dark');
@@ -118,9 +120,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const root = window.document.documentElement;
     root.classList.remove('text-sm', 'text-base', 'text-lg');
     root.classList.add(
-      fontSize === 'small' ? 'text-sm' : 
-      fontSize === 'large' ? 'text-lg' : 
-      'text-base'
+      fontSize === 'small' ? 'text-sm' : fontSize === 'large' ? 'text-lg' : 'text-base'
     );
     localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
@@ -170,7 +170,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       emailNotifications: emailNotifications.toString(),
       lowStockThreshold: lowStockThreshold.toString(),
       autoBackup: autoBackup.toString(),
-      dataRetention: dataRetention.toString()
+      dataRetention: dataRetention.toString(),
     };
 
     Object.entries(settingsToSave).forEach(([key, value]) => {
@@ -181,11 +181,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   return (
-    <SettingsContext.Provider 
-      value={{ 
-        fontSize, 
-        setFontSize, 
-        theme, 
+    <SettingsContext.Provider
+      value={{
+        fontSize,
+        setFontSize,
+        theme,
         setTheme,
         companyName,
         setCompanyName,
@@ -203,7 +203,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setAutoBackup,
         dataRetention,
         setDataRetention,
-        saveSettings
+        saveSettings,
       }}
     >
       {children}
