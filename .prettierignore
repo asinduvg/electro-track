@@ -1,0 +1,11 @@
+.env
+.env.*
+.replit
+attached_assets
+*.png
+*.jpg
+*.svg
+node_modules
+dist
+build
+*.log
