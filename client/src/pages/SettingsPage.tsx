@@ -77,7 +77,7 @@ const SettingsPage: React.FC = () => {
                     <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Settings</h1>
                     <p className="text-slate-600 mt-2">Configure your ElectroTrack preferences and system settings</p>
                 </div>
-                <Button onClick={handleSave} className="flex items-center bg-slate-900 hover:bg-slate-800">
+                <Button onClick={handleSave} className="flex items-center">
                     <Save className="mr-2 h-4 w-4" />
                     Save Changes
                 </Button>
