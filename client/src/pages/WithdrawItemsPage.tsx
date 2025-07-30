@@ -12,7 +12,7 @@ import useStocks from '../hooks/useStocks';
 import useCategories from '../hooks/useCategories';
 import { useAuth } from '../context/AuthContext';
 import { WithdrawItemsSkeleton } from '../components/ui/InventorySkeletons';
-import SearchContainer from '@/components/SearchContainer';
+import SearchContainer from '../components/SearchContainer';
 
 interface WithdrawItem {
     itemId: string;
