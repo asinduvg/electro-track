@@ -12,6 +12,7 @@ import useStocks from '../hooks/useStocks';
 import useCategories from '../hooks/useCategories';
 import { useAuth } from '../context/AuthContext';
 import { ReceiveItemsSkeleton } from '../components/ui/InventorySkeletons';
+import SearchContainer from '../components/SearchContainer';
 
 interface ReceiveItem {
     itemId: string;
@@ -213,7 +214,7 @@ const ReceiveItemsPage: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900">Receive Items</h1>
+                        <h2 className="text-3xl font-bold text-slate-900">Receive Items</h2>
                         <p className="mt-2 text-slate-600">Add items to your inventory</p>
                     </div>
                 </div>
@@ -222,17 +223,9 @@ const ReceiveItemsPage: React.FC = () => {
                 <Card className="bg-white border-0 shadow-lg mb-6">
                     <CardContent className="p-6">
                         <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute right-4 top-[20px] z-10 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                <Input
-                                    placeholder="Search items by name, SKU, or description..."
-                                    className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
+                            <SearchContainer searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-wrap gap-3 max-w-[48%]">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
