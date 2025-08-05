@@ -141,6 +141,21 @@ const ItemDetailPage: React.FC = () => {
         }
     };
 
+    const getStatusColor = (status: string) : string => {
+        switch (status) {
+            case 'in_stock':
+                return "text-[#008489]";
+            case 'low_stock':
+                return "text-[#FC642D]";
+            case 'out_of_stock':
+                return "text-[#C4141C]";
+            case 'discontinued':
+                return "text-[#717171]";
+            default:
+                return "text-[#717171]";
+        }
+    }
+
     // Calculate what the automatic status should be based on stock levels
     const getAutomaticStatus = (itemId: string, minimumStock: number) => {
         const totalStock = getTotalQuantity(itemId, stocks);
@@ -505,13 +520,13 @@ const ItemDetailPage: React.FC = () => {
                         <Card className="bg-white border-0 shadow-lg">
                             <CardHeader className="pb-4">
                                 <CardTitle className="flex items-center text-slate-900">
-                                    <Package className="mr-3 h-5 w-5 text-emerald-600" />
+                                    <Package className={`mr-3 h-5 w-5 text-slate-600`} />
                                     Stock Summary
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="text-center">
-                                    <div className="text-3xl font-bold text-emerald-600">{totalQuantity}</div>
+                                    <div className={`text-3xl font-bold ${getStatusColor(item.status)}`}>{totalQuantity}</div>
                                     <div className="text-sm text-slate-500">Total Stock</div>
                                 </div>
                                 
