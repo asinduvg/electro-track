@@ -17,6 +17,7 @@ import useItems from '../hooks/useItems';
 import useStocks from '../hooks/useStocks';
 import useCategories from '../hooks/useCategories';
 import { InventoryTableSkeleton, ItemCardGridSkeleton } from '../components/ui/InventorySkeletons';
+import SearchContainer from '../components/SearchContainer';
 
 interface InventoryListPageProps {
   hideAddButton?: boolean;

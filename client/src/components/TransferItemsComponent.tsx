@@ -21,6 +21,7 @@ import useTransactions from '../hooks/useTransactions';
 import useCategories from '../hooks/useCategories';
 import { useAuth } from '../context/AuthContext';
 import { TransferItemsSkeleton } from './ui/InventorySkeletons';
+import SearchContainer from './SearchContainer';
 
 interface TransferItem {
   itemId: string;
