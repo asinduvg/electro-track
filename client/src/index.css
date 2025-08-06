@@ -3,204 +3,211 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        /* Airbnb Theme Colors */
-        --background: 255 255 255; /* white */
-        --foreground: 34 34 34; /* Airbnb dark gray */
-        --card: 255 255 255; /* white */
-        --card-foreground: 34 34 34; /* Airbnb dark gray */
-        --popover: 255 255 255; /* white */
-        --popover-foreground: 34 34 34; /* Airbnb dark gray */
-        --primary: 255 56 92; /* Airbnb rausch (pink-red) */
-        --primary-foreground: 255 255 255; /* white */
-        --secondary: 247 247 247; /* Airbnb light gray */
-        --secondary-foreground: 34 34 34; /* Airbnb dark gray */
-        --muted: 247 247 247; /* Airbnb light gray */
-        --muted-foreground: 113 113 113; /* Airbnb medium gray */
-        --accent: 0 132 137; /* Airbnb teal */
-        --accent-foreground: 255 255 255; /* white */
-        --destructive: 196 20 28; /* Airbnb red */
-        --destructive-foreground: 255 255 255; /* white */
-        --border: 221 221 221; /* Airbnb border gray */
-        --input: 221 221 221; /* Airbnb border gray */
-        --ring: 255 56 92; /* Airbnb rausch */
-        --success: 0 132 137; /* Airbnb teal */
-        --warning: 252 100 45; /* Airbnb orange */
-        --sidebar: 255 255 255; /* white */
-        --sidebar-accent: 247 247 247; /* light gray */
-    }
+  :root {
+    /* Airbnb Theme Colors */
+    --background: 255 255 255; /* white */
+    --foreground: 34 34 34; /* Airbnb dark gray */
+    --card: 255 255 255; /* white */
+    --card-foreground: 34 34 34; /* Airbnb dark gray */
+    --popover: 255 255 255; /* white */
+    --popover-foreground: 34 34 34; /* Airbnb dark gray */
+    --primary: 255 56 92; /* Airbnb rausch (pink-red) */
+    --primary-foreground: 255 255 255; /* white */
+    --secondary: 247 247 247; /* Airbnb light gray */
+    --secondary-foreground: 34 34 34; /* Airbnb dark gray */
+    --muted: 247 247 247; /* Airbnb light gray */
+    --muted-foreground: 113 113 113; /* Airbnb medium gray */
+    --accent: 0 132 137; /* Airbnb teal */
+    --accent-foreground: 255 255 255; /* white */
+    --destructive: 196 20 28; /* Airbnb red */
+    --destructive-foreground: 255 255 255; /* white */
+    --border: 221 221 221; /* Airbnb border gray */
+    --input: 221 221 221; /* Airbnb border gray */
+    --ring: 255 56 92; /* Airbnb rausch */
+    --success: 0 132 137; /* Airbnb teal */
+    --warning: 252 100 45; /* Airbnb orange */
+    --sidebar: 255 255 255; /* white */
+    --sidebar-accent: 247 247 247; /* light gray */
+  }
 
-    .dark {
-        --background: 34 34 34; /* Airbnb dark background */
-        --foreground: 255 255 255; /* white */
-        --card: 72 72 72; /* darker gray */
-        --card-foreground: 255 255 255; /* white */
-        --popover: 72 72 72; /* darker gray */
-        --popover-foreground: 255 255 255; /* white */
-        --primary: 255 56 92; /* Airbnb rausch */
-        --primary-foreground: 255 255 255; /* white */
-        --secondary: 72 72 72; /* darker gray */
-        --secondary-foreground: 255 255 255; /* white */
-        --muted: 72 72 72; /* darker gray */
-        --muted-foreground: 176 176 176; /* light gray */
-        --accent: 0 132 137; /* Airbnb teal */
-        --accent-foreground: 255 255 255; /* white */
-        --destructive: 196 20 28; /* Airbnb red */
-        --destructive-foreground: 255 255 255; /* white */
-        --border: 118 118 118; /* medium gray */
-        --input: 118 118 118; /* medium gray */
-        --ring: 255 56 92; /* Airbnb rausch */
-        --success: 0 132 137; /* Airbnb teal */
-        --warning: 252 100 45; /* Airbnb orange */
-        --sidebar: 34 34 34; /* dark background */
-        --sidebar-accent: 72 72 72; /* darker gray */
-    }
+  .dark {
+    --background: 34 34 34; /* Airbnb dark background */
+    --foreground: 255 255 255; /* white */
+    --card: 72 72 72; /* darker gray */
+    --card-foreground: 255 255 255; /* white */
+    --popover: 72 72 72; /* darker gray */
+    --popover-foreground: 255 255 255; /* white */
+    --primary: 255 56 92; /* Airbnb rausch */
+    --primary-foreground: 255 255 255; /* white */
+    --secondary: 72 72 72; /* darker gray */
+    --secondary-foreground: 255 255 255; /* white */
+    --muted: 72 72 72; /* darker gray */
+    --muted-foreground: 176 176 176; /* light gray */
+    --accent: 0 132 137; /* Airbnb teal */
+    --accent-foreground: 255 255 255; /* white */
+    --destructive: 196 20 28; /* Airbnb red */
+    --destructive-foreground: 255 255 255; /* white */
+    --border: 118 118 118; /* medium gray */
+    --input: 118 118 118; /* medium gray */
+    --ring: 255 56 92; /* Airbnb rausch */
+    --success: 0 132 137; /* Airbnb teal */
+    --warning: 252 100 45; /* Airbnb orange */
+    --sidebar: 34 34 34; /* dark background */
+    --sidebar-accent: 72 72 72; /* darker gray */
+  }
 
-    * {
-        @apply border-border;
-    }
+  * {
+    @apply border-border;
+  }
 
-    html, body {
-        @apply bg-white text-foreground antialiased;
-        font-family: 'Cereal', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        font-feature-settings: "rlig" 1, "calt" 1;
-        letter-spacing: -0.01em;
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
+  html,
+  body {
+    @apply bg-white text-foreground antialiased;
+    font-family: 'Cereal', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+    letter-spacing: -0.01em;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-    /* Hide Replit development banner */
-    #replit-dev-banner {
-        display: none !important;
-    }
+  /* Hide Replit development banner */
+  #replit-dev-banner {
+    display: none !important;
+  }
 
-    select {
-        @apply block w-full px-3 py-2 border-2 rounded-md shadow-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500;
-        @apply bg-white dark:bg-gray-800;
-        @apply border-gray-300 dark:border-gray-600;
-        @apply focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none;
-    }
+  select {
+    @apply block w-full rounded-md border-2 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm dark:text-gray-100 dark:placeholder-gray-500;
+    @apply bg-white dark:bg-gray-800;
+    @apply border-gray-300 dark:border-gray-600;
+    @apply focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
 
-    textarea {
-        @apply block w-full px-3 py-2 border-2 rounded-md shadow-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500;
-        @apply bg-white dark:bg-gray-800;
-        @apply border-gray-300 dark:border-gray-600;
-        @apply focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none;
-    }
+  textarea {
+    @apply block w-full rounded-md border-2 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm dark:text-gray-100 dark:placeholder-gray-500;
+    @apply bg-white dark:bg-gray-800;
+    @apply border-gray-300 dark:border-gray-600;
+    @apply focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
 
-    /* Font size classes */
-    .text-sm {
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-    }
+  /* Font size classes */
+  .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
 
-    .text-base {
-        font-size: 1rem;
-        line-height: 1.5rem;
-    }
+  .text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
 
-    .text-lg {
-        font-size: 1.125rem;
-        line-height: 1.75rem;
-    }
+  .text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
 
-    /* Dark mode component styles */
-    .dark .bg-white {
-        @apply bg-slate-800;
-    }
+  /* Dark mode component styles */
+  .dark .bg-white {
+    @apply bg-slate-800;
+  }
 
-    .dark .bg-slate-50 {
-        @apply bg-slate-900;
-    }
+  .dark .bg-slate-50 {
+    @apply bg-slate-900;
+  }
 
-    .dark .bg-slate-100 {
-        @apply bg-slate-800;
-    }
+  .dark .bg-slate-100 {
+    @apply bg-slate-800;
+  }
 
-    .dark .bg-gray-50 {
-        @apply bg-gray-900;
-    }
+  .dark .bg-gray-50 {
+    @apply bg-gray-900;
+  }
 
-    .dark .bg-gray-100 {
-        @apply bg-gray-800;
-    }
+  .dark .bg-gray-100 {
+    @apply bg-gray-800;
+  }
 
-    .dark .border-gray-200 {
-        @apply border-gray-700;
-    }
+  .dark .border-gray-200 {
+    @apply border-gray-700;
+  }
 
-    .dark .border-slate-200 {
-        @apply border-slate-700;
-    }
+  .dark .border-slate-200 {
+    @apply border-slate-700;
+  }
 
-    .dark .text-gray-500 {
-        @apply text-gray-400;
-    }
+  .dark .text-gray-500 {
+    @apply text-gray-400;
+  }
 
-    .dark .text-gray-600 {
-        @apply text-gray-300;
-    }
+  .dark .text-gray-600 {
+    @apply text-gray-300;
+  }
 
-    .dark .text-gray-700 {
-        @apply text-gray-200;
-    }
+  .dark .text-gray-700 {
+    @apply text-gray-200;
+  }
 
-    .dark .text-gray-900 {
-        @apply text-white;
-    }
+  .dark .text-gray-900 {
+    @apply text-white;
+  }
 
-    .dark .text-slate-600 {
-        @apply text-slate-300;
-    }
+  .dark .text-slate-600 {
+    @apply text-slate-300;
+  }
 
-    .dark .text-slate-700 {
-        @apply text-slate-200;
-    }
+  .dark .text-slate-700 {
+    @apply text-slate-200;
+  }
 
-    .dark .text-slate-900 {
-        @apply text-white;
-    }
+  .dark .text-slate-900 {
+    @apply text-white;
+  }
 
-    .dark .hover\:bg-gray-50:hover {
-        @apply hover:bg-gray-800;
-    }
+  .dark .hover\:bg-gray-50:hover {
+    @apply hover:bg-gray-800;
+  }
 
-    .dark .hover\:bg-gray-100:hover {
-        @apply hover:bg-gray-700;
-    }
+  .dark .hover\:bg-gray-100:hover {
+    @apply hover:bg-gray-700;
+  }
 
-    .dark .hover\:bg-slate-50:hover {
-        @apply hover:bg-slate-800;
-    }
+  .dark .hover\:bg-slate-50:hover {
+    @apply hover:bg-slate-800;
+  }
 
-    .dark .hover\:bg-slate-100:hover {
-        @apply hover:bg-slate-700;
-    }
+  .dark .hover\:bg-slate-100:hover {
+    @apply hover:bg-slate-700;
+  }
 
-    /* Input styles */
-    .dark input {
-        @apply bg-gray-800 border-gray-600 text-gray-100;
-    }
+  /* Input styles */
+  .dark input {
+    @apply border-gray-600 bg-gray-800 text-gray-100;
+  }
 
-    /* Card styles */
-    .dark .card {
-        @apply bg-gray-800 border-gray-700;
-    }
+  /* Card styles */
+  .dark .card {
+    @apply border-gray-700 bg-gray-800;
+  }
 
-    /* Button styles */
-    .dark .btn-primary {
-        @apply bg-blue-600 hover:bg-blue-700;
-    }
+  /* Button styles */
+  .dark .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700;
+  }
 
-    .dark .btn-secondary {
-        @apply bg-gray-700 hover:bg-gray-600;
-    }
+  .dark .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600;
+  }
 }
 
 /* Skeleton animations */
 @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }

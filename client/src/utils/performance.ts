@@ -40,11 +40,11 @@ export const memoize = <T extends (...args: any[]) => any>(fn: T): T => {
 
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
@@ -89,11 +89,14 @@ export const sanitizeInput = (input: string): string => {
 
 export const calculateStockValue = (items: any[]): number => {
   return items.reduce((total, item) => {
-    return total + (item.quantity * parseFloat(item.unit_cost || '0'));
+    return total + item.quantity * parseFloat(item.unit_cost || '0');
   }, 0);
 };
 
-export const getStockStatus = (current: number, minimum: number): 'in_stock' | 'low_stock' | 'out_of_stock' => {
+export const getStockStatus = (
+  current: number,
+  minimum: number
+): 'in_stock' | 'low_stock' | 'out_of_stock' => {
   if (current === 0) return 'out_of_stock';
   if (current <= minimum) return 'low_stock';
   return 'in_stock';

@@ -5,9 +5,12 @@ import { cn } from '@/utils/cn';
 // Dashboard Stats Skeleton
 export const DashboardStatsSkeleton: React.FC = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div
+          key={i}
+          className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800"
+        >
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <Skeleton className="h-4 w-16" />
@@ -29,12 +32,17 @@ interface InventoryTableSkeletonProps {
 
 export const InventoryTableSkeleton: React.FC<InventoryTableSkeletonProps> = ({
   rows = 10,
-  className
+  className,
 }) => {
   return (
-    <div className={cn('bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700', className)}>
+    <div
+      className={cn(
+        'rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
+        className
+      )}
+    >
       {/* Table Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <Skeleton className="h-6 w-32" />
           <div className="flex space-x-2">
@@ -43,7 +51,7 @@ export const InventoryTableSkeleton: React.FC<InventoryTableSkeletonProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Table Content */}
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -75,15 +83,23 @@ interface ItemCardGridSkeletonProps {
 
 export const ItemCardGridSkeleton: React.FC<ItemCardGridSkeletonProps> = ({
   count = 12,
-  className
+  className,
 }) => {
   return (
-    <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6', className)}>
+    <div
+      className={cn(
+        'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+        className
+      )}
+    >
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <Skeleton className="h-32 w-full mb-4 rounded-md" />
-          <Skeleton className="h-5 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-1/2 mb-3" />
+        <div
+          key={i}
+          className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+        >
+          <Skeleton className="mb-4 h-32 w-full rounded-md" />
+          <Skeleton className="mb-2 h-5 w-3/4" />
+          <Skeleton className="mb-3 h-4 w-1/2" />
           <div className="flex items-center justify-between">
             <Skeleton className="h-6 w-16 rounded-full" />
             <Skeleton className="h-4 w-12" />
@@ -97,17 +113,17 @@ export const ItemCardGridSkeleton: React.FC<ItemCardGridSkeletonProps> = ({
 // Form Skeleton
 export const FormSkeleton: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48 mb-6" />
-        
+        <Skeleton className="mb-6 h-8 w-48" />
+
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="space-y-2">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
         ))}
-        
+
         <div className="flex space-x-3 pt-4">
           <Skeleton className="h-10 w-24 rounded-md" />
           <Skeleton className="h-10 w-20 rounded-md" />
@@ -120,8 +136,8 @@ export const FormSkeleton: React.FC = () => {
 // Analytics Chart Skeleton
 export const AnalyticsChartSkeleton: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <div className="mb-6 flex items-center justify-between">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-8 w-24 rounded-md" />
       </div>
@@ -133,11 +149,11 @@ export const AnalyticsChartSkeleton: React.FC = () => {
 // Supplier List Skeleton
 export const SupplierListSkeleton: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       {Array.from({ length: 8 }).map((_, i) => (
-        <ListItemSkeleton 
-          key={i} 
-          showAvatar={true} 
+        <ListItemSkeleton
+          key={i}
+          showAvatar={true}
           showAction={true}
           className={i === 7 ? 'border-b-0' : ''}
         />
@@ -149,11 +165,11 @@ export const SupplierListSkeleton: React.FC = () => {
 // Transaction History Skeleton
 export const TransactionHistorySkeleton: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <Skeleton className="h-6 w-40" />
       </div>
-      
+
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} className="px-6 py-4">
@@ -165,7 +181,7 @@ export const TransactionHistorySkeleton: React.FC = () => {
                   <Skeleton className="h-3 w-24" />
                 </div>
               </div>
-              <div className="text-right space-y-1">
+              <div className="space-y-1 text-right">
                 <Skeleton className="h-4 w-16" />
                 <Skeleton className="h-3 w-12" />
               </div>
@@ -180,15 +196,18 @@ export const TransactionHistorySkeleton: React.FC = () => {
 // Location Grid Skeleton
 export const LocationGridSkeleton: React.FC = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 9 }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div
+          key={i}
+          className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800"
+        >
+          <div className="mb-4 flex items-center justify-between">
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-8 w-8 rounded-full" />
           </div>
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-2/3 mb-4" />
+          <Skeleton className="mb-2 h-4 w-full" />
+          <Skeleton className="mb-4 h-4 w-2/3" />
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-16" />
             <Skeleton className="h-6 w-12 rounded-full" />
@@ -204,14 +223,17 @@ export const SearchResultsSkeleton: React.FC = () => {
   return (
     <div className="space-y-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <div
+          key={i}
+          className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+        >
           <div className="flex items-start space-x-4">
-            <Skeleton className="h-16 w-16 rounded-md flex-shrink-0" />
+            <Skeleton className="h-16 w-16 flex-shrink-0 rounded-md" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
-              <div className="flex items-center space-x-4 mt-3">
+              <div className="mt-3 flex items-center space-x-4">
                 <Skeleton className="h-4 w-16" />
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-6 w-16 rounded-full" />
@@ -228,7 +250,7 @@ export const SearchResultsSkeleton: React.FC = () => {
 export const AddItemFormSkeleton: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="space-y-2">
@@ -236,44 +258,44 @@ export const AddItemFormSkeleton: React.FC = () => {
             <Skeleton className="h-5 w-64 animate-pulse" />
           </div>
         </div>
-        
+
         {/* Form Card with proper shadow and styling */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-6 py-4">
             <div className="flex items-center">
-              <Skeleton className="h-6 w-6 mr-2 animate-pulse" />
+              <Skeleton className="mr-2 h-6 w-6 animate-pulse" />
               <Skeleton className="h-6 w-32 animate-pulse" />
             </div>
           </div>
-          
-          <div className="p-6 space-y-6">
+
+          <div className="space-y-6 p-6">
             {/* Form Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-24 animate-pulse" />
-                  <Skeleton className="h-10 w-full rounded-md animate-pulse" />
+                  <Skeleton className="h-10 w-full animate-pulse rounded-md" />
                 </div>
               ))}
             </div>
-            
+
             {/* Description Field */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-20 animate-pulse" />
-              <Skeleton className="h-20 w-full rounded-md animate-pulse" />
+              <Skeleton className="h-20 w-full animate-pulse rounded-md" />
             </div>
-            
+
             {/* Image Upload Section */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-28 animate-pulse" />
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-                <Skeleton className="h-32 w-full rounded-md animate-pulse" />
+              <div className="rounded-lg border-2 border-dashed border-gray-300 p-6">
+                <Skeleton className="h-32 w-full animate-pulse rounded-md" />
               </div>
             </div>
-            
+
             {/* Submit Button */}
             <div className="pt-4">
-              <Skeleton className="h-10 w-32 rounded-md animate-pulse" />
+              <Skeleton className="h-10 w-32 animate-pulse rounded-md" />
             </div>
           </div>
         </div>
@@ -286,30 +308,30 @@ export const AddItemFormSkeleton: React.FC = () => {
 export const ReceiveItemsSkeleton: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header matching Items tab style */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <Skeleton className="h-8 w-48 animate-pulse" />
             <Skeleton className="h-5 w-64 animate-pulse" />
           </div>
         </div>
-        
+
         {/* Search Items Card with proper styling */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-6 py-4">
             <div className="flex items-center">
-              <Skeleton className="h-5 w-5 mr-2 animate-pulse" />
+              <Skeleton className="mr-2 h-5 w-5 animate-pulse" />
               <Skeleton className="h-6 w-48 animate-pulse" />
             </div>
           </div>
-          
+
           <div className="p-6">
             {/* Search Input */}
             <div className="mb-4">
-              <Skeleton className="h-10 w-64 rounded-md animate-pulse" />
+              <Skeleton className="h-10 w-64 animate-pulse rounded-md" />
             </div>
-            
+
             {/* Items Table matching InventoryTableSkeleton structure */}
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -335,10 +357,10 @@ export const ReceiveItemsSkeleton: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Skeleton className="h-6 w-16 rounded-full animate-pulse" />
+                        <Skeleton className="h-6 w-16 animate-pulse rounded-full" />
                       </td>
                       <td className="px-6 py-4">
-                        <Skeleton className="h-8 w-16 rounded-md animate-pulse" />
+                        <Skeleton className="h-8 w-16 animate-pulse rounded-md" />
                       </td>
                     </tr>
                   ))}
@@ -347,10 +369,10 @@ export const ReceiveItemsSkeleton: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Floating Action Button */}
         <div className="fixed bottom-6 right-6">
-          <Skeleton className="h-14 w-14 rounded-full animate-pulse shadow-lg" />
+          <Skeleton className="h-14 w-14 animate-pulse rounded-full shadow-lg" />
         </div>
       </div>
     </div>
@@ -361,30 +383,30 @@ export const ReceiveItemsSkeleton: React.FC = () => {
 export const WithdrawItemsSkeleton: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header matching Items tab style */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <Skeleton className="h-8 w-48 animate-pulse" />
             <Skeleton className="h-5 w-64 animate-pulse" />
           </div>
         </div>
-        
+
         {/* Search Items Card with proper styling */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-6 py-4">
             <div className="flex items-center">
-              <Skeleton className="h-5 w-5 mr-2 animate-pulse" />
+              <Skeleton className="mr-2 h-5 w-5 animate-pulse" />
               <Skeleton className="h-6 w-48 animate-pulse" />
             </div>
           </div>
-          
+
           <div className="p-6">
             {/* Search Input */}
             <div className="mb-4">
-              <Skeleton className="h-10 w-64 rounded-md animate-pulse" />
+              <Skeleton className="h-10 w-64 animate-pulse rounded-md" />
             </div>
-            
+
             {/* Items Table matching InventoryTableSkeleton structure */}
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -413,10 +435,10 @@ export const WithdrawItemsSkeleton: React.FC = () => {
                         <Skeleton className="h-4 w-12 animate-pulse" />
                       </td>
                       <td className="px-6 py-4">
-                        <Skeleton className="h-6 w-20 rounded-full animate-pulse" />
+                        <Skeleton className="h-6 w-20 animate-pulse rounded-full" />
                       </td>
                       <td className="px-6 py-4">
-                        <Skeleton className="h-8 w-16 rounded-md animate-pulse" />
+                        <Skeleton className="h-8 w-16 animate-pulse rounded-md" />
                       </td>
                     </tr>
                   ))}
@@ -425,10 +447,10 @@ export const WithdrawItemsSkeleton: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Floating Action Button */}
         <div className="fixed bottom-6 right-6">
-          <Skeleton className="h-14 w-14 rounded-full animate-pulse shadow-lg" />
+          <Skeleton className="h-14 w-14 animate-pulse rounded-full shadow-lg" />
         </div>
       </div>
     </div>
@@ -439,36 +461,36 @@ export const WithdrawItemsSkeleton: React.FC = () => {
 export const TransferItemsSkeleton: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header matching Items tab style */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <Skeleton className="h-8 w-48 animate-pulse" />
             <Skeleton className="h-5 w-64 animate-pulse" />
           </div>
         </div>
-        
+
         {/* Search Items Card with proper styling */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-6 py-4">
             <div className="flex items-center">
-              <Skeleton className="h-5 w-5 mr-2 animate-pulse" />
+              <Skeleton className="mr-2 h-5 w-5 animate-pulse" />
               <Skeleton className="h-6 w-48 animate-pulse" />
             </div>
           </div>
-          
+
           <div className="p-6">
             {/* Search Input */}
             <div className="mb-4">
-              <Skeleton className="h-10 w-64 rounded-md animate-pulse" />
+              <Skeleton className="h-10 w-64 animate-pulse rounded-md" />
             </div>
-            
+
             {/* Items Table matching InventoryTableSkeleton structure */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    {["SKU", "Name", "Total Stock", "Locations", "Actions"].map((_, i) => (
+                    {['SKU', 'Name', 'Total Stock', 'Locations', 'Actions'].map((_, i) => (
                       <th key={i} className="px-6 py-3 text-left">
                         <Skeleton className="h-4 w-16 animate-pulse" />
                       </th>
@@ -492,12 +514,12 @@ export const TransferItemsSkeleton: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-1">
-                          <Skeleton className="h-6 w-16 rounded-full animate-pulse" />
-                          <Skeleton className="h-6 w-16 rounded-full animate-pulse" />
+                          <Skeleton className="h-6 w-16 animate-pulse rounded-full" />
+                          <Skeleton className="h-6 w-16 animate-pulse rounded-full" />
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Skeleton className="h-8 w-16 rounded-md animate-pulse" />
+                        <Skeleton className="h-8 w-16 animate-pulse rounded-md" />
                       </td>
                     </tr>
                   ))}
@@ -506,10 +528,10 @@ export const TransferItemsSkeleton: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Floating Action Button */}
         <div className="fixed bottom-6 right-6">
-          <Skeleton className="h-14 w-14 rounded-full animate-pulse shadow-lg" />
+          <Skeleton className="h-14 w-14 animate-pulse rounded-full shadow-lg" />
         </div>
       </div>
     </div>

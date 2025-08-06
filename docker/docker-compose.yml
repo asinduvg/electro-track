@@ -7,9 +7,9 @@ services:
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: electrotrack
     ports:
-      - "5433:5432"
+      - '5433:5432'
     volumes:
-      - "./sql:/docker-entrypoint-initdb.d"
+      - './sql:/docker-entrypoint-initdb.d'
       - postgres-data:/var/lib/postgresql/data
 
 volumes:

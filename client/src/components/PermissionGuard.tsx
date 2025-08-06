@@ -20,23 +20,23 @@ const ROLE_HIERARCHY: Record<UserRole, number> = {
 
 // Action-based permissions
 const ACTION_PERMISSIONS: Record<string, UserRole[]> = {
-  'create_item': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'edit_item': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER, UserRole.WAREHOUSE_STAFF],
-  'delete_item': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'create_location': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'edit_location': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'delete_location': [UserRole.ADMIN],
-  'create_user': [UserRole.ADMIN],
-  'edit_user': [UserRole.ADMIN],
-  'delete_user': [UserRole.ADMIN],
-  'create_supplier': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'edit_supplier': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'delete_supplier': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'view_reports': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'export_data': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
-  'manage_settings': [UserRole.ADMIN],
-  'create_transaction': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER, UserRole.WAREHOUSE_STAFF],
-  'view_analytics': [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  create_item: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  edit_item: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER, UserRole.WAREHOUSE_STAFF],
+  delete_item: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  create_location: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  edit_location: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  delete_location: [UserRole.ADMIN],
+  create_user: [UserRole.ADMIN],
+  edit_user: [UserRole.ADMIN],
+  delete_user: [UserRole.ADMIN],
+  create_supplier: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  edit_supplier: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  delete_supplier: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  view_reports: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  export_data: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
+  manage_settings: [UserRole.ADMIN],
+  create_transaction: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER, UserRole.WAREHOUSE_STAFF],
+  view_analytics: [UserRole.ADMIN, UserRole.INVENTORY_MANAGER],
 };
 
 const PermissionGuard: React.FC<PermissionGuardProps> = ({
@@ -44,7 +44,7 @@ const PermissionGuard: React.FC<PermissionGuardProps> = ({
   requiredRole,
   requiredRoles,
   fallback = null,
-  action
+  action,
 }) => {
   const { currentUser } = useAuth();
 
@@ -89,26 +89,26 @@ export const usePermissions = () => {
 
   const hasPermission = (action: string): boolean => {
     if (!currentUser) return false;
-    
+
     const userRole = currentUser.role as UserRole;
     const allowedRoles = ACTION_PERMISSIONS[action];
-    
+
     return allowedRoles ? allowedRoles.includes(userRole) : false;
   };
 
   const hasRole = (role: UserRole): boolean => {
     if (!currentUser) return false;
-    
+
     const userRole = currentUser.role as UserRole;
     const userRoleLevel = ROLE_HIERARCHY[userRole];
     const requiredRoleLevel = ROLE_HIERARCHY[role];
-    
+
     return userRoleLevel >= requiredRoleLevel;
   };
 
   const hasAnyRole = (roles: UserRole[]): boolean => {
     if (!currentUser) return false;
-    
+
     const userRole = currentUser.role as UserRole;
     return roles.includes(userRole);
   };

@@ -22,9 +22,9 @@ const StockAlerts: React.FC = () => {
   const generateStockAlerts = (): StockAlert[] => {
     const alerts: StockAlert[] = [];
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const currentStock = stocks
-        .filter(stock => stock.item_id === item.id)
+        .filter((stock) => stock.item_id === item.id)
         .reduce((total, stock) => total + stock.quantity, 0);
 
       const minStock = item.minimum_stock || 10;
@@ -38,7 +38,7 @@ const StockAlerts: React.FC = () => {
           item,
           currentStock,
           threshold: minStock,
-          urgency: currentStock <= minStock * 0.5 ? 'high' : 'medium'
+          urgency: currentStock <= minStock * 0.5 ? 'high' : 'medium',
         });
       }
 
@@ -50,7 +50,7 @@ const StockAlerts: React.FC = () => {
           item,
           currentStock,
           threshold: 0,
-          urgency: 'high'
+          urgency: 'high',
         });
       }
 
@@ -62,7 +62,7 @@ const StockAlerts: React.FC = () => {
           item,
           currentStock,
           threshold: maxStock,
-          urgency: 'low'
+          urgency: 'low',
         });
       }
     });
@@ -128,8 +128,8 @@ const StockAlerts: React.FC = () => {
       </CardHeader>
       <CardContent>
         {alerts.length === 0 ? (
-          <div className="text-center py-8">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <div className="py-8 text-center">
+            <Package className="mx-auto mb-4 h-12 w-12 text-gray-400" />
             <p className="text-gray-500">No stock alerts at this time</p>
             <p className="text-sm text-gray-400">All inventory levels are within normal ranges</p>
           </div>
@@ -138,18 +138,14 @@ const StockAlerts: React.FC = () => {
             {alerts.slice(0, 10).map((alert) => (
               <div
                 key={alert.id}
-                className={`p-3 border rounded-lg ${getAlertColor(alert.urgency)}`}
+                className={`rounded-lg border p-3 ${getAlertColor(alert.urgency)}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {getAlertIcon(alert.type)}
                     <div>
-                      <div className="font-medium text-sm">
-                        {alert.item.name}
-                      </div>
-                      <div className="text-xs opacity-75">
-                        SKU: {alert.item.sku}
-                      </div>
+                      <div className="text-sm font-medium">{alert.item.name}</div>
+                      <div className="text-xs opacity-75">SKU: {alert.item.sku}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -166,13 +162,14 @@ const StockAlerts: React.FC = () => {
                 </div>
                 {alert.type === 'low_stock' && (
                   <div className="mt-2 text-xs">
-                    Reorder recommended: {Math.max(alert.threshold * 2 - alert.currentStock, alert.threshold)} units
+                    Reorder recommended:{' '}
+                    {Math.max(alert.threshold * 2 - alert.currentStock, alert.threshold)} units
                   </div>
                 )}
               </div>
             ))}
             {alerts.length > 10 && (
-              <div className="text-center pt-2">
+              <div className="pt-2 text-center">
                 <Button variant="ghost" size="sm">
                   View all {alerts.length} alerts
                 </Button>

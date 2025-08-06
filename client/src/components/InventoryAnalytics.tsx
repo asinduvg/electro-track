@@ -1,9 +1,15 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Badge } from './ui/Badge';
-import { 
-  TrendingUp, TrendingDown, DollarSign, Package, 
-  BarChart3, PieChart, Activity, Calendar 
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Package,
+  BarChart3,
+  PieChart,
+  Activity,
+  Calendar,
 } from 'lucide-react';
 import useItems from '../hooks/useItems';
 import useStocks from '../hooks/useStocks';
@@ -18,21 +24,21 @@ const InventoryAnalytics: React.FC = () => {
     const totalItems = items.length;
     const totalStockValue = items.reduce((total, item) => {
       const itemStock = stocks
-        .filter(stock => stock.item_id === item.id)
+        .filter((stock) => stock.item_id === item.id)
         .reduce((sum, stock) => sum + stock.quantity, 0);
-      return total + (itemStock * Number(item.unit_cost || 0));
+      return total + itemStock * Number(item.unit_cost || 0);
     }, 0);
 
-    const lowStockItems = items.filter(item => {
+    const lowStockItems = items.filter((item) => {
       const currentStock = stocks
-        .filter(stock => stock.item_id === item.id)
+        .filter((stock) => stock.item_id === item.id)
         .reduce((sum, stock) => sum + stock.quantity, 0);
       return currentStock <= (item.minimum_stock || 10);
     }).length;
 
-    const outOfStockItems = items.filter(item => {
+    const outOfStockItems = items.filter((item) => {
       const currentStock = stocks
-        .filter(stock => stock.item_id === item.id)
+        .filter((stock) => stock.item_id === item.id)
         .reduce((sum, stock) => sum + stock.quantity, 0);
       return currentStock === 0;
     }).length;
@@ -41,37 +47,43 @@ const InventoryAnalytics: React.FC = () => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recentTransactions = transactions.filter(t => {
+    const recentTransactions = transactions.filter((t) => {
       const transactionDate = new Date(t.performed_at || Date.now());
       return transactionDate >= thirtyDaysAgo;
     });
 
-    const transactionsByType = recentTransactions.reduce((acc, t) => {
-      acc[t.type] = (acc[t.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const transactionsByType = recentTransactions.reduce(
+      (acc, t) => {
+        acc[t.type] = (acc[t.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     const mostActiveItems = items
-      .map(item => {
-        const itemTransactions = recentTransactions.filter(t => t.item_id === item.id);
+      .map((item) => {
+        const itemTransactions = recentTransactions.filter((t) => t.item_id === item.id);
         return {
           item,
           transactionCount: itemTransactions.length,
-          totalMovement: itemTransactions.reduce((sum, t) => sum + Math.abs(t.quantity), 0)
+          totalMovement: itemTransactions.reduce((sum, t) => sum + Math.abs(t.quantity), 0),
         };
       })
-      .filter(data => data.transactionCount > 0)
+      .filter((data) => data.transactionCount > 0)
       .sort((a, b) => b.transactionCount - a.transactionCount)
       .slice(0, 5);
 
-    const categoryDistribution = items.reduce((acc, item) => {
-      const category = item.manufacturer || 'Unknown Manufacturer';
-      acc[category] = (acc[category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const categoryDistribution = items.reduce(
+      (acc, item) => {
+        const category = item.manufacturer || 'Unknown Manufacturer';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     const stockTurnover = recentTransactions
-      .filter(t => ['withdraw', 'transfer'].includes(t.type))
+      .filter((t) => ['withdraw', 'transfer'].includes(t.type))
       .reduce((sum, t) => sum + Math.abs(t.quantity), 0);
 
     return {
@@ -84,14 +96,14 @@ const InventoryAnalytics: React.FC = () => {
       mostActiveItems,
       categoryDistribution,
       stockTurnover,
-      averageItemValue: totalItems > 0 ? totalStockValue / totalItems : 0
+      averageItemValue: totalItems > 0 ? totalStockValue / totalItems : 0,
     };
   }, [items, stocks, transactions]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
     }).format(value);
   };
 
@@ -103,7 +115,7 @@ const InventoryAnalytics: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -114,7 +126,7 @@ const InventoryAnalytics: React.FC = () => {
               <Package className="h-8 w-8 text-[#FF385C]" />
             </div>
             <div className="mt-2 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+              <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
               <span className="text-green-500">+12% from last month</span>
             </div>
           </CardContent>
@@ -130,7 +142,7 @@ const InventoryAnalytics: React.FC = () => {
               <DollarSign className="h-8 w-8 text-green-500" />
             </div>
             <div className="mt-2 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+              <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
               <span className="text-green-500">+8% from last month</span>
             </div>
           </CardContent>
@@ -168,7 +180,7 @@ const InventoryAnalytics: React.FC = () => {
       </div>
 
       {/* Transaction Analysis */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -204,7 +216,7 @@ const InventoryAnalytics: React.FC = () => {
               {analytics.mostActiveItems.map((data, index) => (
                 <div key={data.item.id} className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-sm">{data.item.name}</div>
+                    <div className="text-sm font-medium">{data.item.name}</div>
                     <div className="text-xs text-gray-500">SKU: {data.item.sku}</div>
                   </div>
                   <div className="text-right">
@@ -227,9 +239,9 @@ const InventoryAnalytics: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {Object.entries(analytics.categoryDistribution).map(([category, count]) => (
-              <div key={category} className="text-center p-3 bg-gray-50 rounded-lg">
+              <div key={category} className="rounded-lg bg-gray-50 p-3 text-center">
                 <div className="text-2xl font-bold text-[#FF385C]">{count}</div>
                 <div className="text-sm text-gray-600">{category}</div>
               </div>
@@ -239,7 +251,7 @@ const InventoryAnalytics: React.FC = () => {
       </Card>
 
       {/* Additional Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">{analytics.stockTurnover}</div>
@@ -249,7 +261,9 @@ const InventoryAnalytics: React.FC = () => {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">{formatCurrency(analytics.averageItemValue)}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {formatCurrency(analytics.averageItemValue)}
+            </div>
             <div className="text-sm text-gray-600">Average Item Value</div>
           </CardContent>
         </Card>
