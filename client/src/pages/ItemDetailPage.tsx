@@ -144,15 +144,13 @@ const ItemDetailPage: React.FC = () => {
     const getStatusColor = (status: string) : string => {
         switch (status) {
             case 'in_stock':
-                return "text-[#008489]";
+                return "text-success";
             case 'low_stock':
-                return "text-[#FC642D]";
+                return "text-warning";
             case 'out_of_stock':
-                return "text-[#C4141C]";
-            case 'discontinued':
-                return "text-[#717171]";
+                return "text-danger";
             default:
-                return "text-[#717171]";
+                return "text-info";
         }
     }
 

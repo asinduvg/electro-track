@@ -13,6 +13,12 @@ export default {
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+
+        success: "hsl(var(--success))",
+        warning: "hcl(var(--warning))",
+        danger: "hsl(var(--danger))",
+        info: "hsl(var(--secondary))",
+
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",

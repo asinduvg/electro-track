@@ -28,6 +28,7 @@
         --warning: 252 100 45; /* Airbnb orange */
         --sidebar: 255 255 255; /* white */
         --sidebar-accent: 247 247 247; /* light gray */
+        --danger: 196 20 28; /* Airbnb red */
     }
 
     .dark {
