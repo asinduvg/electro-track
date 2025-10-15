@@ -14,13 +14,13 @@ import {
 } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
 import { useAuth } from '../context/AuthContext';
-import type { Database } from '../lib/database.types';
+import type { Item as ItemType } from '@shared/schema';
 import useItems from '../hooks/useItems.tsx';
 import useTransactions from '../hooks/useTransactions.tsx';
 import useLocations from '../hooks/useLocations.tsx';
 import useStocks from '../hooks/useStocks.tsx';
 
-type Item = Database['public']['Tables']['items']['Row'];
+type Item = ItemType;
 
 interface DisposeItem {
   id: string;
@@ -418,7 +418,7 @@ const DisposeItemsPage: React.FC = () => {
                     {selectedItems
                       .reduce((sum, selected) => {
                         const item = items.find((i) => i.id === selected.id);
-                        return sum + (item ? item.unit_cost * selected.quantity : 0);
+                        return sum + (item ? parseFloat(item.unit_cost as string) * selected.quantity : 0);
                       }, 0)
                       .toFixed(2)}
                   </p>

@@ -5,10 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
-import type { Database } from '../lib/database.types';
+import type { Location } from '@shared/schema';
 import useLocations from '../hooks/useLocations.tsx';
-
-type LocationUpdate = Database['public']['Tables']['locations']['Update'];
 
 const EditLocationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +15,7 @@ const EditLocationPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<LocationUpdate | null>(null);
+  const [formData, setFormData] = useState<Partial<Location> | null>(null);
 
   const { getLocationById, error: locationsError, updateLocation } = useLocations();
 

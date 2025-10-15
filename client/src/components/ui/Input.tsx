@@ -22,7 +22,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <div className={cn('relative rounded-md', leftAddon && 'flex')}>
+        <div className={cn('relative rounded-md', leftAddon ? 'flex' : '')}>
           {leftAddon && (
             <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
               {leftAddon}
@@ -36,9 +36,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               error
                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                 : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-              leftAddon && 'rounded-l-none',
-              rightAddon && 'rounded-r-none',
-              fullWidth && 'w-full',
+              leftAddon ? 'rounded-l-none' : '',
+              rightAddon ? 'rounded-r-none' : '',
+              fullWidth ? 'w-full' : '',
               className
             )}
             aria-invalid={!!error}

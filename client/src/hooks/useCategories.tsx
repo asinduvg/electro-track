@@ -65,8 +65,8 @@ function useCategories() {
   ): Promise<Category | null> => {
     try {
       const updatedCategory = await apiClient.updateCategory(id, updates);
-      setCategories((prev) => prev.map((cat) => (cat.id === id ? updatedCategory : cat)));
-      return updatedCategory;
+      setCategories((prev) => prev.map((cat) => (cat.id === id ? updatedCategory as Category : cat)));
+      return updatedCategory as Category;
     } catch (error) {
       console.error('Failed to update category:', error);
       setError('Failed to update category');
