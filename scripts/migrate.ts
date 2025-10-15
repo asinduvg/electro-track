@@ -16,6 +16,7 @@ async function runMigrations() {
   const pool = new Pool({
     connectionString: databaseUrl,
     max: 1,
+    ssl: databaseUrl.includes('neon.tech') ? { rejectUnauthorized: false } : undefined,
   });
 
   const db = drizzle(pool);
@@ -27,6 +28,7 @@ async function runMigrations() {
     process.exit(0);
   } catch (error) {
     console.error('❌ Migration failed:', error);
+    console.error('Error details:', error);
     await pool.end();
     process.exit(1);
   }
