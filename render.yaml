@@ -1,0 +1,28 @@
+services:
+  # Web Service (Express + React)
+  - type: web
+    name: electro-track
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: yarn install && yarn build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: electro-track-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PORT
+        value: 10000
+    healthCheckPath: /
+
+databases:
+  # PostgreSQL Database
+  - name: electro-track-db
+    databaseName: electrotrack
+    plan: free
+    region: oregon
