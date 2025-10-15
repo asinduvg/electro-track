@@ -78,6 +78,9 @@
     "zod": "^3.24.2",
     "zod-validation-error": "^3.4.0"
   },
+  "engines": {
+    "node": "22.19.0"
+  },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.2.5",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
