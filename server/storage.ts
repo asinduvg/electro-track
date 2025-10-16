@@ -49,6 +49,7 @@ import {
 } from '@shared/schema';
 import { db } from './db';
 import { eq, and, desc, asc, or, ilike } from 'drizzle-orm';
+import bcrypt from 'bcrypt';
 
 export interface IStorage {
   // Users
@@ -185,12 +186,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const result = await db.insert(users).values(user).returning();
+    // Hash the password before storing
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+
+    const result = await db
+      .insert(users)
+      .values({
+        ...user,
+        password: hashedPassword,
+      })
+      .returning();
     return result[0];
   }
 
   async updateUser(id: string, updates: Partial<InsertUser>): Promise<User | undefined> {
-    const result = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    // Hash password if it's being updated
+    const updatesWithHashedPassword = { ...updates };
+    if (updates.password) {
+      const saltRounds = 10;
+      updatesWithHashedPassword.password = await bcrypt.hash(updates.password, saltRounds);
+    }
+
+    const result = await db
+      .update(users)
+      .set(updatesWithHashedPassword)
+      .where(eq(users.id, id))
+      .returning();
     return result[0];
   }
 

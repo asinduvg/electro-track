@@ -1,9 +1,9 @@
 import { useDatabase } from '../context/DatabaseContext.tsx';
 import { useEffect, useState } from 'react';
-import type { User } from '@shared/schema';
+import type { PublicUser } from '@shared/schema';
 import { apiClient } from '../lib/api';
 
-type UserUpdate = Partial<User>;
+type UserUpdate = Partial<PublicUser>;
 
 const ERR_USERS_LOAD = 'Failed to load users';
 const ERR_USER_LOAD = 'Failed to load user';
@@ -11,15 +11,15 @@ const ERR_USER_UPDATE = 'Failed to update user';
 const ERR_USER_DELETE = 'Failed to delete user';
 
 const db_getUsers = async () => {
-  return (await apiClient.getUsers()) as User[];
+  return (await apiClient.getUsers()) as PublicUser[];
 };
 
 const db_getUserById = async (id: string) => {
-  return (await apiClient.getUser(id)) as User;
+  return (await apiClient.getUser(id)) as PublicUser;
 };
 
 const db_updateUser = async (id: string, updates: UserUpdate) => {
-  return (await apiClient.updateUser(id, updates)) as User;
+  return (await apiClient.updateUser(id, updates)) as PublicUser;
 };
 
 const db_deleteUser = async (id: string) => {
@@ -29,14 +29,14 @@ const db_deleteUser = async (id: string) => {
 
 function useUsers() {
   const { dbOperation } = useDatabase();
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<PublicUser[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const getUserById = async (id: string): Promise<User | null> => {
+  const getUserById = async (id: string): Promise<PublicUser | null> => {
     const existingUser = users.find((user) => user.id === id);
     if (existingUser) return existingUser;
 
-    return await dbOperation<User>(
+    return await dbOperation<PublicUser>(
       () => db_getUserById(id),
       (user) => setUsers((prevUsers) => [...prevUsers, user]),
       setError,
@@ -44,8 +44,8 @@ function useUsers() {
     );
   };
 
-  const updateUser = async (id: string, updates: UserUpdate): Promise<User | null> => {
-    return await dbOperation<User>(
+  const updateUser = async (id: string, updates: UserUpdate): Promise<PublicUser | null> => {
+    return await dbOperation<PublicUser>(
       () => db_updateUser(id, updates),
       (user) =>
         setUsers((prevUsers) =>
@@ -67,7 +67,7 @@ function useUsers() {
 
   useEffect(() => {
     (async () => {
-      await dbOperation<User[]>(db_getUsers, setUsers, setError, ERR_USERS_LOAD);
+      await dbOperation<PublicUser[]>(db_getUsers, setUsers, setError, ERR_USERS_LOAD);
     })();
   }, [dbOperation]);
 
