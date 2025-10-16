@@ -8,6 +8,13 @@
       "when": 1760527512538,
       "tag": "0000_breezy_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760584145151,
+      "tag": "0001_first_nightmare",
+      "breakpoints": true
     }
   ]
 }
