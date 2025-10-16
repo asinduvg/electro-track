@@ -169,11 +169,11 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+          <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2">
               <div className="h-8 w-64 animate-pulse rounded bg-slate-200"></div>
-              <div className="h-5 w-96 animate-pulse rounded bg-slate-200"></div>
+              <div className="h-5 w-full max-w-sm animate-pulse rounded bg-slate-200 sm:w-96"></div>
             </div>
             {!hideAddButton && (
               <Link to="/inventory/add" className="add-item-button">
@@ -192,15 +192,15 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Inventory Items</h1>
-            <p className="mt-2 text-slate-600">Manage your electronic components and equipment</p>
+            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Inventory Items</h1>
+            <p className="mt-1 text-sm text-slate-600 sm:mt-2 sm:text-base">Manage your electronic components and equipment</p>
           </div>
           {!hideAddButton && (
             <Link to="/inventory/add" className="add-item-button">
-              <Button className="flex items-center bg-[#FF385C] px-6 py-3 font-medium text-white shadow-lg transition-colors hover:bg-[#E31C5F] hover:shadow-xl">
+              <Button className="flex w-full items-center justify-center bg-[#FF385C] px-6 py-3 font-medium text-white shadow-lg transition-colors hover:bg-[#E31C5F] hover:shadow-xl sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Add New Item
               </Button>
@@ -210,23 +210,23 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
 
         {/* Search and Filters */}
         <Card className="mb-6 border-0 bg-white shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col space-y-3 sm:space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
               <div className="relative flex-1">
                 <Search className="absolute right-4 top-[20px] z-10 h-4 w-4 -translate-y-1/2 transform text-slate-400" />
                 <Input
-                  placeholder="Search items by name, SKU, or description..."
+                  placeholder="Search by name, SKU..."
                   className="border-slate-200 pl-10 focus:border-slate-400 focus:ring-slate-400"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-slate-200 bg-white px-4 py-3 transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+                  className="w-full border border-slate-200 bg-white px-4 py-3 transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400 sm:w-auto"
                 >
                   <option value="all">All Status</option>
                   <option value="in_stock">In Stock</option>
@@ -238,7 +238,7 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="border border-slate-200 bg-white px-4 py-3 transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+                  className="w-full border border-slate-200 bg-white px-4 py-3 transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400 sm:w-auto"
                 >
                   <option value="all">All Categories</option>
                   {categories.map((category) => (
@@ -312,8 +312,8 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
 
         {/* Results Summary */}
         <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <p className="text-slate-600">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-600 sm:text-base">
               Showing {filteredAndSortedItems.length} of {items.length} items
             </p>
 
@@ -349,7 +349,7 @@ const InventoryListPage: React.FC<InventoryListPageProps> = ({ hideAddButton = f
         {/* Items Table */}
         <Card className="border-0 bg-white shadow-lg">
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
               <Table>
                 <TableHead className="bg-slate-50">
                   <TableRow>
