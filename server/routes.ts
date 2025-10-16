@@ -10,6 +10,7 @@ import {
   insertTransactionSchema,
   insertSupplierSchema,
 } from '@shared/schema';
+import bcrypt from 'bcrypt';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
@@ -17,14 +18,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
 
-      // Simple authentication - in production, use proper password hashing
+      // Validate input
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+      }
+
+      // Get user by email
       const user = await storage.getUserByEmail(email);
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      // For demo purposes, accept any password - in production implement proper auth
-      res.json({ user });
+      // Verify password using bcrypt
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      // Don't send password in response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -35,7 +48,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/users', async (req, res) => {
     try {
       const users = await storage.getAllUsers();
-      res.json(users);
+      // Remove password from response
+      const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+      res.json(usersWithoutPasswords);
     } catch (error) {
       console.error('Get users error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -48,7 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      res.json(user);
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error('Get user error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -59,7 +76,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userData = insertUserSchema.parse(req.body);
       const user = await storage.createUser(userData);
-      res.status(201).json(user);
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      res.status(201).json(userWithoutPassword);
     } catch (error) {
       console.error('Create user error:', error);
       res.status(400).json({ error: 'Invalid user data' });
@@ -73,7 +92,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      res.json(user);
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error('Update user error:', error);
       res.status(500).json({ error: 'Internal server error' });

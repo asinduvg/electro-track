@@ -62,6 +62,7 @@ export const supplierStatusEnum = pgEnum('supplier_status', ['active', 'inactive
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull().unique(),
+  password: text('password').notNull(),
   role: userRoleEnum('role').notNull(),
   name: text('name').notNull(),
   department: text('department'),
@@ -291,12 +292,23 @@ export const purchaseOrderItems = pgTable('purchase_order_items', {
 });
 
 // Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  email: true,
-  name: true,
-  role: true,
-  department: true,
-});
+export const insertUserSchema = createInsertSchema(users)
+  .pick({
+    email: true,
+    name: true,
+    role: true,
+    department: true,
+    password: true,
+  })
+  .extend({
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+  });
 
 export const insertCategorySchema = createInsertSchema(categories).pick({
   category: true,
@@ -429,6 +441,7 @@ export const insertPurchaseOrderItemSchema = createInsertSchema(purchaseOrderIte
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type PublicUser = Omit<User, 'password'>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Category = typeof categories.$inferSelect;
 export type InsertLocation = z.infer<typeof insertLocationSchema>;

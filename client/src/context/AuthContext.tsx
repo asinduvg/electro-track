@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiClient } from '../lib/api';
-import type { User } from '@shared/schema';
+import type { PublicUser } from '@shared/schema';
 
 interface AuthContextType {
-  currentUser: User | null;
-  login: (email: string, password: string) => Promise<User | null>;
+  currentUser: PublicUser | null;
+  login: (email: string, password: string) => Promise<PublicUser | null>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  setCurrentUser: (user: User | null) => void;
+  setCurrentUser: (user: PublicUser | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<PublicUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,12 +57,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const login = async (email: string, password: string): Promise<User | null> => {
+  const login = async (email: string, password: string): Promise<PublicUser | null> => {
     try {
       setError(null);
       setIsLoading(true);
 
-      const response = (await apiClient.login(email, password)) as { user: User };
+      const response = (await apiClient.login(email, password)) as { user: PublicUser };
       const user = response.user;
 
       setCurrentUser(user);
@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const setCurrentUserDirect = (user: User | null) => {
+  const setCurrentUserDirect = (user: PublicUser | null) => {
     setCurrentUser(user);
     if (user) {
       localStorage.setItem('currentUser', JSON.stringify(user));
