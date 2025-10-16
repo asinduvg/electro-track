@@ -63,6 +63,8 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 - **Frontend**: React 18, TypeScript, Tailwind CSS
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
+  - Local Dev: Docker PostgreSQL
+  - Production: Neon PostgreSQL (deploy branch)
 - **State Management**: React Query for server state
 - **UI Components**: Custom Airbnb-themed component library
 - **Icons**: Lucide React
@@ -70,10 +72,20 @@ A comprehensive inventory management system built with React, TypeScript, and Po
 
 ## Quick Start
 
-1. **Database Setup**: PostgreSQL database is automatically configured
-2. **Schema Migration**: Run `npm run db:push` to create tables
-3. **Start Application**: Run `npm run dev` to start both frontend and backend
-4. **Default Login**: admin@et.com / admin123
+### Local Development (Main Branch)
+
+1. **Install Dependencies**: `yarn install`
+2. **Start Docker PostgreSQL**: `cd docker && docker-compose up -d`
+3. **Setup Environment**: `cp .env.example .env`
+4. **Schema Migration**: `yarn db:push`
+5. **Start Application**: `yarn dev`
+6. **Default Login**: admin@et.com / admin123
+
+See [README.local.md](./README.local.md) for detailed setup instructions.
+
+### Production Deployment (Deploy Branch)
+
+The deploy branch uses Neon PostgreSQL for production. See deployment documentation for details.
 
 ## API Endpoints
 

@@ -1,15 +1,6 @@
-// src/lib/imageUpload.ts - Deferred upload version
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Image upload utilities
+// Note: This is a local-only implementation for development
+// For production, implement a proper file upload service
 
 export class ImageUploadError extends Error {
   constructor(
@@ -37,66 +28,6 @@ export const validateImage = (file: File): void => {
   const supportedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
   if (!supportedFormats.includes(file.type)) {
     throw new ImageUploadError('Supported formats: JPEG, PNG, WebP, GIF');
-  }
-};
-
-// Upload file to Supabase (called during form submission)
-export const uploadItemImage = async (file: File, itemId: string): Promise<string> => {
-  try {
-    // Validate the image first
-    validateImage(file);
-
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop()?.toLowerCase();
-    const fileName = `${itemId}-${Date.now()}.${fileExt}`;
-    const filePath = `items/${fileName}`;
-
-    // Upload file to Supabase Storage
-    const { error: uploadError, data } = await supabase.storage
-      .from('items')
-      .upload(filePath, file, {
-        upsert: true, // Replace if file already exists
-      });
-
-    if (uploadError) {
-      throw new ImageUploadError(`Upload failed: ${uploadError.message}`, uploadError.name);
-    }
-
-    if (!data) {
-      throw new ImageUploadError('Upload completed but no data returned');
-    }
-
-    // Get public URL
-    const { data: urlData } = supabase.storage.from('items').getPublicUrl(filePath);
-
-    return urlData.publicUrl;
-  } catch (error) {
-    if (error instanceof ImageUploadError) {
-      throw error;
-    }
-    throw new ImageUploadError(`Unexpected error during upload: ${error}`);
-  }
-};
-
-// Delete image from Supabase
-export const deleteItemImage = async (imageUrl: string): Promise<void> => {
-  try {
-    // Extract file path from URL
-    const url = new URL(imageUrl);
-    const pathSegments = url.pathname.split('/');
-    const fileName = pathSegments[pathSegments.length - 1];
-    const filePath = `items/${fileName}`;
-
-    const { error } = await supabase.storage.from('items').remove([filePath]);
-
-    if (error) {
-      throw new ImageUploadError(`Delete failed: ${error.message}`);
-    }
-  } catch (error) {
-    if (error instanceof ImageUploadError) {
-      throw error;
-    }
-    throw new ImageUploadError(`Unexpected error during delete: ${error}`);
   }
 };
 

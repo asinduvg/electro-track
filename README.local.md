@@ -1,11 +1,11 @@
 # ElectroTrack - Local Development Setup
 
-This guide will help you set up ElectroTrack for local development on your machine.
+This guide will help you set up ElectroTrack for local development on your machine using Docker.
 
 ## Prerequisites
 
-1. **Node.js** (version 18 or higher)
-2. **PostgreSQL** database (or use Neon for easy setup)
+1. **Node.js** (version 22.19.0)
+2. **Docker** and **Docker Compose** installed
 3. **Git** (for cloning the repository)
 
 ## Local Setup Instructions
@@ -15,49 +15,54 @@ This guide will help you set up ElectroTrack for local development on your machi
 ```bash
 # Clone the repository
 git clone <your-repository-url>
-cd electrotrack
+cd electro-track
 
 # Install dependencies
-npm install
+yarn install
 ```
 
-### 2. Database Setup
+### 2. Database Setup (Docker PostgreSQL)
 
-You have two options for the database:
+Start the PostgreSQL database using Docker:
 
-#### Option A: Use Neon Database (Recommended for easy setup)
+```bash
+# Navigate to docker directory
+cd docker
 
-1. Go to [Neon Console](https://console.neon.tech/)
-2. Create a free account and new project
-3. Copy the connection string from your project dashboard
+# Start PostgreSQL container
+docker-compose up -d
 
-#### Option B: Local PostgreSQL
-
-1. Install PostgreSQL on your machine
-2. Create a new database:
-
-```sql
-CREATE DATABASE electrotrack;
+# Verify container is running
+docker ps
 ```
 
-3. Your connection string will be: `postgresql://username:password@localhost:5432/electrotrack`
+The Docker setup will:
+- Start PostgreSQL on port 5433
+- Initialize the database with the schema from `sql/init.sql`
+- Create a persistent volume for data storage
+
+See `docker/README.md` for detailed Docker setup instructions.
 
 ### 3. Environment Configuration
 
 ```bash
 # Copy the example environment file
 cp .env.example .env
-
-# Edit .env with your database details
-nano .env  # or use your preferred editor
 ```
 
-Update the `.env` file with your database connection:
+The `.env` file is already configured for Docker PostgreSQL:
 
 ```env
-DATABASE_URL=postgresql://username:password@localhost:5432/electrotrack
+# Database Configuration (Docker PostgreSQL for local development)
+DATABASE_URL=postgresql://myuser:mypassword@localhost:5433/electrotrack
+
+# Session Configuration
 SESSION_SECRET=your-secret-key-here
+
+# Node Environment
 NODE_ENV=development
+
+# Server Configuration
 PORT=5000
 ```
 
@@ -65,14 +70,14 @@ PORT=5000
 
 ```bash
 # Push the schema to your database
-npm run db:push
+yarn db:push
 ```
 
 ### 5. Start Development Server
 
 ```bash
 # Start the application
-npm run dev
+yarn dev
 ```
 
 The application will be available at: `http://localhost:5000`
@@ -81,10 +86,12 @@ The application will be available at: `http://localhost:5000`
 
 ### Available Scripts
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm run db:push` - Push schema changes to database
-- `npm run db:generate` - Generate migration files
+- `yarn dev` - Start development server with hot reload
+- `yarn build` - Build for production
+- `yarn start` - Start production server
+- `yarn db:push` - Push schema changes to database
+- `yarn check` - Run TypeScript type checking
+- `yarn format` - Format code with Prettier
 
 ### Project Structure
 
@@ -92,6 +99,10 @@ The application will be available at: `http://localhost:5000`
 ├── client/           # React frontend
 ├── server/           # Express backend
 ├── shared/           # Shared types and schema
+├── docker/           # Docker PostgreSQL setup
+│   ├── docker-compose.yml
+│   ├── sql/init.sql
+│   └── README.md
 ├── .env             # Environment variables (local only)
 ├── .env.example     # Environment template
 └── package.json     # Dependencies and scripts
@@ -102,45 +113,70 @@ The application will be available at: `http://localhost:5000`
 The project uses Drizzle ORM with PostgreSQL. To make schema changes:
 
 1. Edit `shared/schema.ts`
-2. Run `npm run db:push` to apply changes
+2. Run `yarn db:push` to apply changes
 3. Never write SQL migrations manually
+
+#### Docker Database Commands
+
+```bash
+# Stop database
+cd docker && docker-compose down
+
+# Stop and remove all data (fresh start)
+cd docker && docker-compose down -v
+
+# View database logs
+cd docker && docker-compose logs -f
+
+# Access PostgreSQL CLI
+docker exec -it my-postgres psql -U myuser -d electrotrack
+```
 
 ### Troubleshooting
 
 #### Database Connection Issues
 
-- Verify your DATABASE_URL in `.env`
-- Ensure PostgreSQL is running (if using local PostgreSQL)
-- Check if the database exists
+- Verify Docker container is running: `docker ps`
+- Check DATABASE_URL in `.env` matches Docker configuration
+- View logs: `cd docker && docker-compose logs`
 
 #### Port Already in Use
 
-- Change the PORT in your `.env` file
-- Or kill the process using port 5000: `lsof -ti:5000 | xargs kill`
+- **Database port 5433**: Change port in `docker/docker-compose.yml` and update `.env`
+- **App port 5000**: Change PORT in your `.env` file
+- Or kill the process: `lsof -ti:5000 | xargs kill`
 
 #### Module Not Found Errors
 
-- Run `npm install` to ensure all dependencies are installed
-- Check if Node.js version is 18 or higher
+- Run `yarn install` to ensure all dependencies are installed
+- Check if Node.js version matches: `node --version` (should be 22.19.0)
 
-## Differences from Replit
+#### Docker Issues
 
-When running locally vs. Replit:
-
-1. **Environment Variables**: Use `.env` file instead of Replit secrets
-2. **Database**: Setup your own PostgreSQL or use Neon
-3. **Port**: Can use any available port (configurable in `.env`)
-4. **File System**: Standard file system instead of Replit's virtual environment
+- Ensure Docker daemon is running
+- Try restarting Docker containers: `cd docker && docker-compose restart`
+- Fresh start: `cd docker && docker-compose down -v && docker-compose up -d`
 
 ## Production Deployment
 
-For production deployment:
+For production deployment (e.g., on Render):
 
-1. Set `NODE_ENV=production`
-2. Use a production PostgreSQL database
+1. Use production database (e.g., Neon PostgreSQL)
+2. Set `NODE_ENV=production`
 3. Set strong `SESSION_SECRET`
-4. Run `npm run build` to create optimized build
-5. Serve the built files with a production server
+4. Run `yarn build` to create optimized build
+5. Use `yarn start` to serve the production build
+
+**Note**: The deploy branch uses Neon PostgreSQL for production deployment on Render.
+
+## Differences from Production (Deploy Branch)
+
+When running locally vs. production:
+
+1. **Database**: Docker PostgreSQL (local) vs. Neon PostgreSQL (production)
+2. **Environment Variables**: `.env` file (local) vs. Render environment variables (production)
+3. **Port**: 5000 (local, configurable) vs. assigned by Render (production)
+4. **Dependencies**: Simplified for local development (no Neon serverless drivers)
 
 ## Support
 
@@ -148,5 +184,6 @@ If you encounter issues with local setup:
 
 1. Check the troubleshooting section above
 2. Verify all prerequisites are installed
-3. Ensure your database connection string is correct
+3. Ensure Docker containers are running
 4. Check that all environment variables are set properly
+5. Review `docker/README.md` for Docker-specific issues

@@ -26,7 +26,9 @@ ElectroTrack is a comprehensive inventory management system designed for electro
 ### Database Architecture
 
 - **ORM**: Drizzle ORM with TypeScript schema definitions
-- **Connection**: Neon serverless PostgreSQL with connection pooling
+- **Connection**: PostgreSQL with connection pooling (node-postgres driver)
+- **Local Dev**: Docker-based PostgreSQL setup
+- **Production**: Neon serverless PostgreSQL (deploy branch)
 - **Schema**: Shared schema definitions between frontend and backend
 - **Migrations**: Drizzle Kit for database migrations
 
@@ -92,10 +94,10 @@ ElectroTrack is a comprehensive inventory management system designed for electro
 
 ### Backend Dependencies
 
-- **Database**: Neon serverless PostgreSQL
+- **Database**: PostgreSQL (Docker for local dev, Neon for production)
 - **ORM**: Drizzle ORM with PostgreSQL adapter
 - **Authentication**: Custom implementation with session management
-- **File Upload**: Supabase for image storage (deferred implementation)
+- **File Upload**: Local file system (planned for future implementation)
 
 ### Build Dependencies
 
@@ -106,21 +108,22 @@ ElectroTrack is a comprehensive inventory management system designed for electro
 
 ## Deployment Strategy
 
-### Development Environment
+### Development Environment (Main Branch)
 
-- **Platform**: Replit with automatic environment provisioning OR local development
-- **Database**: Neon serverless PostgreSQL (automatically provisioned in Replit, configurable locally)
+- **Platform**: Local development with Docker
+- **Database**: Docker-based PostgreSQL (port 5433)
 - **Hot Reload**: Vite development server with HMR
 - **Error Handling**: Runtime error overlay for development
-- **Environment Variables**: Replit secrets OR .env file for local development
+- **Environment Variables**: .env file for local development
 
-### Local Development Setup
+### Local Development Setup (Main Branch)
 
-- **Prerequisites**: Node.js 18+, PostgreSQL (or Neon database)
+- **Prerequisites**: Node.js 22.19.0, Docker & Docker Compose
 - **Configuration**: .env file with DATABASE_URL, SESSION_SECRET, PORT
-- **Database**: Local PostgreSQL or Neon serverless connection
-- **Environment Loading**: dotenv package for .env file support
+- **Database**: Docker PostgreSQL (docker-compose setup)
+- **Environment Loading**: tsx with --env-file flag
 - **Port Configuration**: Configurable via PORT environment variable (default: 5000)
+- **Documentation**: See README.local.md and docker/README.md
 
 ### Production Build
 
@@ -131,9 +134,11 @@ ElectroTrack is a comprehensive inventory management system designed for electro
 
 ### Database Strategy
 
+- **Main Branch**: Docker PostgreSQL for local development
+- **Deploy Branch**: Neon serverless PostgreSQL for production
 - **Migrations**: Drizzle Kit for schema management
-- **Connection**: Connection pooling with Neon serverless (works for both Replit and local)
-- **Backup**: Built-in Neon backup and recovery
+- **Connection**: Connection pooling with node-postgres (main) or Neon serverless (deploy)
+- **Backup**: Docker volumes (main) or built-in Neon backup (deploy)
 - **Performance**: Optimized queries with proper indexing
 
 ## User Preferences
